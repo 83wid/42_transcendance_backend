@@ -1,0 +1,8 @@
+export default () => ({
+  port: 3000,
+  FORTYTWO_APP_ID:
+    '2b19a2a17a8e11719e446f106ad062e21a479e5cac253b10661f511aaf921c0b',
+  FORTYTWO_APP_SECRET:
+    'b9385338ee1ce2c4072c6f6391171b94b3c57543ff104437202e421c0f6e836f',
+  FORTYTWO_APP_CALLBACK_URL: 'http://localhost:3000/auth/42/callback',
+});
