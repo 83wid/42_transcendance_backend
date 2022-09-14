@@ -9,3 +9,25 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        Int     @default(autoincrement()) @id
+  username	String  @unique	
+  password	String  	
+  email	String  @unique
+  // first_name	character varying(255)	
+  // last_name	character varying(255)	
+  // created_at timestamp
+  // updated_at timestamp
+  // verified	boolean NULL [false]	
+  // achivements	integer[] NU
+}
+
+model Post {
+  id        Int      @default(autoincrement()) @id
+  title     String
+  content   String?
+  published Boolean? @default(false)
+  // author    User?    @relation(fiefeatlds: [authorId], references: [id])
+  authorId  Int?
+}

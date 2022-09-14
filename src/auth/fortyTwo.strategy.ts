@@ -10,6 +10,19 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
       clientID: process.env.FORTYTWO_APP_ID,
       clientSecret: process.env.FORTYTWO_APP_SECRET,
       callbackURL: process.env.FORTYTWO_APP_CALLBACK_URL,
+      profileFields: {
+        id: function (obj: any) {
+          return String(obj.id);
+        },
+        username: 'login',
+        displayName: 'displayname',
+        'name.familyName': 'last_name',
+        'name.givenName': 'first_name',
+        profileUrl: 'url',
+        'emails.0.value': 'email',
+        'phoneNumbers.0.value': 'phone',
+        'photos.0.value': 'image_url',
+      },
       scope: 'public',
     });
   }

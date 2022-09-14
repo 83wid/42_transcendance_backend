@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { FortyTwoAuthGuard } from './fortyTwo-auth.guard';
 
@@ -8,12 +8,11 @@ export class AuthController {
   @Get('')
   @UseGuards(FortyTwoAuthGuard)
   async Auth(@Req() req: any) {
-    //dsd
+    //return req.query
   }
-
   @Get('/42/callback')
-  // @UseGuards(FortyTwoAuthGuard)
+  @UseGuards(FortyTwoAuthGuard)
   async Callback(@Req() req: any) {
-    return req.query.code;
+    return this.authService.authenticate(req);
   }
 }
