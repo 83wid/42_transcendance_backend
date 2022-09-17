@@ -1,10 +1,12 @@
 -- CREATE DATABASE TRANSCENDANCE;
 -- USE TRANSCENDANCE;
-CREATE TYPE level_type AS ENUM ('bronze', 'silver', 'gold', 'platinum');
-CREATE TYPE game_diff AS ENUM ('easy', 'normal', 'difficult');
+CREATE TYPE level_type AS ENUM ('BRONZE', 'SILVER', 'GOLD', 'PLATINUM');
+CREATE TYPE game_diff AS ENUM ('EASY', 'NORMAL', 'DIFFICULT');
+CREATE TYPE conversation_type AS ENUM ('DIRECT', 'GROUP');
 -- create table for users
 CREATE TABLE users (
-  id int NOT NULL unique,
+  id SERIAL NOT NULL unique,
+  intra_id text NOT NULL unique,
   username varchar(255) NOT NULL unique,
   password varchar(255) NOT NULL,
   email varchar(255) NOT NULL unique,
@@ -18,15 +20,16 @@ CREATE TABLE users (
 );
 -- create table for all conversation
 CREATE TABLE conversation (
-  id int NOT NULL,
+  id SERIAL NOT NULL,
   name varchar(255) NOT NULL unique,
+  type conversation_type DEFAULT 'DIRECT',
   direct BOOLEAN DEFAULT true,
   PRIMARY KEY (id)
 );
 -- create table for for group members 
 CREATE TABLE group_member (
-  user_id int NOT NULL,
-  conversation_id int NOT NULL,
+  user_id SERIAL NOT NULL,
+  conversation_id SERIAL NOT NULL,
   joint_date timestamp NOT NULL,
   left_date timestamp NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users (id),
@@ -34,10 +37,10 @@ CREATE TABLE group_member (
 );
 -- create table for messages
 CREATE TABLE message (
-  id int NOT NULL,
-  sender_id int NOT NULL,
-  message text NOT NULL,
-  conversation_id int NOT NULL,
+  id SERIAL NOT NULL,
+  sender_id SERIAL NOT NULL,
+  content text NOT NULL,
+  conversation_id SERIAL NOT NULL,
   created_at timestamp NOT NULL,
   updated_at timestamp NOT NULL,
   read_by integer [],
@@ -48,7 +51,7 @@ CREATE TABLE message (
 );
 
 CREATE TABLE achivements (
-  id int NOT NULL,
+  id SERIAL NOT NULL,
   name VARCHAR(25) NOT NULL,
   level level_type DEFAULT 'bronze',
   xp int NOT NULL,
@@ -57,9 +60,9 @@ CREATE TABLE achivements (
 );
 
 CREATE TABLE friends (
-  id int NOT NULL,
-  sender_id int NOT NULL,
-  receiver_id int NOT NULL,
+  id SERIAL NOT NULL,
+  sender_id SERIAL NOT NULL,
+  receiver_id SERIAL NOT NULL,
   created_at timestamp NOT NULL,
   accepted BOOLEAN DEFAULT false,
   FOREIGN KEY (sender_id) REFERENCES users (id),
@@ -68,7 +71,7 @@ CREATE TABLE friends (
 );
 
 CREATE TABLE game (
-  id int NOT NULL,
+  id SERIAL NOT NULL,
   player integer [],
   level game_diff DEFAULT 'normal',
   scores integer [],

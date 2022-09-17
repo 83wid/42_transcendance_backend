@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,24 +7,97 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int     @default(autoincrement()) @id
-  username	String  @unique	
-  password	String  	
-  email	String  @unique
-  // first_name	character varying(255)	
-  // last_name	character varying(255)	
-  // created_at timestamp
-  // updated_at timestamp
-  // verified	boolean NULL [false]	
-  // achivements	integer[] NU
+model achivements {
+  id          Int         @id @default(autoincrement())
+  name        String      @db.VarChar(25)
+  level       level_type? @default(bronze)
+  xp          Int
+  description String?
 }
 
-model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  // author    User?    @relation(fiefeatlds: [authorId], references: [id])
-  authorId  Int?
+model conversation {
+  id           Int                @id @default(autoincrement())
+  name         String             @unique @db.VarChar(255)
+  type         conversation_type? @default(DIRECT)
+  direct       Boolean?           @default(true)
+  group_member group_member[]     @ignore
+  message      message[]
+}
+
+model friends {
+  id                               Int      @id @default(autoincrement())
+  sender_id                        Int      @default(autoincrement())
+  receiver_id                      Int      @default(autoincrement())
+  created_at                       DateTime @db.Timestamp(6)
+  accepted                         Boolean? @default(false)
+  users_friends_receiver_idTousers users    @relation("friends_receiver_idTousers", fields: [receiver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_friends_sender_idTousers   users    @relation("friends_sender_idTousers", fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model game {
+  id     Int        @id @default(autoincrement())
+  player Int[]
+  level  game_diff? @default(normal)
+  scores Int[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model group_member {
+  user_id         Int          @default(autoincrement())
+  conversation_id Int          @default(autoincrement())
+  joint_date      DateTime     @db.Timestamp(6)
+  left_date       DateTime     @db.Timestamp(6)
+  conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@ignore
+}
+
+model message {
+  id              Int          @id @default(autoincrement())
+  sender_id       Int          @default(autoincrement())
+  content         String
+  conversation_id Int          @default(autoincrement())
+  created_at      DateTime     @db.Timestamp(6)
+  updated_at      DateTime     @db.Timestamp(6)
+  read_by         Int[]
+  delivered_to    Int[]
+  conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users        @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  id                                 Int            @id @default(autoincrement())
+  intra_id                           String         @unique
+  username                           String         @unique @db.VarChar(255)
+  password                           String         @db.VarChar(255)
+  email                              String         @unique @db.VarChar(255)
+  first_name                         String         @db.VarChar(255)
+  last_name                          String         @db.VarChar(255)
+  created_at                         DateTime       @db.Timestamp(6)
+  updated_at                         DateTime       @db.Timestamp(6)
+  verified                           Boolean?       @default(false)
+  achivements                        Int[]
+  friends_friends_receiver_idTousers friends[]      @relation("friends_receiver_idTousers")
+  friends_friends_sender_idTousers   friends[]      @relation("friends_sender_idTousers")
+  group_member                       group_member[] @ignore
+  message                            message[]
+}
+
+enum conversation_type {
+  DIRECT
+  GROUP
+}
+
+enum game_diff {
+  easy
+  normal
+  difficult
+}
+
+enum level_type {
+  bronze
+  silver
+  gold
+  platinum
 }

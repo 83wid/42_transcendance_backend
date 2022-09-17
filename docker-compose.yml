@@ -18,3 +18,15 @@ services:
     restart: always
     ports:
       - 8080:8080
+  
+  server:
+    depends_on:
+      - db
+    build: ./
+    image: server
+    container_name: server
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/app
