@@ -6,6 +6,13 @@ import { UsersModule } from './users/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import config from './helpers/config';
+import { JwtStategy } from './auth/jwt.strategy';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from './auth/constants';
+import { FriendsService } from './friends/friends.service';
+import { AchivementsService } from './achivements/achivements.service';
+import { ChatService } from './chat/chat.service';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -13,8 +20,19 @@ import config from './helpers/config';
     AuthModule,
     UsersModule,
     PrismaModule,
+    JwtModule.register({
+      secret: jwtConstants.secret,
+      signOptions: { expiresIn: '60s' },
+    }),
+    ChatModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    JwtStategy,
+    FriendsService,
+    AchivementsService,
+    ChatService,
+  ],
 })
 export class AppModule {}

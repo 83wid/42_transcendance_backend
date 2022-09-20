@@ -12,20 +12,60 @@ model conversation {
   name         String             @unique @db.VarChar(255)
   type         conversation_type? @default(DIRECT)
   direct       Boolean?           @default(true)
-  group_member group_member[]     @ignore
+  group_member group_member[]
   message      message[]
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by the Prisma Client.
+model users {
+  id                                 Int            @id @default(autoincrement())
+  intra_id                           Int            @unique @default(autoincrement())
+  username                           String         @unique @db.VarChar(255)
+  email                              String         @unique @db.VarChar(255)
+  first_name                         String         @db.VarChar(255)
+  last_name                          String         @db.VarChar(255)
+  created_at                         DateTime?      @default(now()) @db.Timestamp(6)
+  updated_at                         DateTime?      @default(now()) @db.Timestamp(6)
+  img_url                            String?        @db.VarChar(255)
+  achivements                        Int[]
+  friends_friends_receiver_idTousers friends[]      @relation("friends_receiver_idTousers")
+  friends_friends_sender_idTousers   friends[]      @relation("friends_sender_idTousers")
+  group_member                       group_member[]
+  message                            message[]
+}
+
+model achivements {
+  id          Int         @id @default(autoincrement())
+  name        String      @db.VarChar(25)
+  level       level_type? @default(BRONZE)
+  xp          Int
+  description String?
+}
+
+model friends {
+  id                               Int      @id @default(autoincrement())
+  sender_id                        Int      @default(autoincrement())
+  receiver_id                      Int      @default(autoincrement())
+  created_at                       DateTime @default(now()) @db.Timestamp(6)
+  accepted                         Boolean? @default(false)
+  users_friends_receiver_idTousers users    @relation("friends_receiver_idTousers", fields: [receiver_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  users_friends_sender_idTousers   users    @relation("friends_sender_idTousers", fields: [sender_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model game {
+  id     Int        @id @default(autoincrement())
+  player Int[]
+  level  game_diff? @default(NORMAL)
+  scores Int[]
+}
+
 model group_member {
+  id              Int          @id @default(autoincrement())
   user_id         Int          @default(autoincrement())
   conversation_id Int          @default(autoincrement())
   joint_date      DateTime?    @default(now()) @db.Timestamp(6)
   left_date       DateTime?    @db.Timestamp(6)
   conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users           users        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@ignore
+  users           users        @relation(fields: [user_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model message {
@@ -38,22 +78,7 @@ model message {
   read_by         Int[]
   delivered_to    Int[]
   conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users           users        @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model users {
-  id           Int            @id @default(autoincrement())
-  intra_id     String         @unique
-  username     String         @unique @db.VarChar(255)
-  email        String         @unique @db.VarChar(255)
-  first_name   String         @db.VarChar(255)
-  last_name    String         @db.VarChar(255)
-  created_at   DateTime?      @default(now()) @db.Timestamp(6)
-  updated_at   DateTime?      @default(now()) @db.Timestamp(6)
-  img_url      String?        @db.VarChar(255)
-  achivements  Int[]
-  group_member group_member[] @ignore
-  message      message[]
+  users           users        @relation(fields: [sender_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum conversation_type {
