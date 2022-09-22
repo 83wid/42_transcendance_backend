@@ -1,15 +1,21 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
   @Post('update')
-  async updateUser(@Body() data) {
-    this.usersService.updateUser({ data, where: { intra_id: data.intra_id } });
+  @UseGuards(JwtAuthGuard)
+  async updateUser(@Req() req: any) {
+    // console.log(data);
+    this.usersService.updateUser({
+      data: req.body,
+      where: { intra_id: req.user.sub },
+    });
   }
-  @Get(':id')
-  async findUser(@Param() params) {
-    return this.usersService.user({ intra_id: params.id });
+  @Get(':username')
+  async findUser(@Param('username') username) {
+    return this.usersService.user({ username: username });
   }
 }

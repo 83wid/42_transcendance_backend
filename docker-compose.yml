@@ -7,6 +7,7 @@ services:
     restart: always
     volumes:
       - ./database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
+      - db:/var/lib/postgresql/data
     env_file:
       - .env
 
@@ -30,3 +31,11 @@ services:
       - 3000:3000
     volumes:
       - ./:/app
+    
+volumes:
+  db:
+    driver: local
+    driver_opts:
+      type: 'none' 
+      o: bind
+      device: $PWD/database/data
