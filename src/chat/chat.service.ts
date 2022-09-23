@@ -13,14 +13,18 @@ export class ChatService {
     orderBy?: Prisma.conversationOrderByWithRelationInput;
   }): Promise<conversation[]> {
     const { skip, take, cursor, where, include, orderBy } = params;
-    return this.prisma.conversation.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      include,
-      orderBy,
-    });
+    try {
+      return this.prisma.conversation.findMany({
+        skip,
+        take,
+        cursor,
+        where,
+        include,
+        orderBy,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async getChatMessages(params: {
@@ -31,12 +35,16 @@ export class ChatService {
     orderBy?: Prisma.messageOrderByWithRelationInput;
   }): Promise<message[]> {
     const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.message.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
+    try {
+      return this.prisma.message.findMany({
+        skip,
+        take,
+        cursor,
+        where,
+        orderBy,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 }

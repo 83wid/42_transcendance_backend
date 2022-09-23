@@ -1,24 +1,17 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ChatService } from './chat.service';
 
 @Controller('chat')
 export class ChatController {
   constructor(private chatService: ChatService) {}
-  @Get('')
+  @Post('')
   @UseGuards(JwtAuthGuard)
   async getChats(@Req() req: any) {
+    console.log(req.query.page);
     return this.chatService.getUserChats({
-      skip: 0,
-      take: 5,
+      skip: Number(req.query.page - 1),
+      take: Number(req.query.size),
       //   cursor: {},
       where: {
         group_member: {
@@ -30,16 +23,16 @@ export class ChatController {
       include: { group_member: true },
     });
   }
-  @Get(':id')
+  @Post(':id')
   @UseGuards(JwtAuthGuard)
-  async getChatsMessages(@Param('id') id: number) {
+  async getChatsMessages(@Req() req: any) {
     // return data;
     return this.chatService.getChatMessages({
-      skip: 0,
-      take: 5,
       //   cursor: {},
+      skip: Number(req.query.page - 1),
+      take: Number(req.query.size),
       where: {
-        conversation_id: Number(id),
+        conversation_id: Number(req.params.id),
       },
     });
   }

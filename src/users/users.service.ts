@@ -9,9 +9,13 @@ export class UsersService {
   async user(
     usersWhereUniqueInput: Prisma.usersWhereUniqueInput,
   ): Promise<users | null> {
-    return this.prisma.users.findUnique({
-      where: usersWhereUniqueInput,
-    });
+    try {
+      return this.prisma.users.findUnique({
+        where: usersWhereUniqueInput,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async users(params: {
@@ -22,19 +26,27 @@ export class UsersService {
     orderBy?: Prisma.usersOrderByWithRelationInput;
   }): Promise<users[]> {
     const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.users.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
+    try {
+      return this.prisma.users.findMany({
+        skip,
+        take,
+        cursor,
+        where,
+        orderBy,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async createUser(data: Prisma.usersCreateInput): Promise<users> {
-    return this.prisma.users.create({
-      data,
-    });
+    try {
+      return this.prisma.users.create({
+        data,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async updateUser(params: {
@@ -42,15 +54,23 @@ export class UsersService {
     data: Prisma.usersUpdateInput;
   }): Promise<users> {
     const { where, data } = params;
-    return this.prisma.users.update({
-      data,
-      where,
-    });
+    try {
+      return this.prisma.users.update({
+        data,
+        where,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 
   async deleteUser(where: Prisma.usersWhereUniqueInput): Promise<users> {
-    return this.prisma.users.delete({
-      where,
-    });
+    try {
+      return this.prisma.users.delete({
+        where,
+      });
+    } catch (error) {
+      return error;
+    }
   }
 }
