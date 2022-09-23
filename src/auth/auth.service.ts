@@ -38,6 +38,7 @@ export class AuthService {
         first_name: newUser.first_name,
         last_name: newUser.last_name,
         img_url: newUser.img_url,
+        first_log: true,
       };
       return {
         access_token: this.jwtService.sign(payload),
@@ -49,6 +50,7 @@ export class AuthService {
       first_name: user.first_name,
       last_name: user.last_name,
       img_url: user.img_url,
+      first_log: false,
     };
     return {
       access_token: this.jwtService.sign(payload),

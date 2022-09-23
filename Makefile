@@ -4,6 +4,7 @@ VLM = `docker volume ls -q`
 all:
 	docker-compose -f  $(FILE) up -d --build
 	docker ps
+	# yarn && yarn start:dev
 
 clean:
 	docker-compose -f $(FILE) down

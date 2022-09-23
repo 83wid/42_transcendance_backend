@@ -8,6 +8,8 @@ services:
     volumes:
       - ./database/setup.sql:/docker-entrypoint-initdb.d/setup.sql
       - db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
     env_file:
       - .env
 
@@ -19,19 +21,20 @@ services:
     restart: always
     ports:
       - 8080:8080
-  
+
   server:
     depends_on:
       - db
-    build: ./
-    image: server
+    image: node
     container_name: server
-    restart: always
-    ports:
-      - 3000:3000
     volumes:
       - ./:/app
-    
+    working_dir: /app
+    command: ["sh", "-c", "yarn && yarn start:dev"]
+    restart: always
+    ports:
+      - 5000:5000
+
 volumes:
   db:
     driver: local

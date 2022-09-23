@@ -15,6 +15,7 @@ export class UsersController {
     });
   }
   @Get(':username')
+  @UseGuards(JwtAuthGuard)
   async findUser(@Param('username') username) {
     return this.usersService.user({ username: username });
   }
