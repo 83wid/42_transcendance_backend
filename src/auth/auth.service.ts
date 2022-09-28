@@ -10,9 +10,7 @@ export class AuthService {
   ) {}
   async authenticate(req: any) {
     if (!req.user) {
-      return {
-        message: 'User not found',
-      };
+      return '';
     }
     const intra_id = Number(req.user.id);
     const email = req.user.emails[0].value;
@@ -21,7 +19,7 @@ export class AuthService {
     const username = req.user.username;
     const img_url = req.user.photos[0].value;
     const user = await this.UserService.user({
-      email,
+      intra_id,
     });
     if (!user) {
       const newUser = await this.UserService.createUser({
@@ -40,9 +38,7 @@ export class AuthService {
         img_url: newUser.img_url,
         first_log: true,
       };
-      return {
-        access_token: this.jwtService.sign(payload),
-      };
+      return this.jwtService.sign(payload);
     }
     const payload = {
       username: user.username,
@@ -52,8 +48,6 @@ export class AuthService {
       img_url: user.img_url,
       first_log: false,
     };
-    return {
-      access_token: this.jwtService.sign(payload),
-    };
+    return this.jwtService.sign(payload);
   }
 }

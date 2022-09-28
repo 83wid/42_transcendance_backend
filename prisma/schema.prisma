@@ -9,9 +9,8 @@ datasource db {
 
 model conversation {
   id           Int                @id @default(autoincrement())
-  name         String             @unique @db.VarChar(255)
+  name         String?            @db.VarChar(255)
   type         conversation_type? @default(DIRECT)
-  direct       Boolean?           @default(true)
   group_member group_member[]
   message      message[]
 }

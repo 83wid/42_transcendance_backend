@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { FortyTwoAuthGuard } from './fortyTwo-auth.guard';
 
@@ -12,8 +12,9 @@ export class AuthController {
   // }
   @Get('/42/callback')
   @UseGuards(FortyTwoAuthGuard)
-  async Callback(@Req() req: any) {
-    return this.authService.authenticate(req);
+  async Callback(@Req() req: any, @Res() res: any) {
+    const token = await this.authService.authenticate(req);
+    return res.redirect(`http://localhost:3000/?token=${token}`);
   }
 
   @Get('/login')

@@ -21,10 +21,9 @@ CREATE TABLE users (
 );
 -- create table for all conversation
 CREATE TABLE conversation (
-  id SERIAL NOT NULL,
-  name varchar(255) NOT NULL unique,
+  id SERIAL NOT NULL unique,
+  name varchar(255),
   type conversation_type DEFAULT 'DIRECT',
-  direct BOOLEAN DEFAULT true,
   PRIMARY KEY (id)
 );
 -- create table for for group members 
@@ -40,7 +39,7 @@ CREATE TABLE group_member (
 );
 -- create table for messages
 CREATE TABLE message (
-  id SERIAL NOT NULL,
+  id SERIAL NOT NULL unique,
   sender_id SERIAL NOT NULL,
   content text NOT NULL,
   conversation_id SERIAL NOT NULL,
