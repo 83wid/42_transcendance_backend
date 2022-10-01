@@ -60,8 +60,18 @@ CREATE TABLE achivements (
   description text,
   PRIMARY KEY (id)
 );
--- create table for messages
+-- create table for friends
 CREATE TABLE friends (
+  id SERIAL NOT NULL,
+  sender_id SERIAL NOT NULL,
+  receiver_id SERIAL NOT NULL,
+  created_at timestamp NOT NULL DEFAULT now(),
+  FOREIGN KEY (sender_id) REFERENCES users (intra_id),
+  FOREIGN KEY (receiver_id) REFERENCES users (intra_id),
+  PRIMARY KEY (id)
+);
+-- create table for messages
+CREATE TABLE friendsInvites (
   id SERIAL NOT NULL,
   sender_id SERIAL NOT NULL,
   receiver_id SERIAL NOT NULL,

@@ -41,12 +41,7 @@ export class AuthService {
       return this.jwtService.sign(payload);
     }
     const payload = {
-      username: user.username,
       sub: user.intra_id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      img_url: user.img_url,
-      first_log: false,
     };
     return this.jwtService.sign(payload);
   }
