@@ -7,31 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model conversation {
-  id           Int                @id @default(autoincrement())
-  name         String?            @db.VarChar(255)
-  type         conversation_type? @default(DIRECT)
-  group_member group_member[]
-  message      message[]
-}
-
-model users {
-  id                                 Int            @id @default(autoincrement())
-  intra_id                           Int            @unique @default(autoincrement())
-  username                           String         @unique @db.VarChar(255)
-  email                              String         @unique @db.VarChar(255)
-  first_name                         String         @db.VarChar(255)
-  last_name                          String         @db.VarChar(255)
-  created_at                         DateTime?      @default(now()) @db.Timestamp(6)
-  updated_at                         DateTime?      @default(now()) @db.Timestamp(6)
-  img_url                            String?        @db.VarChar(255)
-  achivements                        Int[]
-  friends_friends_receiver_idTousers friends[]      @relation("friends_receiver_idTousers")
-  friends_friends_sender_idTousers   friends[]      @relation("friends_sender_idTousers")
-  group_member                       group_member[]
-  message                            message[]
-}
-
 model achivements {
   id          Int         @id @default(autoincrement())
   name        String      @db.VarChar(25)
@@ -40,14 +15,30 @@ model achivements {
   description String?
 }
 
+model blocked {
+  id                             Int      @id @default(autoincrement())
+  userid                         Int      @default(autoincrement())
+  blockedid                      Int      @default(autoincrement())
+  created_at                     DateTime @default(now()) @db.Timestamp(6)
+  users_blocked_blockedidTousers users    @relation("blocked_blockedidTousers", fields: [blockedid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  users_blocked_useridTousers    users    @relation("blocked_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model conversation {
+  id           Int                @id @default(autoincrement())
+  name         String?            @db.VarChar(255)
+  type         conversation_type? @default(DIRECT)
+  group_member group_member[]
+  message      message[]
+}
+
 model friends {
-  id                               Int      @id @default(autoincrement())
-  sender_id                        Int      @default(autoincrement())
-  receiver_id                      Int      @default(autoincrement())
-  created_at                       DateTime @default(now()) @db.Timestamp(6)
-  accepted                         Boolean? @default(false)
-  users_friends_receiver_idTousers users    @relation("friends_receiver_idTousers", fields: [receiver_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
-  users_friends_sender_idTousers   users    @relation("friends_sender_idTousers", fields: [sender_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  id                            Int      @id @default(autoincrement())
+  userid                        Int      @default(autoincrement())
+  friendid                      Int      @default(autoincrement())
+  created_at                    DateTime @default(now()) @db.Timestamp(6)
+  users_friends_friendidTousers users    @relation("friends_friendidTousers", fields: [friendid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  users_friends_useridTousers   users    @relation("friends_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model game {
@@ -67,6 +58,16 @@ model group_member {
   users           users        @relation(fields: [user_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
+model invites {
+  id                              Int      @id @default(autoincrement())
+  senderid                        Int      @default(autoincrement())
+  receiverid                      Int      @default(autoincrement())
+  created_at                      DateTime @default(now()) @db.Timestamp(6)
+  accepted                        Boolean? @default(false)
+  users_invites_receiveridTousers users    @relation("invites_receiveridTousers", fields: [receiverid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  users_invites_senderidTousers   users    @relation("invites_senderidTousers", fields: [senderid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
 model message {
   id              Int          @id @default(autoincrement())
   sender_id       Int          @default(autoincrement())
@@ -78,6 +79,27 @@ model message {
   delivered_to    Int[]
   conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           users        @relation(fields: [sender_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  id                                Int            @id @default(autoincrement())
+  intra_id                          Int            @unique @default(autoincrement())
+  username                          String         @unique @db.VarChar(255)
+  email                             String         @unique @db.VarChar(255)
+  first_name                        String         @db.VarChar(255)
+  last_name                         String         @db.VarChar(255)
+  created_at                        DateTime?      @default(now()) @db.Timestamp(6)
+  updated_at                        DateTime?      @default(now()) @db.Timestamp(6)
+  img_url                           String?        @db.VarChar(255)
+  achivements                       Int[]
+  blocked_blocked_blockedidTousers  blocked[]      @relation("blocked_blockedidTousers")
+  blocked_blocked_useridTousers     blocked[]      @relation("blocked_useridTousers")
+  friends_friends_friendidTousers   friends[]      @relation("friends_friendidTousers")
+  friends_friends_useridTousers     friends[]      @relation("friends_useridTousers")
+  group_member                      group_member[]
+  invites_invites_receiveridTousers invites[]      @relation("invites_receiveridTousers")
+  invites_invites_senderidTousers   invites[]      @relation("invites_senderidTousers")
+  message                           message[]
 }
 
 enum conversation_type {

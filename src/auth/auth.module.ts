@@ -16,7 +16,6 @@ import { JwtStategy } from './jwt.strategy';
     PrismaModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60s' },
     }),
   ],
   controllers: [AuthController],

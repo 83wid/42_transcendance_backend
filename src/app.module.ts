@@ -13,6 +13,7 @@ import { FriendsService } from './friends/friends.service';
 import { AchivementsService } from './achivements/achivements.service';
 import { ChatService } from './chat/chat.service';
 import { ChatModule } from './chat/chat.module';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ChatModule } from './chat/chat.module';
     AuthModule,
     UsersModule,
     PrismaModule,
+    FriendsModule,
     JwtModule.register({
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '60s' },
