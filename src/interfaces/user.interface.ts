@@ -26,13 +26,23 @@ export interface Friends {
   updated_at: string;
 }
 
+/***********    Friends & Friends Requests    ***********/
 //sendRequest DTO
 export class friendRequestBody {
   @IsString()
   @IsNotEmpty()
-  sender_id: string;
-
+  requestedId: string;
+}
+export class acceptRequestBody {
   @IsString()
   @IsNotEmpty()
-  receiver_id: string;
+  id: string;
 }
+
+// Block User DTO
+export class blockRequestBody {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+}
+/***********    Friends & Friends Requests    ***********/

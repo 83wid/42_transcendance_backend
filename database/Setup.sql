@@ -60,27 +60,39 @@ CREATE TABLE achivements (
   description text,
   PRIMARY KEY (id)
 );
--- create table for friends
+-- create table for Friends
 CREATE TABLE friends (
   id SERIAL NOT NULL,
-  sender_id SERIAL NOT NULL,
-  receiver_id SERIAL NOT NULL,
+  userId SERIAL NOT NULL,
+  friendId SERIAL NOT NULL,
   created_at timestamp NOT NULL DEFAULT now(),
-  FOREIGN KEY (sender_id) REFERENCES users (intra_id),
-  FOREIGN KEY (receiver_id) REFERENCES users (intra_id),
+  FOREIGN KEY (userId) REFERENCES users (intra_id),
+  FOREIGN KEY (friendId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
--- create table for messages
-CREATE TABLE friendsInvites (
+-- create table for Friends requests
+CREATE TABLE invites (
   id SERIAL NOT NULL,
-  sender_id SERIAL NOT NULL,
-  receiver_id SERIAL NOT NULL,
+  senderId SERIAL NOT NULL,
+  receiverId SERIAL NOT NULL,
   created_at timestamp NOT NULL DEFAULT now(),
   accepted BOOLEAN DEFAULT false,
-  FOREIGN KEY (sender_id) REFERENCES users (intra_id),
-  FOREIGN KEY (receiver_id) REFERENCES users (intra_id),
+  FOREIGN KEY (senderId) REFERENCES users (intra_id),
+  FOREIGN KEY (receiverId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
+
+-- create table for Blocked users
+CREATE TABLE blocked (
+  id SERIAL NOT NULL,
+  userId SERIAL NOT NULL,
+  blockedId SERIAL NOT NULL,
+  created_at timestamp NOT NULL DEFAULT now(),
+  FOREIGN KEY (userId) REFERENCES users (intra_id),
+  FOREIGN KEY (blockedId) REFERENCES users (intra_id),
+  PRIMARY KEY (id)
+);
+
 -- create table for messages
 CREATE TABLE game (
   id SERIAL NOT NULL,
