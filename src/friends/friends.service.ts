@@ -52,7 +52,9 @@ export class FriendsService {
       }
     } catch (error) {
       return res.status(400).json({
-        message: error,
+        message:
+          'Friend Request Failed, Please Try Again or shoose another user',
+        error: error,
       });
     }
   }
@@ -101,7 +103,7 @@ export class FriendsService {
           },
         });
         return res.status(200).json({
-          message: 'Accept Friend Request Success',
+          message: 'Friend Request Accepted',
         });
       }
       return res.status(400).json({
@@ -109,7 +111,8 @@ export class FriendsService {
       });
     } catch (error) {
       return res.status(400).json({
-        message: error,
+        message: 'Something went wrong',
+        error: error,
       });
     }
   }
@@ -137,7 +140,8 @@ export class FriendsService {
       });
     } catch (error) {
       return res.status(400).json({
-        message: error,
+        message: 'Something went wrong',
+        error: error,
       });
     }
   }
@@ -178,9 +182,14 @@ export class FriendsService {
   }
 
   //Block Friend
-  blockFriend(dto: blockRequestBody, req: any, res: Response) {
+  async blockFriend(dto: blockRequestBody, req: any, res: Response) {
     try {
-      this.prisma.friends.deleteMany({
+      if (Number(dto.id) === req.user.sub) {
+        return res.status(400).json({
+          message: 'You cannot block yourself',
+        });
+      }
+      await this.prisma.friends.deleteMany({
         where: {
           OR: [
             {
@@ -194,18 +203,36 @@ export class FriendsService {
           ],
         },
       });
-      this.prisma.blocked.create({
-        data: {
-          userid: req.user.sub,
-          blockedid: Number(dto.id),
+      const blocked = await this.prisma.blocked.findMany({
+        where: {
+          OR: [
+            { userid: req.user.sub, blockedid: Number(dto.id) },
+            {
+              userid: Number(dto.id),
+              blockedid: req.user.sub,
+            },
+          ],
         },
       });
-      return res.status(200).json({
-        message: 'Friend Blocked',
-      });
+      if (blocked.length < 1) {
+        await this.prisma.blocked.create({
+          data: {
+            userid: req.user.sub,
+            blockedid: Number(dto.id),
+          },
+        });
+        return res.status(200).json({
+          message: 'Friend Blocked',
+        });
+      } else {
+        return res.status(400).json({
+          message: 'Friend Already Blocked',
+        });
+      }
     } catch (error) {
       return res.status(400).json({
-        message: error,
+        message: "Couldn't block friend",
+        error: error,
       });
     }
   }
