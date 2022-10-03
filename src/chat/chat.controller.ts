@@ -61,16 +61,17 @@ export class ChatController {
   async sendMessage(@Req() req: any) {
     if (Number(req.body.conversation_id) === -1) {
       return await this.chatService.createConversation({
-        // group_member: {
-        //   connect: [{ users: { connect: { intra_id: Number(req.user.sub) } } }],
-        // },
-        message: {
-          create: {
-            content: req.body.content,
-            users: { connect: { intra_id: Number(req.user.sub) } },
-          },
-        },
-      });
+  // group_member: {
+  //   connect: [{ users: { connect: { intra_id: Number(req.user.sub) } } }],
+  // },
+  message: {
+    create: {
+      content: req.body.content,
+      users: { connect: { intra_id: Number(req.user.sub) } },
+    },
+  },
+  name: ''
+});
     }
     // return await this.chatService.createMessage({
     //   content: req.body.content,
