@@ -1,4 +1,16 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+// import { Response as Res, Request as Req } from 'express';
+
+// Global Interface declare
+export {};
+declare global {
+  namespace Express {
+    interface Request {
+      user: any;
+    }
+  }
+}
+
 
 export interface User {
   id: number;
@@ -46,3 +58,4 @@ export class blockRequestBody {
   id: string;
 }
 /***********    Friends & Friends Requests    ***********/
+
