@@ -3,6 +3,8 @@
 CREATE TYPE level_type AS ENUM ('BRONZE', 'SILVER', 'GOLD', 'PLATINUM');
 CREATE TYPE game_diff AS ENUM ('EASY', 'NORMAL', 'DIFFICULT');
 CREATE TYPE conversation_type AS ENUM ('DIRECT', 'GROUP');
+CREATE TYPE notification_type AS ENUM('FRIEND_REQUEST', 'GAME_INVITE', 'OTHER');
+CREATE TYPE user_status AS ENUM('ONLINE', 'OFFLINE', 'PLAYING');
 -- create table for users
 CREATE TABLE users (
   id SERIAL NOT NULL unique,
@@ -101,3 +103,24 @@ CREATE TABLE game (
   scores integer [],
   PRIMARY KEY (id)
 );
+
+-- create table for notification
+CREATE TABLE notification (
+  id SERIAL,
+  type notification_type NOT NULL DEFAULT 'OTHER',
+  userId SERIAL NOT NULL,
+  fromId SERIAL NOT NULL,
+  targetId SERIAL NOT NULL,
+  content TEXT,
+  createdAt timestamp NOT NULL DEFAULT now(),
+  updatedAt timestamp NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users (intra_id),
+  FOREIGN KEY (fromId) REFERENCES users (intra_id),
+  PRIMARY KEY (id)
+);
+
+INSERT INTO users(intra_id, username, email, first_name, last_name)
+VALUES
+(115, 'ali@zaynoune@', 'ali@ali.ali', 'ali', 'zaynoune'),
+(12, 'alizaynoune@', 'aliali.ali', 'ali', 'zaynoune'),
+(1, 'alizaynoune', 'ali@ali.com', 'ali', 'zaynoune')

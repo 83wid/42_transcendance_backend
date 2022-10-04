@@ -26,7 +26,8 @@ export class AuthService {
       intra_id,
     });
     if (!user) {
-      const newUser = await this.UserService.createUser({
+      try {
+              const newUser = await this.UserService.createUser({
         intra_id,
         email,
         username,
@@ -42,8 +43,14 @@ export class AuthService {
         img_url: newUser.img_url,
         first_log: true,
       };
+      console.log(newUser);
+      
       return this.jwtService.sign(payload);
-    }
+      } catch (error) {
+        return ''
+      }
+
+    }    
     const payload = {
       sub: user.intra_id,
     };
@@ -52,6 +59,8 @@ export class AuthService {
   // get auth profile
   async authprofile(id: number, res: Response) {
     try {
+      console.log(id);
+      
       const data = await this.prisma.users.findUnique({
         where: { intra_id: id },
       });
@@ -66,8 +75,6 @@ export class AuthService {
         ])
       return res.status(200).json(data);
     } catch (error) {
-      console.log(error);
-
       return res.status(400).json({
         message: error,
       });
