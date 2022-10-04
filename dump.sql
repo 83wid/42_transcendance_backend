@@ -1,9 +1,161 @@
 --
+-- PostgreSQL database cluster dump
+--
+
+SET default_transaction_read_only = off;
+
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+
+--
+-- Drop databases (except postgres and template1)
+--
+
+DROP DATABASE "TRANSCENDANCE";
+
+
+
+
+--
+-- Drop roles
+--
+
+DROP ROLE nabouzah;
+
+
+--
+-- Roles
+--
+
+CREATE ROLE nabouzah;
+ALTER ROLE nabouzah WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'SCRAM-SHA-256$4096:7njRpVbI9eHwYwXvGxg9ZQ==$d3bzYEsItD/Po+5btov7cUZA0PMaqvEjJHHx/uia3W0=:xzEM7A14Hn1TaYqNRic3Ezeg3IAzetwnBf1YiH9/LjQ=';
+
+
+
+
+
+
+--
+-- Databases
+--
+
+--
+-- Database "template1" dump
+--
+
+--
 -- PostgreSQL database dump
 --
 
 -- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
 -- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+UPDATE pg_catalog.pg_database SET datistemplate = false WHERE datname = 'template1';
+DROP DATABASE template1;
+--
+-- Name: template1; Type: DATABASE; Schema: -; Owner: nabouzah
+--
+
+CREATE DATABASE template1 WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
+
+
+ALTER DATABASE template1 OWNER TO nabouzah;
+
+\connect template1
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: DATABASE template1; Type: COMMENT; Schema: -; Owner: nabouzah
+--
+
+COMMENT ON DATABASE template1 IS 'default template for new databases';
+
+
+--
+-- Name: template1; Type: DATABASE PROPERTIES; Schema: -; Owner: nabouzah
+--
+
+ALTER DATABASE template1 IS_TEMPLATE = true;
+
+
+\connect template1
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: DATABASE template1; Type: ACL; Schema: -; Owner: nabouzah
+--
+
+REVOKE CONNECT,TEMPORARY ON DATABASE template1 FROM PUBLIC;
+GRANT CONNECT ON DATABASE template1 TO PUBLIC;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- Database "TRANSCENDANCE" dump
+--
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
+-- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: TRANSCENDANCE; Type: DATABASE; Schema: -; Owner: nabouzah
+--
+
+CREATE DATABASE "TRANSCENDANCE" WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
+
+
+ALTER DATABASE "TRANSCENDANCE" OWNER TO nabouzah;
+
+\connect "TRANSCENDANCE"
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -942,6 +1094,28 @@ ALTER TABLE ONLY public.users ALTER COLUMN intra_id SET DEFAULT nextval('public.
 --
 
 COPY public.achivements (id, name, level, xp, description) FROM stdin;
+1	friendly	SILVER	100	description
+2	friendly	BRONZE	200	description
+3	friendly	GOLD	300	description
+4	friendly	PLATINUM	500	description
+5	legendary	SILVER	100	description
+6	legendary	BRONZE	200	description
+7	legendary	GOLD	300	description
+8	legendary	PLATINUM	500	description
+9	sharpshooter	SILVER	100	description
+10	sharpshooter	BRONZE	200	description
+11	sharpshooter	GOLD	300	description
+12	sharpshooter	PLATINUM	500	description
+13	wildfire	SILVER	100	description
+14	wildfire	BRONZE	200	description
+15	wildfire	GOLD	300	description
+16	wildfire	PLATINUM	500	description
+17	winner	SILVER	100	description
+18	winner	BRONZE	200	description
+19	winner	GOLD	300	description
+20	winner	PLATINUM	500	description
+21	photogenic	GOLD	300	description
+22	photogenic	PLATINUM	500	description
 \.
 
 
@@ -1014,9 +1188,16 @@ COPY public.notification (id, type, userid, fromid, targetid, content, createdat
 --
 
 COPY public.users (id, intra_id, username, email, first_name, last_name, created_at, updated_at, img_url, achivements) FROM stdin;
-1	115	ali@zaynoune@	ali@ali.ali	ali	zaynoune	2022-10-04 18:27:03.37214	2022-10-04 18:27:03.37214	\N	\N
-2	12	alizaynoune@	aliali.ali	ali	zaynoune	2022-10-04 18:27:03.37214	2022-10-04 18:27:03.37214	\N	\N
-3	1	alizaynoune	ali@ali.com	ali	zaynoune	2022-10-04 18:27:03.37214	2022-10-04 18:27:03.37214	\N	\N
+1	1	alizaynoune1	aliZayoune1@ali.ali	ali1	zaynoune1	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+2	2	alizaynoune2	aliZayoune2@ali.ali	ali2	zaynoune2	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+3	3	alizaynoune3	aliZayoune3@ali.ali	ali3	zaynoune3	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+4	4	alizaynoune4	aliZayoune4@ali.ali	ali4	zaynoune4	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+5	5	alizaynoune5	aliZayoune5@ali.ali	ali5	zaynoune5	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+6	6	alizaynoune6	aliZayoune6@ali.ali	ali6	zaynoune6	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+7	7	alizaynoune7	aliZayoune7@ali.ali	ali7	zaynoune7	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+8	8	alizaynoune8	aliZayoune8@ali.ali	ali8	zaynoune8	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+9	9	alizaynoune9	aliZayoune9@ali.ali	ali9	zaynoune9	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+10	10	alizaynoune10	aliZayoune10@ali.ali	ali10	zaynoune10	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
 \.
 
 
@@ -1024,7 +1205,7 @@ COPY public.users (id, intra_id, username, email, first_name, last_name, created
 -- Name: achivements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nabouzah
 --
 
-SELECT pg_catalog.setval('public.achivements_id_seq', 1, false);
+SELECT pg_catalog.setval('public.achivements_id_seq', 22, true);
 
 
 --
@@ -1178,7 +1359,7 @@ SELECT pg_catalog.setval('public.notification_userid_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nabouzah
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 3, true);
+SELECT pg_catalog.setval('public.users_id_seq', 10, true);
 
 
 --
@@ -1390,5 +1571,65 @@ ALTER TABLE ONLY public.notification
 
 --
 -- PostgreSQL database dump complete
+--
+
+--
+-- Database "postgres" dump
+--
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
+-- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+DROP DATABASE postgres;
+--
+-- Name: postgres; Type: DATABASE; Schema: -; Owner: nabouzah
+--
+
+CREATE DATABASE postgres WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
+
+
+ALTER DATABASE postgres OWNER TO nabouzah;
+
+\connect postgres
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: DATABASE postgres; Type: COMMENT; Schema: -; Owner: nabouzah
+--
+
+COMMENT ON DATABASE postgres IS 'default administrative connection database';
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- PostgreSQL database cluster dump complete
 --
 

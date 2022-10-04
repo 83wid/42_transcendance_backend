@@ -1,10 +1,15 @@
 -- CREATE DATABASE TRANSCENDANCE;
 -- USE TRANSCENDANCE;
 CREATE TYPE level_type AS ENUM ('BRONZE', 'SILVER', 'GOLD', 'PLATINUM');
+
 CREATE TYPE game_diff AS ENUM ('EASY', 'NORMAL', 'DIFFICULT');
+
 CREATE TYPE conversation_type AS ENUM ('DIRECT', 'GROUP');
+
 CREATE TYPE notification_type AS ENUM('FRIEND_REQUEST', 'GAME_INVITE', 'OTHER');
+
 CREATE TYPE user_status AS ENUM('ONLINE', 'OFFLINE', 'PLAYING');
+
 -- create table for users
 CREATE TABLE users (
   id SERIAL NOT NULL unique,
@@ -21,6 +26,7 @@ CREATE TABLE users (
   achivements integer [],
   PRIMARY KEY (id)
 );
+
 -- create table for all conversation
 CREATE TABLE conversation (
   id SERIAL NOT NULL unique,
@@ -28,6 +34,7 @@ CREATE TABLE conversation (
   type conversation_type DEFAULT 'DIRECT',
   PRIMARY KEY (id)
 );
+
 -- create table for for group members 
 CREATE TABLE group_member (
   id SERIAL NOT NULL unique,
@@ -39,6 +46,7 @@ CREATE TABLE group_member (
   FOREIGN KEY (conversation_id) REFERENCES conversation (id),
   PRIMARY KEY (id)
 );
+
 -- create table for messages
 CREATE TABLE message (
   id SERIAL NOT NULL unique,
@@ -53,6 +61,7 @@ CREATE TABLE message (
   FOREIGN KEY (sender_id) REFERENCES users (intra_id),
   FOREIGN KEY (conversation_id) REFERENCES conversation (id)
 );
+
 -- create table for messages
 CREATE TABLE achivements (
   id SERIAL NOT NULL,
@@ -62,6 +71,7 @@ CREATE TABLE achivements (
   description text,
   PRIMARY KEY (id)
 );
+
 -- create table for Friends
 CREATE TABLE friends (
   id SERIAL NOT NULL,
@@ -72,6 +82,7 @@ CREATE TABLE friends (
   FOREIGN KEY (friendId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
+
 -- create table for Friends requests
 CREATE TABLE invites (
   id SERIAL NOT NULL,
@@ -119,8 +130,55 @@ CREATE TABLE notification (
   PRIMARY KEY (id)
 );
 
-INSERT INTO users(intra_id, username, email, first_name, last_name)
+-- VALUES
+--   (
+--     generate_series(1, 10),
+--     'ali' || (ARRAY['@', '.', '_', ','])[round(random()*3)] || 'zaynoune' || trunc(random() * 1000),
+--     'ali' || (ARRAY['@', '.', '_', ','])[round(random()*3)] || '@zaynoune.com' || trunc(random() * 1000),
+--     'ali',
+--     'zaynoune'
+--   )
+INSERT INTO
+  achivements(name, level, xp, description)
 VALUES
-(115, 'ali@zaynoune@', 'ali@ali.ali', 'ali', 'zaynoune'),
-(12, 'alizaynoune@', 'aliali.ali', 'ali', 'zaynoune'),
-(1, 'alizaynoune', 'ali@ali.com', 'ali', 'zaynoune')
+  ('friendly', 'SILVER', 100, 'description'),
+  ('friendly', 'BRONZE', 200, 'description'),
+  ('friendly', 'GOLD', 300, 'description'),
+  ('friendly', 'PLATINUM', 500, 'description'),
+  ('legendary', 'SILVER', 100, 'description'),
+  ('legendary', 'BRONZE', 200, 'description'),
+  ('legendary', 'GOLD', 300, 'description'),
+  ('legendary', 'PLATINUM', 500, 'description'),
+  ('sharpshooter', 'SILVER', 100, 'description'),
+  ('sharpshooter', 'BRONZE', 200, 'description'),
+  ('sharpshooter', 'GOLD', 300, 'description'),
+  ('sharpshooter', 'PLATINUM', 500, 'description'),
+  ('wildfire', 'SILVER', 100, 'description'),
+  ('wildfire', 'BRONZE', 200, 'description'),
+  ('wildfire', 'GOLD', 300, 'description'),
+  ('wildfire', 'PLATINUM', 500, 'description'),
+  ('winner', 'SILVER', 100, 'description'),
+  ('winner', 'BRONZE', 200, 'description'),
+  ('winner', 'GOLD', 300, 'description'),
+  ('winner', 'PLATINUM', 500, 'description'),
+  ('photogenic', 'GOLD', 300, 'description'),
+  ('photogenic', 'PLATINUM', 500, 'description');
+
+INSERT INTO
+  users(
+    intra_id,
+    username,
+    email,
+    first_name,
+    last_name,
+    img_url,
+  )
+SELECT
+  nb,
+  'alizaynoune' || nb,
+  'aliZayoune' || nb || '@ali.ali',
+  'ali' || nb,
+  'zaynoune' || nb,
+  'https://joeschmoe.io/api/v1/random'
+FROM
+  generate_series(1, 30) nb;
