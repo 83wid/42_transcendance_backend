@@ -13,6 +13,6 @@ export class CreateUserDto {
   created_at: string;
   updated_at: string;
   img_url: string;
-  achivements: Array<number>;
+  achievements: Array<number>;
   group_member: Array<number>;
 }

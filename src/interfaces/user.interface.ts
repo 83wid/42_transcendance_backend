@@ -24,7 +24,7 @@ export interface User {
   updated_at: string;
   verified: boolean;
   img_url: string;
-  achivements: number;
+  achievements: number;
   group_member: Array<number>;
 }
 

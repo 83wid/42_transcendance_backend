@@ -20,7 +20,6 @@ CREATE TABLE users (
   last_name varchar(255) NOT NULL,
   img_url varchar(255),
   cover varchar(255),
-  achivements integer [],
   status STATUS_T DEFAULT 'OFFLINE',
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
@@ -60,16 +59,6 @@ CREATE TABLE message (
   PRIMARY KEY (id),
   FOREIGN KEY (sender_id) REFERENCES users (intra_id),
   FOREIGN KEY (conversation_id) REFERENCES conversation (id)
-);
-
--- create table for messages
-CREATE TABLE achivements (
-  id SERIAL NOT NULL,
-  name VARCHAR(25) NOT NULL,
-  level level_type DEFAULT 'BRONZE',
-  xp int NOT NULL,
-  description text,
-  PRIMARY KEY (id)
 );
 
 -- create table for Friends
@@ -130,54 +119,29 @@ CREATE TABLE notification (
   PRIMARY KEY (id)
 );
 
-INSERT INTO
-  users (
-    intra_id,
-    username,
-    email,
-    first_name,
-    last_name,
-    img_url,
-    cover,
-    achivements
-  )
-VALUES
-  (
-    51111,
-    'alizaynou',
-    'alzaynou@student.1337.ma',
-    'Ali',
-    'Zaynoune',
-    'https://cdn.intra.42.fr/users/alzaynou.jpg',
-    'https://random.imagecdn.app/1800/800',
-    ARRAY [random() * 22, random() * 22, random() * 22, random() * 22, random() * 22]
-  );
+-- create table for messages
+CREATE TABLE achievements (
+  id SERIAL NOT NULL,
+  name VARCHAR(25) NOT NULL,
+  level level_type DEFAULT 'BRONZE',
+  xp int NOT NULL,
+  description text,
+  PRIMARY KEY (id)
+);
+
+-- create table for users_achievements
+CREATE TABLE users_achievements (
+  id SERIAL NOT NULL,
+  userId INT NOT NULL,
+  achievementId INT NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users (intra_id),
+  FOREIGN KEY (achievementId) REFERENCES achievements (id),
+  createdAt timestamp NOT NULL DEFAULT now(),
+  PRIMARY KEY (id)
+);
 
 INSERT INTO
-  users (
-    intra_id,
-    username,
-    email,
-    first_name,
-    last_name,
-    img_url,
-    cover,
-    achivements
-  )
-SELECT
-  id,
-  'alizaynoune' || id,
-  'zaynoune' || id || '@ali.ali',
-  'ali',
-  'zaynoune',
-  'https://joeschmoe.io/api/v1/random',
-  'https://random.imagecdn.app/1800/800',
-  ARRAY [random() * 22, random() * 22, random() * 22, random() * 22, random() * 22]
-FROM
-  generate_series(1, 30) AS id;
-
-INSERT INTO
-  achivements(name, level, xp, description)
+  achievements(name, level, xp, description)
 VALUES
   ('friendly', 'SILVER', 100, 'description'),
   ('friendly', 'BRONZE', 200, 'description'),
@@ -201,3 +165,54 @@ VALUES
   ('winner', 'PLATINUM', 500, 'description'),
   ('photogenic', 'GOLD', 300, 'description'),
   ('photogenic', 'PLATINUM', 500, 'description');
+
+INSERT INTO
+  users (
+    intra_id,
+    username,
+    email,
+    first_name,
+    last_name,
+    img_url,
+    cover
+  )
+VALUES
+  (
+    51111,
+    'alizaynou',
+    'alzaynou@student.1337.ma',
+    'Ali',
+    'Zaynoune',
+    'https://cdn.intra.42.fr/users/alzaynou.jpg',
+    'https://random.imagecdn.app/1800/800'
+  );
+
+INSERT INTO
+  users (
+    intra_id,
+    username,
+    email,
+    first_name,
+    last_name,
+    img_url,
+    cover
+  )
+SELECT
+  id,
+  'alizaynoune' || id,
+  'zaynoune' || id || '@ali.ali',
+  'ali',
+  'zaynoune',
+  'https://joeschmoe.io/api/v1/random',
+  'https://random.imagecdn.app/1800/800'
+FROM
+  generate_series(1, 30) AS id;
+
+INSERT INTO
+  users_achievements (userId, achievementId)
+VALUES
+  (51111, 1),
+  (51111, 2),
+  (51111, 3),
+  (51111, 5),
+  (51111, 8);

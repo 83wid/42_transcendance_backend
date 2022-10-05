@@ -61,6 +61,7 @@ export class AuthService {
     try {      
       const data = await this.prisma.users.findUnique({
         where: { intra_id: id },
+        include: {notification_notification_useridTousers: true}
       });
       console.log(data);
       
@@ -72,6 +73,7 @@ export class AuthService {
           'first_name',
           'last_name',
           'img_url',
+          'notification_notification_useridTousers'
         ])
         console.log(ret);
         

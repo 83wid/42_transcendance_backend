@@ -86,10 +86,10 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: achivements; Type: TABLE; Schema: public; Owner: nabouzah
+-- Name: achievements; Type: TABLE; Schema: public; Owner: nabouzah
 --
 
-CREATE TABLE public.achivements (
+CREATE TABLE public.achievements (
     id integer NOT NULL,
     name character varying(25) NOT NULL,
     level public.level_type DEFAULT 'BRONZE'::public.level_type,
@@ -98,13 +98,13 @@ CREATE TABLE public.achivements (
 );
 
 
-ALTER TABLE public.achivements OWNER TO nabouzah;
+ALTER TABLE public.achievements OWNER TO nabouzah;
 
 --
--- Name: achivements_id_seq; Type: SEQUENCE; Schema: public; Owner: nabouzah
+-- Name: achievements_id_seq; Type: SEQUENCE; Schema: public; Owner: nabouzah
 --
 
-CREATE SEQUENCE public.achivements_id_seq
+CREATE SEQUENCE public.achievements_id_seq
     AS integer
     START WITH 1
     INCREMENT BY 1
@@ -113,13 +113,13 @@ CREATE SEQUENCE public.achivements_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.achivements_id_seq OWNER TO nabouzah;
+ALTER TABLE public.achievements_id_seq OWNER TO nabouzah;
 
 --
--- Name: achivements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nabouzah
+-- Name: achievements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nabouzah
 --
 
-ALTER SEQUENCE public.achivements_id_seq OWNED BY public.achivements.id;
+ALTER SEQUENCE public.achievements_id_seq OWNED BY public.achievements.id;
 
 
 --
@@ -718,7 +718,6 @@ CREATE TABLE public.users (
     last_name character varying(255) NOT NULL,
     img_url character varying(255),
     cover character varying(255),
-    achivements integer[],
     status public.status_t DEFAULT 'OFFLINE'::public.status_t,
     created_at timestamp without time zone DEFAULT now(),
     updated_at timestamp without time zone DEFAULT now()
@@ -726,6 +725,42 @@ CREATE TABLE public.users (
 
 
 ALTER TABLE public.users OWNER TO nabouzah;
+
+--
+-- Name: users_achievements; Type: TABLE; Schema: public; Owner: nabouzah
+--
+
+CREATE TABLE public.users_achievements (
+    id integer NOT NULL,
+    userid integer NOT NULL,
+    achievementid integer NOT NULL,
+    createdat timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.users_achievements OWNER TO nabouzah;
+
+--
+-- Name: users_achievements_id_seq; Type: SEQUENCE; Schema: public; Owner: nabouzah
+--
+
+CREATE SEQUENCE public.users_achievements_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.users_achievements_id_seq OWNER TO nabouzah;
+
+--
+-- Name: users_achievements_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nabouzah
+--
+
+ALTER SEQUENCE public.users_achievements_id_seq OWNED BY public.users_achievements.id;
+
 
 --
 -- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: nabouzah
@@ -750,10 +785,10 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: achivements id; Type: DEFAULT; Schema: public; Owner: nabouzah
+-- Name: achievements id; Type: DEFAULT; Schema: public; Owner: nabouzah
 --
 
-ALTER TABLE ONLY public.achivements ALTER COLUMN id SET DEFAULT nextval('public.achivements_id_seq'::regclass);
+ALTER TABLE ONLY public.achievements ALTER COLUMN id SET DEFAULT nextval('public.achievements_id_seq'::regclass);
 
 
 --
@@ -911,10 +946,17 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
--- Data for Name: achivements; Type: TABLE DATA; Schema: public; Owner: nabouzah
+-- Name: users_achievements id; Type: DEFAULT; Schema: public; Owner: nabouzah
 --
 
-COPY public.achivements (id, name, level, xp, description) FROM stdin;
+ALTER TABLE ONLY public.users_achievements ALTER COLUMN id SET DEFAULT nextval('public.users_achievements_id_seq'::regclass);
+
+
+--
+-- Data for Name: achievements; Type: TABLE DATA; Schema: public; Owner: nabouzah
+--
+
+COPY public.achievements (id, name, level, xp, description) FROM stdin;
 1	friendly	SILVER	100	description
 2	friendly	BRONZE	200	description
 3	friendly	GOLD	300	description
@@ -1008,46 +1050,54 @@ COPY public.notification (id, type, userid, fromid, targetid, content, createdat
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: nabouzah
 --
 
-COPY public.users (id, intra_id, username, email, first_name, last_name, img_url, cover, achivements, status, created_at, updated_at) FROM stdin;
-1	51111	alizaynou	alzaynou@student.1337.ma	Ali	Zaynoune	https://cdn.intra.42.fr/users/alzaynou.jpg	https://random.imagecdn.app/1800/800	{19,9,1,1,5}	OFFLINE	2022-10-05 13:08:40.494469	2022-10-05 13:08:40.494469
-2	1	alizaynoune1	zaynoune1@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{21,7,6,9,13}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-3	2	alizaynoune2	zaynoune2@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{14,1,1,16,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-4	3	alizaynoune3	zaynoune3@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{8,2,14,8,13}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-5	4	alizaynoune4	zaynoune4@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{12,12,15,12,11}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-6	5	alizaynoune5	zaynoune5@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{2,13,7,10,15}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-7	6	alizaynoune6	zaynoune6@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{14,4,8,21,19}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-8	7	alizaynoune7	zaynoune7@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{5,1,18,7,4}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-9	8	alizaynoune8	zaynoune8@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{2,2,19,1,2}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-10	9	alizaynoune9	zaynoune9@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{17,9,20,2,16}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-11	10	alizaynoune10	zaynoune10@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{9,17,21,16,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-12	11	alizaynoune11	zaynoune11@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{15,22,1,18,21}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-13	12	alizaynoune12	zaynoune12@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{9,4,6,3,8}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-14	13	alizaynoune13	zaynoune13@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{4,19,22,7,21}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-15	14	alizaynoune14	zaynoune14@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{17,3,21,8,1}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-16	15	alizaynoune15	zaynoune15@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{7,13,14,17,18}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-17	16	alizaynoune16	zaynoune16@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{0,18,12,16,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-18	17	alizaynoune17	zaynoune17@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{16,19,19,5,13}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-19	18	alizaynoune18	zaynoune18@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{18,1,0,21,2}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-20	19	alizaynoune19	zaynoune19@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{17,13,17,4,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-21	20	alizaynoune20	zaynoune20@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{8,2,20,1,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-22	21	alizaynoune21	zaynoune21@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{3,1,10,2,3}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-23	22	alizaynoune22	zaynoune22@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{6,21,18,12,19}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-24	23	alizaynoune23	zaynoune23@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{16,6,3,19,15}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-25	24	alizaynoune24	zaynoune24@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{3,13,13,7,16}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-26	25	alizaynoune25	zaynoune25@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{15,20,14,16,16}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-27	26	alizaynoune26	zaynoune26@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{3,9,15,17,8}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-28	27	alizaynoune27	zaynoune27@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{19,16,0,10,1}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-29	28	alizaynoune28	zaynoune28@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{9,19,3,13,15}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-30	29	alizaynoune29	zaynoune29@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{8,17,15,13,11}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
-31	30	alizaynoune30	zaynoune30@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{4,2,2,9,19}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+COPY public.users (id, intra_id, username, email, first_name, last_name, img_url, cover, status, created_at, updated_at) FROM stdin;
+1	51111	alizaynou	alzaynou@student.1337.ma	Ali	Zaynoune	https://cdn.intra.42.fr/users/alzaynou.jpg	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.780433	2022-10-05 14:51:43.780433
+2	1	alizaynoune1	zaynoune1@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+3	2	alizaynoune2	zaynoune2@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+4	3	alizaynoune3	zaynoune3@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+5	4	alizaynoune4	zaynoune4@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+6	5	alizaynoune5	zaynoune5@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+7	6	alizaynoune6	zaynoune6@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+8	7	alizaynoune7	zaynoune7@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+9	8	alizaynoune8	zaynoune8@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+10	9	alizaynoune9	zaynoune9@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+11	10	alizaynoune10	zaynoune10@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+12	11	alizaynoune11	zaynoune11@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+13	12	alizaynoune12	zaynoune12@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+14	13	alizaynoune13	zaynoune13@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+15	14	alizaynoune14	zaynoune14@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+16	15	alizaynoune15	zaynoune15@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+17	16	alizaynoune16	zaynoune16@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+18	17	alizaynoune17	zaynoune17@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+19	18	alizaynoune18	zaynoune18@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+20	19	alizaynoune19	zaynoune19@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+21	20	alizaynoune20	zaynoune20@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+22	21	alizaynoune21	zaynoune21@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+23	22	alizaynoune22	zaynoune22@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+24	23	alizaynoune23	zaynoune23@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+25	24	alizaynoune24	zaynoune24@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+26	25	alizaynoune25	zaynoune25@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+27	26	alizaynoune26	zaynoune26@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+28	27	alizaynoune27	zaynoune27@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+29	28	alizaynoune28	zaynoune28@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+30	29	alizaynoune29	zaynoune29@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
+31	30	alizaynoune30	zaynoune30@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-05 14:51:43.786794	2022-10-05 14:51:43.786794
 \.
 
 
 --
--- Name: achivements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nabouzah
+-- Data for Name: users_achievements; Type: TABLE DATA; Schema: public; Owner: nabouzah
 --
 
-SELECT pg_catalog.setval('public.achivements_id_seq', 22, true);
+COPY public.users_achievements (id, userid, achievementid, createdat) FROM stdin;
+\.
+
+
+--
+-- Name: achievements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nabouzah
+--
+
+SELECT pg_catalog.setval('public.achievements_id_seq', 33, true);
 
 
 --
@@ -1198,18 +1248,25 @@ SELECT pg_catalog.setval('public.notification_userid_seq', 1, false);
 
 
 --
+-- Name: users_achievements_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nabouzah
+--
+
+SELECT pg_catalog.setval('public.users_achievements_id_seq', 1, false);
+
+
+--
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nabouzah
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 31, true);
+SELECT pg_catalog.setval('public.users_id_seq', 33, true);
 
 
 --
--- Name: achivements achivements_pkey; Type: CONSTRAINT; Schema: public; Owner: nabouzah
+-- Name: achievements achievements_pkey; Type: CONSTRAINT; Schema: public; Owner: nabouzah
 --
 
-ALTER TABLE ONLY public.achivements
-    ADD CONSTRAINT achivements_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY public.achievements
+    ADD CONSTRAINT achievements_pkey PRIMARY KEY (id);
 
 
 --
@@ -1274,6 +1331,14 @@ ALTER TABLE ONLY public.message
 
 ALTER TABLE ONLY public.notification
     ADD CONSTRAINT notification_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users_achievements users_achievements_pkey; Type: CONSTRAINT; Schema: public; Owner: nabouzah
+--
+
+ALTER TABLE ONLY public.users_achievements
+    ADD CONSTRAINT users_achievements_pkey PRIMARY KEY (id);
 
 
 --
@@ -1402,6 +1467,22 @@ ALTER TABLE ONLY public.notification
 
 ALTER TABLE ONLY public.notification
     ADD CONSTRAINT notification_userid_fkey FOREIGN KEY (userid) REFERENCES public.users(intra_id);
+
+
+--
+-- Name: users_achievements users_achievements_achievementid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nabouzah
+--
+
+ALTER TABLE ONLY public.users_achievements
+    ADD CONSTRAINT users_achievements_achievementid_fkey FOREIGN KEY (achievementid) REFERENCES public.achievements(id);
+
+
+--
+-- Name: users_achievements users_achievements_userid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: nabouzah
+--
+
+ALTER TABLE ONLY public.users_achievements
+    ADD CONSTRAINT users_achievements_userid_fkey FOREIGN KEY (userid) REFERENCES public.users(intra_id);
 
 
 --
