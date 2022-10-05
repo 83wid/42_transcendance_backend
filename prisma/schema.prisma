@@ -7,15 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model achievements {
-  id                 Int                  @id @default(autoincrement())
-  name               String               @db.VarChar(25)
-  level              level_type?          @default(BRONZE)
-  xp                 Int
-  description        String?
-  users_achievements users_achievements[]
-}
-
 model blocked {
   id                             Int      @id @default(autoincrement())
   userid                         Int      @default(autoincrement())
@@ -118,6 +109,15 @@ model users {
   notification_notification_fromidTousers notification[]       @relation("notification_fromidTousers")
   notification_notification_useridTousers notification[]       @relation("notification_useridTousers")
   users_achievements                      users_achievements[]
+}
+
+model achievements {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar(25)
+  level              level_type?          @default(BRONZE)
+  xp                 Int
+  description        String?
+  users_achievements users_achievements[]
 }
 
 model users_achievements {
