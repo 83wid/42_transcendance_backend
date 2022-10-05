@@ -58,13 +58,13 @@ export class AuthService {
   }
   // get auth profile
   async authprofile(id: number, res: Response) {
-    try {
-      console.log(id);
-      
+    try {      
       const data = await this.prisma.users.findUnique({
         where: { intra_id: id },
       });
-       pick(data, [
+      console.log(data);
+      
+       const ret = pick(data, [
           'id',
           'intra_id',
           'username',
@@ -73,8 +73,12 @@ export class AuthService {
           'last_name',
           'img_url',
         ])
-      return res.status(200).json(data);
+        console.log(ret);
+        
+      return res.status(200).json(ret);
     } catch (error) {
+      console.log(error);
+      
       return res.status(400).json({
         message: error,
       });

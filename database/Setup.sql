@@ -6,24 +6,24 @@ CREATE TYPE game_diff AS ENUM ('EASY', 'NORMAL', 'DIFFICULT');
 
 CREATE TYPE conversation_type AS ENUM ('DIRECT', 'GROUP');
 
-CREATE TYPE notification_type AS ENUM('FRIEND_REQUEST', 'GAME_INVITE', 'OTHER');
+CREATE TYPE NOTIFICATION_T AS ENUM ('FRIEND_REQUEST', 'GAME_INVITE', 'OTHER');
 
-CREATE TYPE user_status AS ENUM('ONLINE', 'OFFLINE', 'PLAYING');
+CREATE TYPE STATUS_T AS ENUM ('ONLINE', 'OFFLINE', 'PLAYING');
 
 -- create table for users
 CREATE TABLE users (
   id SERIAL NOT NULL unique,
-  intra_id SERIAL NOT NULL unique,
+  intra_id INT NOT NULL unique,
   username varchar(255) NOT NULL unique,
-  -- password varchar(255) NOT NULL,
   email varchar(255) NOT NULL unique,
   first_name varchar(255) NOT NULL,
   last_name varchar(255) NOT NULL,
+  img_url varchar(255),
+  cover varchar(255),
+  achivements integer [],
+  status STATUS_T DEFAULT 'OFFLINE',
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
-  img_url varchar(255),
-  -- verified boolean DEFAULT false,
-  achivements integer [],
   PRIMARY KEY (id)
 );
 
@@ -118,7 +118,7 @@ CREATE TABLE game (
 -- create table for notification
 CREATE TABLE notification (
   id SERIAL,
-  type notification_type NOT NULL DEFAULT 'OTHER',
+  type NOTIFICATION_T NOT NULL DEFAULT 'OTHER',
   userId SERIAL NOT NULL,
   fromId SERIAL NOT NULL,
   targetId SERIAL NOT NULL,
@@ -130,14 +130,52 @@ CREATE TABLE notification (
   PRIMARY KEY (id)
 );
 
--- VALUES
---   (
---     generate_series(1, 10),
---     'ali' || (ARRAY['@', '.', '_', ','])[round(random()*3)] || 'zaynoune' || trunc(random() * 1000),
---     'ali' || (ARRAY['@', '.', '_', ','])[round(random()*3)] || '@zaynoune.com' || trunc(random() * 1000),
---     'ali',
---     'zaynoune'
---   )
+INSERT INTO
+  users (
+    intra_id,
+    username,
+    email,
+    first_name,
+    last_name,
+    img_url,
+    cover,
+    achivements
+  )
+VALUES
+  (
+    51111,
+    'alizaynou',
+    'alzaynou@student.1337.ma',
+    'Ali',
+    'Zaynoune',
+    'https://cdn.intra.42.fr/users/alzaynou.jpg',
+    'https://random.imagecdn.app/1800/800',
+    ARRAY [random() * 22, random() * 22, random() * 22, random() * 22, random() * 22]
+  );
+
+INSERT INTO
+  users (
+    intra_id,
+    username,
+    email,
+    first_name,
+    last_name,
+    img_url,
+    cover,
+    achivements
+  )
+SELECT
+  id,
+  'alizaynoune' || id,
+  'zaynoune' || id || '@ali.ali',
+  'ali',
+  'zaynoune',
+  'https://joeschmoe.io/api/v1/random',
+  'https://random.imagecdn.app/1800/800',
+  ARRAY [random() * 22, random() * 22, random() * 22, random() * 22, random() * 22]
+FROM
+  generate_series(1, 30) AS id;
+
 INSERT INTO
   achivements(name, level, xp, description)
 VALUES
@@ -163,22 +201,3 @@ VALUES
   ('winner', 'PLATINUM', 500, 'description'),
   ('photogenic', 'GOLD', 300, 'description'),
   ('photogenic', 'PLATINUM', 500, 'description');
-
-INSERT INTO
-  users(
-    intra_id,
-    username,
-    email,
-    first_name,
-    last_name,
-    img_url,
-  )
-SELECT
-  nb,
-  'alizaynoune' || nb,
-  'aliZayoune' || nb || '@ali.ali',
-  'ali' || nb,
-  'zaynoune' || nb,
-  'https://joeschmoe.io/api/v1/random'
-FROM
-  generate_series(1, 30) nb;

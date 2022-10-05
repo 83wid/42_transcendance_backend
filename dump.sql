@@ -1,161 +1,9 @@
 --
--- PostgreSQL database cluster dump
---
-
-SET default_transaction_read_only = off;
-
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-
---
--- Drop databases (except postgres and template1)
---
-
-DROP DATABASE "TRANSCENDANCE";
-
-
-
-
---
--- Drop roles
---
-
-DROP ROLE nabouzah;
-
-
---
--- Roles
---
-
-CREATE ROLE nabouzah;
-ALTER ROLE nabouzah WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'SCRAM-SHA-256$4096:7njRpVbI9eHwYwXvGxg9ZQ==$d3bzYEsItD/Po+5btov7cUZA0PMaqvEjJHHx/uia3W0=:xzEM7A14Hn1TaYqNRic3Ezeg3IAzetwnBf1YiH9/LjQ=';
-
-
-
-
-
-
---
--- Databases
---
-
---
--- Database "template1" dump
---
-
---
 -- PostgreSQL database dump
 --
 
 -- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
 -- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
-UPDATE pg_catalog.pg_database SET datistemplate = false WHERE datname = 'template1';
-DROP DATABASE template1;
---
--- Name: template1; Type: DATABASE; Schema: -; Owner: nabouzah
---
-
-CREATE DATABASE template1 WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
-
-
-ALTER DATABASE template1 OWNER TO nabouzah;
-
-\connect template1
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: DATABASE template1; Type: COMMENT; Schema: -; Owner: nabouzah
---
-
-COMMENT ON DATABASE template1 IS 'default template for new databases';
-
-
---
--- Name: template1; Type: DATABASE PROPERTIES; Schema: -; Owner: nabouzah
---
-
-ALTER DATABASE template1 IS_TEMPLATE = true;
-
-
-\connect template1
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: DATABASE template1; Type: ACL; Schema: -; Owner: nabouzah
---
-
-REVOKE CONNECT,TEMPORARY ON DATABASE template1 FROM PUBLIC;
-GRANT CONNECT ON DATABASE template1 TO PUBLIC;
-
-
---
--- PostgreSQL database dump complete
---
-
---
--- Database "TRANSCENDANCE" dump
---
-
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
--- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: TRANSCENDANCE; Type: DATABASE; Schema: -; Owner: nabouzah
---
-
-CREATE DATABASE "TRANSCENDANCE" WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
-
-
-ALTER DATABASE "TRANSCENDANCE" OWNER TO nabouzah;
-
-\connect "TRANSCENDANCE"
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -208,30 +56,30 @@ CREATE TYPE public.level_type AS ENUM (
 ALTER TYPE public.level_type OWNER TO nabouzah;
 
 --
--- Name: notification_type; Type: TYPE; Schema: public; Owner: nabouzah
+-- Name: notification_t; Type: TYPE; Schema: public; Owner: nabouzah
 --
 
-CREATE TYPE public.notification_type AS ENUM (
+CREATE TYPE public.notification_t AS ENUM (
     'FRIEND_REQUEST',
     'GAME_INVITE',
     'OTHER'
 );
 
 
-ALTER TYPE public.notification_type OWNER TO nabouzah;
+ALTER TYPE public.notification_t OWNER TO nabouzah;
 
 --
--- Name: user_status; Type: TYPE; Schema: public; Owner: nabouzah
+-- Name: status_t; Type: TYPE; Schema: public; Owner: nabouzah
 --
 
-CREATE TYPE public.user_status AS ENUM (
+CREATE TYPE public.status_t AS ENUM (
     'ONLINE',
     'OFFLINE',
     'PLAYING'
 );
 
 
-ALTER TYPE public.user_status OWNER TO nabouzah;
+ALTER TYPE public.status_t OWNER TO nabouzah;
 
 SET default_tablespace = '';
 
@@ -757,7 +605,7 @@ ALTER SEQUENCE public.message_sender_id_seq OWNED BY public.message.sender_id;
 
 CREATE TABLE public.notification (
     id integer NOT NULL,
-    type public.notification_type DEFAULT 'OTHER'::public.notification_type NOT NULL,
+    type public.notification_t DEFAULT 'OTHER'::public.notification_t NOT NULL,
     userid integer NOT NULL,
     fromid integer NOT NULL,
     targetid integer NOT NULL,
@@ -868,10 +716,12 @@ CREATE TABLE public.users (
     email character varying(255) NOT NULL,
     first_name character varying(255) NOT NULL,
     last_name character varying(255) NOT NULL,
-    created_at timestamp without time zone DEFAULT now(),
-    updated_at timestamp without time zone DEFAULT now(),
     img_url character varying(255),
-    achivements integer[]
+    cover character varying(255),
+    achivements integer[],
+    status public.status_t DEFAULT 'OFFLINE'::public.status_t,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
 );
 
 
@@ -897,28 +747,6 @@ ALTER TABLE public.users_id_seq OWNER TO nabouzah;
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
-
-
---
--- Name: users_intra_id_seq; Type: SEQUENCE; Schema: public; Owner: nabouzah
---
-
-CREATE SEQUENCE public.users_intra_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.users_intra_id_seq OWNER TO nabouzah;
-
---
--- Name: users_intra_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: nabouzah
---
-
-ALTER SEQUENCE public.users_intra_id_seq OWNED BY public.users.intra_id;
 
 
 --
@@ -1083,13 +911,6 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
--- Name: users intra_id; Type: DEFAULT; Schema: public; Owner: nabouzah
---
-
-ALTER TABLE ONLY public.users ALTER COLUMN intra_id SET DEFAULT nextval('public.users_intra_id_seq'::regclass);
-
-
---
 -- Data for Name: achivements; Type: TABLE DATA; Schema: public; Owner: nabouzah
 --
 
@@ -1187,17 +1008,38 @@ COPY public.notification (id, type, userid, fromid, targetid, content, createdat
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: nabouzah
 --
 
-COPY public.users (id, intra_id, username, email, first_name, last_name, created_at, updated_at, img_url, achivements) FROM stdin;
-1	1	alizaynoune1	aliZayoune1@ali.ali	ali1	zaynoune1	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-2	2	alizaynoune2	aliZayoune2@ali.ali	ali2	zaynoune2	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-3	3	alizaynoune3	aliZayoune3@ali.ali	ali3	zaynoune3	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-4	4	alizaynoune4	aliZayoune4@ali.ali	ali4	zaynoune4	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-5	5	alizaynoune5	aliZayoune5@ali.ali	ali5	zaynoune5	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-6	6	alizaynoune6	aliZayoune6@ali.ali	ali6	zaynoune6	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-7	7	alizaynoune7	aliZayoune7@ali.ali	ali7	zaynoune7	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-8	8	alizaynoune8	aliZayoune8@ali.ali	ali8	zaynoune8	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-9	9	alizaynoune9	aliZayoune9@ali.ali	ali9	zaynoune9	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
-10	10	alizaynoune10	aliZayoune10@ali.ali	ali10	zaynoune10	2022-10-04 22:04:45.156997	2022-10-04 22:04:45.156997	https://joeschmoe.io/api/v1/random	\N
+COPY public.users (id, intra_id, username, email, first_name, last_name, img_url, cover, achivements, status, created_at, updated_at) FROM stdin;
+1	51111	alizaynou	alzaynou@student.1337.ma	Ali	Zaynoune	https://cdn.intra.42.fr/users/alzaynou.jpg	https://random.imagecdn.app/1800/800	{19,9,1,1,5}	OFFLINE	2022-10-05 13:08:40.494469	2022-10-05 13:08:40.494469
+2	1	alizaynoune1	zaynoune1@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{21,7,6,9,13}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+3	2	alizaynoune2	zaynoune2@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{14,1,1,16,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+4	3	alizaynoune3	zaynoune3@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{8,2,14,8,13}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+5	4	alizaynoune4	zaynoune4@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{12,12,15,12,11}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+6	5	alizaynoune5	zaynoune5@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{2,13,7,10,15}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+7	6	alizaynoune6	zaynoune6@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{14,4,8,21,19}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+8	7	alizaynoune7	zaynoune7@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{5,1,18,7,4}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+9	8	alizaynoune8	zaynoune8@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{2,2,19,1,2}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+10	9	alizaynoune9	zaynoune9@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{17,9,20,2,16}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+11	10	alizaynoune10	zaynoune10@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{9,17,21,16,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+12	11	alizaynoune11	zaynoune11@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{15,22,1,18,21}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+13	12	alizaynoune12	zaynoune12@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{9,4,6,3,8}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+14	13	alizaynoune13	zaynoune13@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{4,19,22,7,21}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+15	14	alizaynoune14	zaynoune14@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{17,3,21,8,1}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+16	15	alizaynoune15	zaynoune15@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{7,13,14,17,18}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+17	16	alizaynoune16	zaynoune16@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{0,18,12,16,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+18	17	alizaynoune17	zaynoune17@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{16,19,19,5,13}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+19	18	alizaynoune18	zaynoune18@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{18,1,0,21,2}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+20	19	alizaynoune19	zaynoune19@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{17,13,17,4,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+21	20	alizaynoune20	zaynoune20@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{8,2,20,1,14}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+22	21	alizaynoune21	zaynoune21@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{3,1,10,2,3}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+23	22	alizaynoune22	zaynoune22@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{6,21,18,12,19}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+24	23	alizaynoune23	zaynoune23@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{16,6,3,19,15}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+25	24	alizaynoune24	zaynoune24@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{3,13,13,7,16}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+26	25	alizaynoune25	zaynoune25@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{15,20,14,16,16}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+27	26	alizaynoune26	zaynoune26@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{3,9,15,17,8}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+28	27	alizaynoune27	zaynoune27@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{19,16,0,10,1}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+29	28	alizaynoune28	zaynoune28@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{9,19,3,13,15}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+30	29	alizaynoune29	zaynoune29@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{8,17,15,13,11}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
+31	30	alizaynoune30	zaynoune30@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	{4,2,2,9,19}	OFFLINE	2022-10-05 13:08:40.507501	2022-10-05 13:08:40.507501
 \.
 
 
@@ -1359,14 +1201,7 @@ SELECT pg_catalog.setval('public.notification_userid_seq', 1, false);
 -- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nabouzah
 --
 
-SELECT pg_catalog.setval('public.users_id_seq', 10, true);
-
-
---
--- Name: users_intra_id_seq; Type: SEQUENCE SET; Schema: public; Owner: nabouzah
---
-
-SELECT pg_catalog.setval('public.users_intra_id_seq', 1, false);
+SELECT pg_catalog.setval('public.users_id_seq', 31, true);
 
 
 --
@@ -1571,65 +1406,5 @@ ALTER TABLE ONLY public.notification
 
 --
 -- PostgreSQL database dump complete
---
-
---
--- Database "postgres" dump
---
-
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
--- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
-DROP DATABASE postgres;
---
--- Name: postgres; Type: DATABASE; Schema: -; Owner: nabouzah
---
-
-CREATE DATABASE postgres WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
-
-
-ALTER DATABASE postgres OWNER TO nabouzah;
-
-\connect postgres
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: DATABASE postgres; Type: COMMENT; Schema: -; Owner: nabouzah
---
-
-COMMENT ON DATABASE postgres IS 'default administrative connection database';
-
-
---
--- PostgreSQL database dump complete
---
-
---
--- PostgreSQL database cluster dump complete
 --
 
