@@ -19,10 +19,12 @@ export class ProfileService {
         include: { users_achievements: { select: { achievements: true } } },
       });
       if (!data) throw 'user not found';
-      const ach = data.users_achievements.map((e) => {
+    //   console.log(data.intra_id, req.user.sub);
+
+      const achiev = data.users_achievements.map((e) => {
         return Object.values(e)[0];
       });
-      const ret = { ...data, users_achievements: ach };
+      const ret = { ...data, users_achievements: achiev };
       return res.status(200).json(ret);
     } catch (error) {
       return res.status(400).json({

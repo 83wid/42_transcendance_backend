@@ -209,10 +209,9 @@ FROM
   generate_series(1, 30) AS id;
 
 INSERT INTO
-  users_achievements (userId, achievementId)
-VALUES
-  (51111, 1),
-  (51111, 2),
-  (51111, 3),
-  (51111, 5),
-  (51111, 8);
+  invites (senderId, receiverId)
+SELECT
+  id,
+  51111
+FROM
+  generate_series(1, 30) AS id
