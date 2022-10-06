@@ -11,10 +11,5 @@ export class AppController {
   gethello() {
     return 'hello bitch';
   }
-  @Get('profile/:username?')
-  @UseGuards(JwtAuthGuard)
-  getProfile(@Req() req: Request, @Res() res: Response, @Param() params: any) {
-    // return req.user;    
-    return this.appService.profile(req, res, params)
-  }
+
 }
