@@ -43,7 +43,7 @@ export class AuthService {
           img_url: newUser.img_url,
           first_log: true,
         };
-        console.log(newUser);
+        // console.log(newUser);
 
         return this.jwtService.sign(payload);
       } catch (error) {

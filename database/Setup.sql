@@ -188,6 +188,14 @@ VALUES
   );
 
 INSERT INTO
+  users_achievements (userId, achievementId)
+SELECT
+  51111,
+  id
+FROM
+  generate_series(1, 22) AS id;
+
+INSERT INTO
   users (
     intra_id,
     username,
