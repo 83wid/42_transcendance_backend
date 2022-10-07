@@ -9,7 +9,7 @@ export class UsersController {
   @Put('update')
   @UseGuards(JwtAuthGuard)
   async updateUser(@Req() req: any, @Res() res: Response) {
-    console.log(req.body);
+    // console.log(req.body);
     const user = await this.usersService.updateUser({
       data: req.body,
       where: { intra_id: req.user.sub },
@@ -18,7 +18,7 @@ export class UsersController {
   }
   @Get(':username')
   @UseGuards(JwtAuthGuard)
-  async findUser(@Param('username') username) {
+  async findUser(@Param('username') username: string) {
     return this.usersService.user({ username: username });
   }
 }

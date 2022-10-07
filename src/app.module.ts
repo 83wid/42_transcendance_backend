@@ -10,10 +10,11 @@ import { JwtStategy } from './auth/jwt.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './auth/constants';
 import { FriendsService } from './friends/friends.service';
-import { AchivementsService } from './achivements/achivements.service';
+import { AchievementsService } from './achivements/achivements.service';
 import { ChatService } from './chat/chat.service';
 import { ChatModule } from './chat/chat.module';
 import { FriendsModule } from './friends/friends.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [
@@ -27,13 +28,14 @@ import { FriendsModule } from './friends/friends.module';
       signOptions: { expiresIn: '60s' },
     }),
     ChatModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     JwtStategy,
     FriendsService,
-    AchivementsService,
+    AchievementsService,
     ChatService,
   ],
 })

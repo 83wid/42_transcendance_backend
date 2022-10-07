@@ -10,7 +10,7 @@ export class UsersService {
     usersWhereUniqueInput: Prisma.usersWhereUniqueInput,
   ): Promise<users | null> {
     try {
-      return this.prisma.users.findUnique({
+      return await this.prisma.users.findUnique({
         where: usersWhereUniqueInput,
       });
     } catch (error) {
@@ -27,7 +27,7 @@ export class UsersService {
   }): Promise<users[]> {
     const { skip, take, cursor, where, orderBy } = params;
     try {
-      return this.prisma.users.findMany({
+      return await this.prisma.users.findMany({
         skip,
         take,
         cursor,
@@ -41,7 +41,7 @@ export class UsersService {
 
   async createUser(data: Prisma.usersCreateInput): Promise<users> {
     try {
-      return this.prisma.users.create({
+      return await this.prisma.users.create({
         data,
       });
     } catch (error) {
@@ -55,7 +55,7 @@ export class UsersService {
   }): Promise<users> {
     const { where, data } = params;
     try {
-      return this.prisma.users.update({
+      return await this.prisma.users.update({
         data,
         where,
       });
@@ -66,7 +66,7 @@ export class UsersService {
 
   async deleteUser(where: Prisma.usersWhereUniqueInput): Promise<users> {
     try {
-      return this.prisma.users.delete({
+      return await this.prisma.users.delete({
         where,
       });
     } catch (error) {
