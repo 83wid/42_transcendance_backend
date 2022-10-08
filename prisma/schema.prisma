@@ -114,6 +114,7 @@ model notification {
   fromid                           Int            @default(autoincrement())
   targetid                         Int            @default(autoincrement())
   content                          String?
+  read                             Boolean?       @default(false)
   createdat                        DateTime       @default(now()) @db.Timestamp(6)
   updatedat                        DateTime       @default(now()) @db.Timestamp(6)
   users_notification_fromidTousers users          @relation("notification_fromidTousers", fields: [fromid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)

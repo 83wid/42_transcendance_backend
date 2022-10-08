@@ -112,6 +112,7 @@ CREATE TABLE notification (
   fromId SERIAL NOT NULL,
   targetId SERIAL NOT NULL,
   content TEXT,
+  read BOOLEAN DEFAULT false,
   createdAt timestamp NOT NULL DEFAULT now(),
   updatedAt timestamp NOT NULL DEFAULT now(),
   FOREIGN KEY (userId) REFERENCES users (intra_id),
