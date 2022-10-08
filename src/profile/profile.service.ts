@@ -39,7 +39,7 @@ export class ProfileService {
         });
         console.log(isFriend);
 
-        if (isFriend) return res.status(200).json({isFriend: true,...user});
+        if (isFriend) return res.status(200).json({relationship: {isFriend: true},...user});
         else {
           const relationship = await this.prisma.invites.findFirst({
             where: {

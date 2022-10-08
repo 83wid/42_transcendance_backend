@@ -73,19 +73,6 @@ model message {
   users           users        @relation(fields: [sender_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model notification {
-  id                               Int            @id @default(autoincrement())
-  type                             notification_t @default(OTHER)
-  userid                           Int            @default(autoincrement())
-  fromid                           Int            @default(autoincrement())
-  targetid                         Int            @default(autoincrement())
-  content                          String?
-  createdat                        DateTime       @default(now()) @db.Timestamp(6)
-  updatedat                        DateTime       @db.Timestamp(6)
-  users_notification_fromidTousers users          @relation("notification_fromidTousers", fields: [fromid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
-  users_notification_useridTousers users          @relation("notification_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
 model users {
   id                                      Int                  @id @default(autoincrement())
   intra_id                                Int                  @unique
@@ -118,6 +105,19 @@ model achievements {
   xp                 Int
   description        String?
   users_achievements users_achievements[]
+}
+
+model notification {
+  id                               Int            @id @default(autoincrement())
+  type                             notification_t @default(OTHER)
+  userid                           Int            @default(autoincrement())
+  fromid                           Int            @default(autoincrement())
+  targetid                         Int            @default(autoincrement())
+  content                          String?
+  createdat                        DateTime       @default(now()) @db.Timestamp(6)
+  updatedat                        DateTime       @default(now()) @db.Timestamp(6)
+  users_notification_fromidTousers users          @relation("notification_fromidTousers", fields: [fromid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  users_notification_useridTousers users          @relation("notification_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model users_achievements {

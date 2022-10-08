@@ -113,7 +113,7 @@ CREATE TABLE notification (
   targetId SERIAL NOT NULL,
   content TEXT,
   createdAt timestamp NOT NULL DEFAULT now(),
-  updatedAt timestamp NOT NULL,
+  updatedAt timestamp NOT NULL DEFAULT now(),
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (fromId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
@@ -191,9 +191,9 @@ INSERT INTO
   users_achievements (userId, achievementId)
 SELECT
   51111,
-  id
+  id * 2
 FROM
-  generate_series(1, 22) AS id;
+  generate_series(1, 10) AS id;
 
 INSERT INTO
   users (
@@ -214,7 +214,7 @@ SELECT
   'https://joeschmoe.io/api/v1/random',
   'https://random.imagecdn.app/1800/800'
 FROM
-  generate_series(1, 30) AS id;
+  generate_series(1, 50) AS id;
 
 INSERT INTO
   invites (senderId, receiverId)
@@ -222,4 +222,22 @@ SELECT
   id,
   51111
 FROM
-  generate_series(1, 30) AS id
+  generate_series(1, 20) AS id;
+
+INSERT INTO
+  invites (senderId, receiverId)
+SELECT
+  51111,
+  id
+FROM
+  generate_series(11, 20) AS id;
+
+INSERT INTO
+  notification (userId, fromId, targetId, content)
+SELECT
+  51111,
+  id,
+  id,
+  'send you friend request'
+FROM
+  generate_series(1, 20) AS id;
