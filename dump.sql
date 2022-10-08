@@ -610,6 +610,7 @@ CREATE TABLE public.notification (
     fromid integer NOT NULL,
     targetid integer NOT NULL,
     content text,
+    read boolean DEFAULT false,
     createdat timestamp without time zone DEFAULT now() NOT NULL,
     updatedat timestamp without time zone DEFAULT now() NOT NULL
 );
@@ -1027,36 +1028,36 @@ COPY public.group_member (id, user_id, conversation_id, joint_date, left_date) F
 --
 
 COPY public.invites (id, senderid, receiverid, created_at, accepted) FROM stdin;
-1	1	51111	2022-10-08 13:00:43.886578	f
-2	2	51111	2022-10-08 13:00:43.886578	f
-3	3	51111	2022-10-08 13:00:43.886578	f
-4	4	51111	2022-10-08 13:00:43.886578	f
-5	5	51111	2022-10-08 13:00:43.886578	f
-6	6	51111	2022-10-08 13:00:43.886578	f
-7	7	51111	2022-10-08 13:00:43.886578	f
-8	8	51111	2022-10-08 13:00:43.886578	f
-9	9	51111	2022-10-08 13:00:43.886578	f
-10	10	51111	2022-10-08 13:00:43.886578	f
-11	11	51111	2022-10-08 13:00:43.886578	f
-12	12	51111	2022-10-08 13:00:43.886578	f
-13	13	51111	2022-10-08 13:00:43.886578	f
-14	14	51111	2022-10-08 13:00:43.886578	f
-15	15	51111	2022-10-08 13:00:43.886578	f
-16	16	51111	2022-10-08 13:00:43.886578	f
-17	17	51111	2022-10-08 13:00:43.886578	f
-18	18	51111	2022-10-08 13:00:43.886578	f
-19	19	51111	2022-10-08 13:00:43.886578	f
-20	20	51111	2022-10-08 13:00:43.886578	f
-21	51111	11	2022-10-08 13:00:43.900803	f
-22	51111	12	2022-10-08 13:00:43.900803	f
-23	51111	13	2022-10-08 13:00:43.900803	f
-24	51111	14	2022-10-08 13:00:43.900803	f
-25	51111	15	2022-10-08 13:00:43.900803	f
-26	51111	16	2022-10-08 13:00:43.900803	f
-27	51111	17	2022-10-08 13:00:43.900803	f
-28	51111	18	2022-10-08 13:00:43.900803	f
-29	51111	19	2022-10-08 13:00:43.900803	f
-30	51111	20	2022-10-08 13:00:43.900803	f
+1	1	51111	2022-10-08 14:11:56.825562	f
+2	2	51111	2022-10-08 14:11:56.825562	f
+3	3	51111	2022-10-08 14:11:56.825562	f
+4	4	51111	2022-10-08 14:11:56.825562	f
+5	5	51111	2022-10-08 14:11:56.825562	f
+6	6	51111	2022-10-08 14:11:56.825562	f
+7	7	51111	2022-10-08 14:11:56.825562	f
+8	8	51111	2022-10-08 14:11:56.825562	f
+9	9	51111	2022-10-08 14:11:56.825562	f
+10	10	51111	2022-10-08 14:11:56.825562	f
+11	11	51111	2022-10-08 14:11:56.825562	f
+12	12	51111	2022-10-08 14:11:56.825562	f
+13	13	51111	2022-10-08 14:11:56.825562	f
+14	14	51111	2022-10-08 14:11:56.825562	f
+15	15	51111	2022-10-08 14:11:56.825562	f
+16	16	51111	2022-10-08 14:11:56.825562	f
+17	17	51111	2022-10-08 14:11:56.825562	f
+18	18	51111	2022-10-08 14:11:56.825562	f
+19	19	51111	2022-10-08 14:11:56.825562	f
+20	20	51111	2022-10-08 14:11:56.825562	f
+21	51111	11	2022-10-08 14:11:56.838278	f
+22	51111	12	2022-10-08 14:11:56.838278	f
+23	51111	13	2022-10-08 14:11:56.838278	f
+24	51111	14	2022-10-08 14:11:56.838278	f
+25	51111	15	2022-10-08 14:11:56.838278	f
+26	51111	16	2022-10-08 14:11:56.838278	f
+27	51111	17	2022-10-08 14:11:56.838278	f
+28	51111	18	2022-10-08 14:11:56.838278	f
+29	51111	19	2022-10-08 14:11:56.838278	f
+30	51111	20	2022-10-08 14:11:56.838278	f
 \.
 
 
@@ -1072,27 +1073,27 @@ COPY public.message (id, sender_id, content, conversation_id, created_at, update
 -- Data for Name: notification; Type: TABLE DATA; Schema: public; Owner: nabouzah
 --
 
-COPY public.notification (id, type, userid, fromid, targetid, content, createdat, updatedat) FROM stdin;
-1	OTHER	51111	1	1	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-2	OTHER	51111	2	2	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-3	OTHER	51111	3	3	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-4	OTHER	51111	4	4	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-5	OTHER	51111	5	5	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-6	OTHER	51111	6	6	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-7	OTHER	51111	7	7	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-8	OTHER	51111	8	8	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-9	OTHER	51111	9	9	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-10	OTHER	51111	10	10	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-11	OTHER	51111	11	11	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-12	OTHER	51111	12	12	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-13	OTHER	51111	13	13	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-14	OTHER	51111	14	14	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-15	OTHER	51111	15	15	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-16	OTHER	51111	16	16	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-17	OTHER	51111	17	17	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-18	OTHER	51111	18	18	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-19	OTHER	51111	19	19	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
-20	OTHER	51111	20	20	send you friend request	2022-10-08 13:00:43.901573	2022-10-08 13:00:43.901573
+COPY public.notification (id, type, userid, fromid, targetid, content, read, createdat, updatedat) FROM stdin;
+1	OTHER	51111	1	1	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+2	OTHER	51111	2	2	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+3	OTHER	51111	3	3	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+4	OTHER	51111	4	4	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+5	OTHER	51111	5	5	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+6	OTHER	51111	6	6	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+7	OTHER	51111	7	7	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+8	OTHER	51111	8	8	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+9	OTHER	51111	9	9	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+10	OTHER	51111	10	10	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+11	OTHER	51111	11	11	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+12	OTHER	51111	12	12	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+13	OTHER	51111	13	13	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+14	OTHER	51111	14	14	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+15	OTHER	51111	15	15	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+16	OTHER	51111	16	16	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+17	OTHER	51111	17	17	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+18	OTHER	51111	18	18	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+19	OTHER	51111	19	19	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
+20	OTHER	51111	20	20	send you friend request	f	2022-10-08 14:11:56.839097	2022-10-08 14:11:56.839097
 \.
 
 
@@ -1101,57 +1102,57 @@ COPY public.notification (id, type, userid, fromid, targetid, content, createdat
 --
 
 COPY public.users (id, intra_id, username, email, first_name, last_name, img_url, cover, status, created_at, updated_at) FROM stdin;
-1	51111	alizaynou	alzaynou@student.1337.ma	Ali	Zaynoune	https://cdn.intra.42.fr/users/alzaynou.jpg	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.856237	2022-10-08 13:00:43.856237
-2	1	alizaynoune1	zaynoune1@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-3	2	alizaynoune2	zaynoune2@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-4	3	alizaynoune3	zaynoune3@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-5	4	alizaynoune4	zaynoune4@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-6	5	alizaynoune5	zaynoune5@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-7	6	alizaynoune6	zaynoune6@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-8	7	alizaynoune7	zaynoune7@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-9	8	alizaynoune8	zaynoune8@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-10	9	alizaynoune9	zaynoune9@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-11	10	alizaynoune10	zaynoune10@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-12	11	alizaynoune11	zaynoune11@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-13	12	alizaynoune12	zaynoune12@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-14	13	alizaynoune13	zaynoune13@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-15	14	alizaynoune14	zaynoune14@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-16	15	alizaynoune15	zaynoune15@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-17	16	alizaynoune16	zaynoune16@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-18	17	alizaynoune17	zaynoune17@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-19	18	alizaynoune18	zaynoune18@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-20	19	alizaynoune19	zaynoune19@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-21	20	alizaynoune20	zaynoune20@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-22	21	alizaynoune21	zaynoune21@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-23	22	alizaynoune22	zaynoune22@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-24	23	alizaynoune23	zaynoune23@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-25	24	alizaynoune24	zaynoune24@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-26	25	alizaynoune25	zaynoune25@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-27	26	alizaynoune26	zaynoune26@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-28	27	alizaynoune27	zaynoune27@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-29	28	alizaynoune28	zaynoune28@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-30	29	alizaynoune29	zaynoune29@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-31	30	alizaynoune30	zaynoune30@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-32	31	alizaynoune31	zaynoune31@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-33	32	alizaynoune32	zaynoune32@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-34	33	alizaynoune33	zaynoune33@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-35	34	alizaynoune34	zaynoune34@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-36	35	alizaynoune35	zaynoune35@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-37	36	alizaynoune36	zaynoune36@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-38	37	alizaynoune37	zaynoune37@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-39	38	alizaynoune38	zaynoune38@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-40	39	alizaynoune39	zaynoune39@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-41	40	alizaynoune40	zaynoune40@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-42	41	alizaynoune41	zaynoune41@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-43	42	alizaynoune42	zaynoune42@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-44	43	alizaynoune43	zaynoune43@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-45	44	alizaynoune44	zaynoune44@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-46	45	alizaynoune45	zaynoune45@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-47	46	alizaynoune46	zaynoune46@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-48	47	alizaynoune47	zaynoune47@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-49	48	alizaynoune48	zaynoune48@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-50	49	alizaynoune49	zaynoune49@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
-51	50	alizaynoune50	zaynoune50@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 13:00:43.881686	2022-10-08 13:00:43.881686
+1	51111	alizaynou	alzaynou@student.1337.ma	Ali	Zaynoune	https://cdn.intra.42.fr/users/alzaynou.jpg	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.802046	2022-10-08 14:11:56.802046
+2	1	alizaynoune1	zaynoune1@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+3	2	alizaynoune2	zaynoune2@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+4	3	alizaynoune3	zaynoune3@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+5	4	alizaynoune4	zaynoune4@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+6	5	alizaynoune5	zaynoune5@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+7	6	alizaynoune6	zaynoune6@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+8	7	alizaynoune7	zaynoune7@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+9	8	alizaynoune8	zaynoune8@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+10	9	alizaynoune9	zaynoune9@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+11	10	alizaynoune10	zaynoune10@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+12	11	alizaynoune11	zaynoune11@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+13	12	alizaynoune12	zaynoune12@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+14	13	alizaynoune13	zaynoune13@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+15	14	alizaynoune14	zaynoune14@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+16	15	alizaynoune15	zaynoune15@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+17	16	alizaynoune16	zaynoune16@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+18	17	alizaynoune17	zaynoune17@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+19	18	alizaynoune18	zaynoune18@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+20	19	alizaynoune19	zaynoune19@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+21	20	alizaynoune20	zaynoune20@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+22	21	alizaynoune21	zaynoune21@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+23	22	alizaynoune22	zaynoune22@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+24	23	alizaynoune23	zaynoune23@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+25	24	alizaynoune24	zaynoune24@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+26	25	alizaynoune25	zaynoune25@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+27	26	alizaynoune26	zaynoune26@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+28	27	alizaynoune27	zaynoune27@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+29	28	alizaynoune28	zaynoune28@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+30	29	alizaynoune29	zaynoune29@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+31	30	alizaynoune30	zaynoune30@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+32	31	alizaynoune31	zaynoune31@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+33	32	alizaynoune32	zaynoune32@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+34	33	alizaynoune33	zaynoune33@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+35	34	alizaynoune34	zaynoune34@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+36	35	alizaynoune35	zaynoune35@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+37	36	alizaynoune36	zaynoune36@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+38	37	alizaynoune37	zaynoune37@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+39	38	alizaynoune38	zaynoune38@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+40	39	alizaynoune39	zaynoune39@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+41	40	alizaynoune40	zaynoune40@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+42	41	alizaynoune41	zaynoune41@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+43	42	alizaynoune42	zaynoune42@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+44	43	alizaynoune43	zaynoune43@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+45	44	alizaynoune44	zaynoune44@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+46	45	alizaynoune45	zaynoune45@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+47	46	alizaynoune46	zaynoune46@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+48	47	alizaynoune47	zaynoune47@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+49	48	alizaynoune48	zaynoune48@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+50	49	alizaynoune49	zaynoune49@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
+51	50	alizaynoune50	zaynoune50@ali.ali	ali	zaynoune	https://joeschmoe.io/api/v1/random	https://random.imagecdn.app/1800/800	OFFLINE	2022-10-08 14:11:56.82172	2022-10-08 14:11:56.82172
 \.
 
 
@@ -1160,16 +1161,16 @@ COPY public.users (id, intra_id, username, email, first_name, last_name, img_url
 --
 
 COPY public.users_achievements (id, userid, achievementid, createdat) FROM stdin;
-1	51111	2	2022-10-08 13:00:43.862677
-2	51111	4	2022-10-08 13:00:43.862677
-3	51111	6	2022-10-08 13:00:43.862677
-4	51111	8	2022-10-08 13:00:43.862677
-5	51111	10	2022-10-08 13:00:43.862677
-6	51111	12	2022-10-08 13:00:43.862677
-7	51111	14	2022-10-08 13:00:43.862677
-8	51111	16	2022-10-08 13:00:43.862677
-9	51111	18	2022-10-08 13:00:43.862677
-10	51111	20	2022-10-08 13:00:43.862677
+1	51111	2	2022-10-08 14:11:56.807709
+2	51111	4	2022-10-08 14:11:56.807709
+3	51111	6	2022-10-08 14:11:56.807709
+4	51111	8	2022-10-08 14:11:56.807709
+5	51111	10	2022-10-08 14:11:56.807709
+6	51111	12	2022-10-08 14:11:56.807709
+7	51111	14	2022-10-08 14:11:56.807709
+8	51111	16	2022-10-08 14:11:56.807709
+9	51111	18	2022-10-08 14:11:56.807709
+10	51111	20	2022-10-08 14:11:56.807709
 \.
 
 

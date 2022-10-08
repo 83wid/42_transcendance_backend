@@ -60,10 +60,16 @@ export class AuthService {
     try {
       const data = await this.prisma.users.findUnique({
         where: { intra_id: id },
-        include: { notification_notification_useridTousers: true },
+        include: {
+          notification_notification_useridTousers: {
+            include: {
+              users_notification_fromidTousers: {
+                select: { username: true, img_url: true, intra_id: true },
+              },
+            },
+          },
+        },
       });
-      // console.log(data);
-
       const ret = pick(data, [
         'id',
         'intra_id',
@@ -74,15 +80,10 @@ export class AuthService {
         'img_url',
         'notification_notification_useridTousers',
       ]);
-      // console.log(ret);
-      const payload = {
-        sub: 1,
-      };
-      console.log(this.jwtService.sign(payload));
 
       return res.status(200).json(ret);
     } catch (error) {
-      // console.log(error);
+      console.log(error);
 
       return res.status(400).json({
         message: error,
