@@ -82,7 +82,7 @@ export class ProfileService {
             });
             console.log(isBlocked);
             return res
-              .status(isBlocked ? 400 : 200)
+              .status(isBlocked ? 404 : 200)
               .json(isBlocked ? { message: 'user not found' } : user);
           }
         }

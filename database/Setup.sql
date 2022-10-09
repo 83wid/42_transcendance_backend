@@ -234,10 +234,11 @@ FROM
   generate_series(11, 20) AS id;
 
 INSERT INTO
-  notification (userId, fromId, targetId, content)
+  notification (userId, fromId,type, targetId, content)
 SELECT
   51111,
   id,
+  'FRIEND_REQUEST',
   id,
   'send you friend request'
 FROM
