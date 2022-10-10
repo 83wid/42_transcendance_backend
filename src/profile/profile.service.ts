@@ -12,9 +12,13 @@ export class ProfileService {
    * @param {string} username
    * @returns {Promise<Response>}
    **/
-  async profile(req: Request, res: Response, username: string): Promise<Response> {
-    console.log(username)
-    
+  async profile(
+    req: Request,
+    res: Response,
+    username: string,
+  ): Promise<Response> {
+    console.log(username);
+
     try {
       const slector = username
         ? { username: username }
@@ -40,7 +44,10 @@ export class ProfileService {
           },
         });
 
-        if (isFriend) return res.status(200).json({relationship: {isFriend: true},...user});
+        if (isFriend)
+          return res
+            .status(200)
+            .json({ relationship: { isFriend: true }, ...user });
         else {
           const relationship = await this.prisma.invites.findFirst({
             where: {
@@ -88,8 +95,8 @@ export class ProfileService {
         }
       } else return res.status(200).json(user);
     } catch (error) {
-      return res.status(400).json({
-        message: error,
+      return res.status(500).json({
+        message: 'server error',
       });
     }
   }
