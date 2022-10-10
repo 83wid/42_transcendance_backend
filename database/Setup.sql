@@ -4,6 +4,8 @@ CREATE TYPE level_type AS ENUM ('BRONZE', 'SILVER', 'GOLD', 'PLATINUM');
 
 CREATE TYPE game_diff AS ENUM ('EASY', 'NORMAL', 'DIFFICULT');
 
+CREATE TYPE game_status AS ENUM('WAITING', 'PLAYING', 'END');
+
 CREATE TYPE conversation_type AS ENUM ('DIRECT', 'GROUP');
 
 CREATE TYPE NOTIFICATION_T AS ENUM ('FRIEND_REQUEST', 'GAME_INVITE', 'OTHER');
@@ -98,10 +100,17 @@ CREATE TABLE blocked (
 -- create table for messages
 CREATE TABLE game (
   id SERIAL NOT NULL,
-  player integer [],
   level game_diff DEFAULT 'NORMAL',
-  scores integer [],
+  status game_status DEFAULT 'WAITING',
+  createdAt timestamp NOT NULL DEFAULT now(),
+  updatedAt timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
+);
+
+CREATE TABLE players (
+  id SERIAL NOT NULL,
+  userId SERIAL NOT NULL,
+  gameId SERIAL NOT NULL,
 );
 
 -- create table for notification
@@ -234,7 +243,7 @@ FROM
   generate_series(11, 20) AS id;
 
 INSERT INTO
-  notification (userId, fromId,type, targetId, content)
+  notification (userId, fromId, type, targetId, content)
 SELECT
   51111,
   id,

@@ -43,6 +43,19 @@ export class ProfileBody {
   id: string;
 }
 
+/************* Game DTO ***************/
+export class InvitePlayGame {
+  @IsNotEmpty()
+  @IsString()
+  userId: string
+}
+export class rejectGame {}
+
+export class acceptGame {}
+
+export class endGame {}
+
+
 /***********    Friends & Friends Requests    ***********/
 //sendRequest DTO
 export class friendRequestBody {

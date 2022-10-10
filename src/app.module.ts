@@ -16,6 +16,7 @@ import { ChatModule } from './chat/chat.module';
 import { FriendsModule } from './friends/friends.module';
 import { ProfileModule } from './profile/profile.module';
 import { GameModule } from './game/game.module';
+import { AchievementsModule } from './achievements/achievements.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { GameModule } from './game/game.module';
     ChatModule,
     ProfileModule,
     GameModule,
+    AchievementsModule,
   ],
   controllers: [AppController],
   providers: [
