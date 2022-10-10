@@ -7,14 +7,9 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import {
-  acceptRequestBody,
-  blockRequestBody,
-  friendRequestBody,
-  unfriendRequestBody,
-} from '../interfaces/user.interface';
+import { friendsBody } from '../interfaces/user.interface';
 import { FriendsService } from './friends.service';
 
 @Controller('friends')
@@ -31,11 +26,7 @@ export class FriendsController {
    */
   @Post('sendrequest')
   @UseGuards(JwtAuthGuard)
-  sendRequest(
-    @Body() dto: friendRequestBody,
-    @Req() req: any,
-    @Res() res: Response,
-  ) {
+  sendRequest(@Body() dto: friendsBody, @Req() req: any, @Res() res: Response) {
     return this.friendsService.sendRequest(dto, Number(req.user.sub), res);
   }
 
@@ -60,7 +51,7 @@ export class FriendsController {
   acceptRequest(
     @Req() req: any,
     @Res() res: Response,
-    @Body() dto: acceptRequestBody,
+    @Body() dto: friendsBody,
   ) {
     return this.friendsService.acceptRequest(dto, Number(req.user.sub), res);
   }
@@ -75,7 +66,7 @@ export class FriendsController {
   rejectRequest(
     @Req() req: any,
     @Res() res: Response,
-    @Body() dto: acceptRequestBody,
+    @Body() dto: friendsBody,
   ) {
     return this.friendsService.rejectRequest(dto, Number(req.user.sub), res);
   }
@@ -87,7 +78,7 @@ export class FriendsController {
    */
   @Post('unfriend')
   @UseGuards(JwtAuthGuard)
-  unfriend(@Body() dto: unfriendRequestBody, @Res() res: Response) {
+  unfriend(@Body() dto: friendsBody, @Res() res: Response) {
     return this.friendsService.unfriend(dto, res);
   }
 
@@ -108,11 +99,7 @@ export class FriendsController {
    */
   @Post('blockfriend')
   @UseGuards(JwtAuthGuard)
-  blockFriend(
-    @Req() req: any,
-    @Res() res: Response,
-    @Body() dto: blockRequestBody,
-  ) {
+  blockFriend(@Req() req: any, @Res() res: Response, @Body() dto: friendsBody) {
     return this.friendsService.blockFriend(dto, req, res);
   }
 
@@ -145,11 +132,7 @@ export class FriendsController {
    */
   @Post('unblock')
   @UseGuards(JwtAuthGuard)
-  unblockUser(
-    @Req() req: any,
-    @Res() res: Response,
-    @Body() dto: blockRequestBody,
-  ) {
+  unblockUser(@Req() req: any, @Res() res: Response, @Body() dto: friendsBody) {
     return this.friendsService.unblockUser(dto, req, res);
   }
 

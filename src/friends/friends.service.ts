@@ -1,20 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Response } from 'express';
-import {
-  acceptRequestBody,
-  blockRequestBody,
-  friendRequestBody,
-  unfriendRequestBody,
-} from '../interfaces/user.interface';
+import { friendsBody } from '../interfaces/user.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { getFriends, getInvites } from './helper';
-import { isEmpty } from 'rxjs';
 
 @Injectable()
 export class FriendsService {
   constructor(private prisma: PrismaService) {}
   //Send new Friend Request
-  async sendRequest(dto: friendRequestBody, userId: number, res: Response) {
+  async sendRequest(dto: friendsBody, userId: number, res: Response) {
     try {
       // check if user not blocked
       const blocked = await this.prisma.blocked.findMany({
@@ -105,7 +99,7 @@ export class FriendsService {
   }
 
   //Accept Friend Request
-  async acceptRequest(dto: acceptRequestBody, userId: number, res: Response) {
+  async acceptRequest(dto: friendsBody, userId: number, res: Response) {
     try {
       const data = await this.prisma.invites.findUnique({
         where: {
@@ -140,7 +134,7 @@ export class FriendsService {
   }
 
   //Reject Friend Request
-  async rejectRequest(dto: acceptRequestBody, userId: number, res: Response) {
+  async rejectRequest(dto: friendsBody, userId: number, res: Response) {
     try {
       const data = await this.prisma.invites.findUnique({
         where: {
@@ -169,7 +163,7 @@ export class FriendsService {
   }
 
   // Unfriend
-  async unfriend(dto: unfriendRequestBody, res: Response) {
+  async unfriend(dto: friendsBody, res: Response) {
     try {
       const data = await this.prisma.friends.findMany({
         where: {
@@ -285,7 +279,7 @@ export class FriendsService {
   }
 
   //Block Friend
-  async blockFriend(dto: blockRequestBody, req: any, res: Response) {
+  async blockFriend(dto: friendsBody, req: any, res: Response) {
     try {
       if (Number(dto.id) === req.user.sub) {
         return res.status(400).json({
@@ -385,7 +379,7 @@ export class FriendsService {
   }
 
   // unblock user
-  async unblockUser(dto: blockRequestBody, req: any, res: Response) {
+  async unblockUser(dto: friendsBody, req: any, res: Response) {
     try {
       const data = await this.prisma.blocked.findMany({
         where: {

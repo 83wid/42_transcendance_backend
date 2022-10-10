@@ -47,7 +47,7 @@ export class ProfileBody {
 export class InvitePlayGame {
   @IsNotEmpty()
   @IsString()
-  userId: string
+  userId: string;
 }
 export class rejectGame {}
 
@@ -55,29 +55,9 @@ export class acceptGame {}
 
 export class endGame {}
 
-
 /***********    Friends & Friends Requests    ***********/
 //sendRequest DTO
-export class friendRequestBody {
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-}
-export class acceptRequestBody {
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-}
-
-// Unfriend DTO
-export class unfriendRequestBody {
-  @IsString()
-  @IsNotEmpty()
-  id: string;
-}
-
-// Block User DTO
-export class blockRequestBody {
+export class friendsBody {
   @IsString()
   @IsNotEmpty()
   id: string;
