@@ -4,6 +4,7 @@ import {
   acceptRequestBody,
   blockRequestBody,
   friendRequestBody,
+  unfriendRequestBody,
 } from '../interfaces/user.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { getFriends, getInvites } from './helper';
@@ -83,7 +84,7 @@ export class FriendsService {
   }
 
   //Accept Friend Request
-  async acceptRequest(dto: acceptRequestBody, userId: Number, res: Response) {
+  async acceptRequest(dto: acceptRequestBody, userId: number, res: Response) {
     try {
       const data = await this.prisma.invites.findUnique({
         where: {
@@ -118,7 +119,7 @@ export class FriendsService {
   }
 
   //Reject Friend Request
-  async rejectRequest(dto: acceptRequestBody, userId: Number, res: Response) {
+  async rejectRequest(dto: acceptRequestBody, userId: number, res: Response) {
     try {
       const data = await this.prisma.invites.findUnique({
         where: {
@@ -146,6 +147,9 @@ export class FriendsService {
     }
   }
 
+  // Unfriend
+  async unfriend(dto: unfriendRequestBody, userId: number, res: Response) {}
+
   //Get all Friends
   async getFriends(req: any, res: Response) {
     try {
@@ -165,10 +169,54 @@ export class FriendsService {
           users_friends_useridTousers: true,
         },
       });
+
       const friends = await getFriends(data, req.user.sub);
       if (friends.length < 1) {
         return res.status(200).json({
           message: 'You have no friends',
+        });
+      }
+      return res.status(200).json({
+        friends,
+      });
+    } catch (error) {
+      return res.status(400).json({
+        message: error,
+      });
+    }
+  }
+
+  //Get Friends by username
+  async getFriendsByUsername(req: any, res: Response) {
+    console.log(req.params.username);
+
+    try {
+      const user = await this.prisma.users.findUnique({
+        where: {
+          username: req.params.username,
+        },
+      });
+      const data = await this.prisma.friends.findMany({
+        where: {
+          OR: [
+            {
+              userid: user.intra_id,
+            },
+            {
+              friendid: user.intra_id,
+            },
+          ],
+        },
+        include: {
+          users_friends_friendidTousers: true,
+          users_friends_useridTousers: true,
+        },
+      });
+
+      const friends = await getFriends(data, user.intra_id);
+      if (friends.length < 1) {
+        return res.status(200).json({
+          message: 'There is no friends',
         });
       }
       return res.status(200).json({
@@ -232,6 +280,33 @@ export class FriendsService {
     } catch (error) {
       return res.status(400).json({
         message: "Couldn't block friend",
+        error: error,
+      });
+    }
+  }
+
+  // get blocked user
+  async getBlockedUsers(req: any, res: Response) {
+    try {
+      const data = await this.prisma.blocked.findMany({
+        where: {
+          userid: req.user.sub,
+        },
+        include: {
+          users_blocked_blockedidTousers: true,
+        },
+      });
+      if (data.length > 0)
+        return res.status(200).json({
+          data,
+        });
+      else
+        return res.status(200).json({
+          message: 'You have no blocked users',
+        });
+    } catch (error) {
+      return res.status(400).json({
+        message: 'Something went wrong',
         error: error,
       });
     }

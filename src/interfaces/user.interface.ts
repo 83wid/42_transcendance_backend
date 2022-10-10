@@ -51,6 +51,13 @@ export class acceptRequestBody {
   id: string;
 }
 
+// Unfriend DTO
+export class unfriendRequestBody {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+}
+
 // Block User DTO
 export class blockRequestBody {
   @IsString()

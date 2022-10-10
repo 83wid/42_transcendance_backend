@@ -13,6 +13,7 @@ import {
   acceptRequestBody,
   blockRequestBody,
   friendRequestBody,
+  unfriendRequestBody,
 } from '../interfaces/user.interface';
 import { FriendsService } from './friends.service';
 
@@ -80,6 +81,21 @@ export class FriendsController {
   }
 
   /*
+   ** Unfriend a friend
+   ** @param {string} id
+   ** @return {object} response
+   */
+  @Post('unfriend')
+  @UseGuards(JwtAuthGuard)
+  unfriend(
+    @Body() dto: unfriendRequestBody,
+    @Req() req: any,
+    @Res() res: Response,
+  ) {
+    return this.friendsService.unfriend(dto, Number(req.user.sub), res);
+  }
+
+  /*
    ** Get all Friends
    ** @return {object} response
    */
@@ -103,4 +119,34 @@ export class FriendsController {
   ) {
     return this.friendsService.blockFriend(dto, req, res);
   }
+
+  /*
+   ** get friends bu username
+   ** @param {string} username
+   ** @return {object} response
+   */
+  @Get('user/:username')
+  @UseGuards(JwtAuthGuard)
+  getFriendsByUsername(@Req() req: any, @Res() res: Response) {
+    return this.friendsService.getFriendsByUsername(req, res);
+  }
+
+  /*
+   ** get blocked users
+   ** @return {object} response
+   */
+
+  @Get('blocked')
+  @UseGuards(JwtAuthGuard)
+  getBlockedUsers(@Req() req: any, @Res() res: Response) {
+    return this.friendsService.getBlockedUsers(req, res);
+  }
+
+  /*
+   ** To do
+   ** get friends by username √
+   ** get blocked users √
+   ** unfriend route
+   ** unblock route
+   */
 }
