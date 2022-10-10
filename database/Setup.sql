@@ -79,6 +79,7 @@ CREATE TABLE invites (
   id SERIAL NOT NULL,
   senderId SERIAL NOT NULL,
   receiverId SERIAL NOT NULL,
+  accepted BOOLEAN DEFAULT false,
   created_at timestamp NOT NULL DEFAULT now(),
   FOREIGN KEY (senderId) REFERENCES users (intra_id),
   FOREIGN KEY (receiverId) REFERENCES users (intra_id),
@@ -158,29 +159,104 @@ VALUES
   ('friendly', 'BRONZE', 20, 'add 20 friends'),
   ('friendly', 'GOLD', 50, 'add 50 friends'),
   ('friendly', 'PLATINUM', 100, 'add 100 friends'),
-  
-  ('legendary', 'SILVER', 100, 'win 1 matche with a max score'),
-  ('legendary', 'BRONZE', 250, 'win 2 matches with max a score'),
-  ('legendary', 'GOLD', 350, 'win 3 matches with max a score'),
-  ('legendary', 'PLATINUM', 500, 'winn 4 matches with max a score'),
-  
-  ('sharpshooter', 'SILVER', 100, 'win 2 matches in one day'),
-  ('sharpshooter', 'BRONZE', 250, 'win 3 matches in one day'),
-  ('sharpshooter', 'GOLD', 350, 'win 4 matches in one day'),
-  ('sharpshooter', 'PLATINUM', 500, 'win 5 matches in one day'),
-  
-  ('wildfire', 'SILVER', 500, 'play 5 matches in one day'),
-  ('wildfire', 'BRONZE', 1400, 'play 10 matches in one day'),
-  ('wildfire', 'GOLD', 2000, 'play 15 matches in one day'),
-  ('wildfire', 'PLATINUM', 5000, 'play 20 matches in one day'),
-  
-  ('winner', 'SILVER', 500, 'Be ranked #1 for 1 day'),
-  ('winner', 'BRONZE', 1000, 'Be ranked #1 for 2 day'),
+  (
+    'legendary',
+    'SILVER',
+    100,
+    'win 1 matche with a max score'
+  ),
+  (
+    'legendary',
+    'BRONZE',
+    250,
+    'win 2 matches with max a score'
+  ),
+  (
+    'legendary',
+    'GOLD',
+    350,
+    'win 3 matches with max a score'
+  ),
+  (
+    'legendary',
+    'PLATINUM',
+    500,
+    'winn 4 matches with max a score'
+  ),
+  (
+    'sharpshooter',
+    'SILVER',
+    100,
+    'win 2 matches in one day'
+  ),
+  (
+    'sharpshooter',
+    'BRONZE',
+    250,
+    'win 3 matches in one day'
+  ),
+  (
+    'sharpshooter',
+    'GOLD',
+    350,
+    'win 4 matches in one day'
+  ),
+  (
+    'sharpshooter',
+    'PLATINUM',
+    500,
+    'win 5 matches in one day'
+  ),
+  (
+    'wildfire',
+    'SILVER',
+    500,
+    'play 5 matches in one day'
+  ),
+  (
+    'wildfire',
+    'BRONZE',
+    1400,
+    'play 10 matches in one day'
+  ),
+  (
+    'wildfire',
+    'GOLD',
+    2000,
+    'play 15 matches in one day'
+  ),
+  (
+    'wildfire',
+    'PLATINUM',
+    5000,
+    'play 20 matches in one day'
+  ),
+  (
+    'winner',
+    'SILVER',
+    500,
+    'Be ranked #1 for 1 day'
+  ),
+  (
+    'winner',
+    'BRONZE',
+    1000,
+    'Be ranked #1 for 2 day'
+  ),
   ('winner', 'GOLD', 3000, 'Be ranked #1 for 3 day'),
-  ('winner', 'PLATINUM', 7000, 'Be ranked #1 for 4 day'),
-  
+  (
+    'winner',
+    'PLATINUM',
+    7000,
+    'Be ranked #1 for 4 day'
+  ),
   ('photogenic', 'GOLD', 100, 'change your avatar'),
-  ('photogenic', 'PLATINUM', 100, 'change your cover');
+  (
+    'photogenic',
+    'PLATINUM',
+    100,
+    'change your cover'
+  );
 
 INSERT INTO
   users (

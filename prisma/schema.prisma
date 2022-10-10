@@ -55,8 +55,8 @@ model invites {
   id                              Int      @id @default(autoincrement())
   senderid                        Int      @default(autoincrement())
   receiverid                      Int      @default(autoincrement())
-  created_at                      DateTime @default(now()) @db.Timestamp(6)
   accepted                        Boolean? @default(false)
+  created_at                      DateTime @default(now()) @db.Timestamp(6)
   users_invites_receiveridTousers users    @relation("invites_receiveridTousers", fields: [receiverid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
   users_invites_senderidTousers   users    @relation("invites_senderidTousers", fields: [senderid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
