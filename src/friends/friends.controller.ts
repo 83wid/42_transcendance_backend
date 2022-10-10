@@ -87,12 +87,8 @@ export class FriendsController {
    */
   @Post('unfriend')
   @UseGuards(JwtAuthGuard)
-  unfriend(
-    @Body() dto: unfriendRequestBody,
-    @Req() req: any,
-    @Res() res: Response,
-  ) {
-    return this.friendsService.unfriend(dto, Number(req.user.sub), res);
+  unfriend(@Body() dto: unfriendRequestBody, @Res() res: Response) {
+    return this.friendsService.unfriend(dto, res);
   }
 
   /*
