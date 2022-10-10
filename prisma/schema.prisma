@@ -34,10 +34,11 @@ model friends {
 }
 
 model game {
-  id     Int        @id @default(autoincrement())
-  player Int[]
-  level  game_diff? @default(NORMAL)
-  scores Int[]
+  id        Int          @id @default(autoincrement())
+  level     game_diff?   @default(NORMAL)
+  status    game_status? @default(WAITING)
+  createdat DateTime     @default(now()) @db.Timestamp(6)
+  updatedat DateTime     @default(now()) @db.Timestamp(6)
 }
 
 model group_member {
@@ -121,6 +122,12 @@ model notification {
   users_notification_useridTousers users          @relation("notification_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
 
+model players {
+  id     Int @id @default(autoincrement())
+  userid Int @default(autoincrement())
+  gameid Int @default(autoincrement())
+}
+
 model users_achievements {
   id            Int          @id @default(autoincrement())
   userid        Int
@@ -158,4 +165,10 @@ enum status_t {
   ONLINE
   OFFLINE
   PLAYING
+}
+
+enum game_status {
+  WAITING
+  PLAYING
+  END
 }

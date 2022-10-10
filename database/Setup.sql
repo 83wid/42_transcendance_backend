@@ -97,7 +97,7 @@ CREATE TABLE blocked (
   PRIMARY KEY (id)
 );
 
--- create table for messages
+-- create table for game
 CREATE TABLE game (
   id SERIAL NOT NULL,
   level game_diff DEFAULT 'NORMAL',
@@ -107,10 +107,12 @@ CREATE TABLE game (
   PRIMARY KEY (id)
 );
 
+-- create table from players
 CREATE TABLE players (
   id SERIAL NOT NULL,
   userId SERIAL NOT NULL,
   gameId SERIAL NOT NULL,
+  PRIMARY KEY (id)
 );
 
 -- create table for notification
