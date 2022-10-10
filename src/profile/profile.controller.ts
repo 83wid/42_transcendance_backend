@@ -8,8 +8,8 @@ export class ProfileController {
   constructor(private appService: ProfileService) {}
   @Get('/:username?')
   @UseGuards(JwtAuthGuard)
-  getProfile(@Req() req: Request, @Res() res: Response, @Param() params: any) {
+  getProfile(@Req() req: Request, @Res() res: Response, @Param('username') username: string) {
     // return req.user;
-    return this.appService.profile(req, res, params);
+    return this.appService.profile(req, res, username);
   }
 }

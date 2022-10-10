@@ -15,6 +15,7 @@ import { ChatService } from './chat/chat.service';
 import { ChatModule } from './chat/chat.module';
 import { FriendsModule } from './friends/friends.module';
 import { ProfileModule } from './profile/profile.module';
+import { GameModule } from './game/game.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ProfileModule } from './profile/profile.module';
     }),
     ChatModule,
     ProfileModule,
+    GameModule,
   ],
   controllers: [AppController],
   providers: [

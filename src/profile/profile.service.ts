@@ -9,13 +9,15 @@ export class ProfileService {
   /**
    * @param {Request} req Request
    * @param {Response} res Response
-   * @param {any} params
+   * @param {string} username
    * @returns {Promise<Response>}
    **/
-  async profile(req: Request, res: Response, params: any): Promise<Response> {
+  async profile(req: Request, res: Response, username: string): Promise<Response> {
+    console.log(username)
+    
     try {
-      const slector = params.username
-        ? { username: params.username }
+      const slector = username
+        ? { username: username }
         : { intra_id: req.user.sub };
       const user = await this.prisma.users.findUnique({
         where: {
@@ -24,7 +26,7 @@ export class ProfileService {
         include: { users_achievements: { select: { achievements: true } } },
       });
       if (!user) throw 'user not found';
-      if (params.username) {
+      if (username) {
         const isFriend = await this.prisma.friends.findFirst({
           where: {
             OR: [
@@ -37,7 +39,6 @@ export class ProfileService {
             ],
           },
         });
-        console.log(isFriend);
 
         if (isFriend) return res.status(200).json({relationship: {isFriend: true},...user});
         else {
@@ -80,7 +81,6 @@ export class ProfileService {
                 ],
               },
             });
-            console.log(isBlocked);
             return res
               .status(isBlocked ? 404 : 200)
               .json(isBlocked ? { message: 'user not found' } : user);

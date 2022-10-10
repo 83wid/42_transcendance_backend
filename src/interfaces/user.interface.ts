@@ -11,7 +11,6 @@ declare global {
   }
 }
 
-
 export interface User {
   id: number;
   intra_id: string;
@@ -36,6 +35,12 @@ export interface Friends {
   accepted: string;
   created_at: string;
   updated_at: string;
+}
+
+/************ Profile DTO **************/
+export class ProfileBody {
+  @IsString()
+  id: string;
 }
 
 /***********    Friends & Friends Requests    ***********/
@@ -65,4 +70,3 @@ export class blockRequestBody {
   id: string;
 }
 /***********    Friends & Friends Requests    ***********/
-
