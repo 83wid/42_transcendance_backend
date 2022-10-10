@@ -61,7 +61,7 @@ export class endGame {}
 export class friendRequestBody {
   @IsString()
   @IsNotEmpty()
-  requestedId: string;
+  id: string;
 }
 export class acceptRequestBody {
   @IsString()
