@@ -8,19 +8,28 @@ import {
 } from '../interfaces/user.interface';
 import { PrismaService } from '../prisma/prisma.service';
 import { getFriends, getInvites } from './helper';
+import { isEmpty } from 'rxjs';
 
 @Injectable()
 export class FriendsService {
   constructor(private prisma: PrismaService) {}
-
   //Send new Friend Request
   async sendRequest(dto: friendRequestBody, userId: number, res: Response) {
     try {
-      if (Number(dto.requestedId) === userId) {
-        return res.status(400).json({
-          message: 'You cannot send a request to yourself',
-        });
-      }
+      // check if user not blocked
+      const blocked = await this.prisma.blocked.findMany({
+        where: {
+          AND: [
+            {
+              userid: userId,
+            },
+            {
+              blockedid: Number(dto.requestedId),
+            },
+          ],
+        },
+      });
+      // check if user already in friends list
       const data = await this.prisma.invites.findMany({
         where: {
           OR: [
@@ -35,7 +44,20 @@ export class FriendsService {
           ],
         },
       });
-      if (data.length < 1) {
+      // check if the user not sending the request to himself
+      if (Number(dto.requestedId) === userId) {
+        return res.status(400).json({
+          message: 'You cannot send a request to yourself',
+        });
+      }
+      // cehck if user in blocked list
+      if (blocked.length > 0) {
+        return res.status(400).json({
+          message: 'You are blocked by this user or you have blocked this user',
+        });
+      }
+
+      if (blocked.length === 0 && data.length < 1) {
         await this.prisma.invites.create({
           data: {
             senderid: userId,
@@ -59,7 +81,6 @@ export class FriendsService {
       });
     }
   }
-
   // Get all Invites
   async getInvites(id: number, res: Response) {
     try {
@@ -148,7 +169,41 @@ export class FriendsService {
   }
 
   // Unfriend
-  async unfriend(dto: unfriendRequestBody, userId: number, res: Response) {}
+  async unfriend(dto: unfriendRequestBody, res: Response) {
+    try {
+      const data = await this.prisma.friends.findMany({
+        where: {
+          OR: [
+            {
+              userid: Number(dto.id),
+            },
+            {
+              friendid: Number(dto.id),
+            },
+          ],
+        },
+      });
+
+      if (data.length > 0) {
+        await this.prisma.friends.delete({
+          where: {
+            id: data[0].id,
+          },
+        });
+        return res.status(200).json({
+          message: 'Unfriend Success',
+        });
+      }
+      return res.status(400).json({
+        message: 'You are not friends with this user',
+      });
+    } catch (error) {
+      return res.status(400).json({
+        message: 'Something went wrong',
+        error: error,
+      });
+    }
+  }
 
   //Get all Friends
   async getFriends(req: any, res: Response) {
@@ -237,6 +292,22 @@ export class FriendsService {
           message: 'You cannot block yourself',
         });
       }
+      // Delete invite if exists
+      await this.prisma.invites.deleteMany({
+        where: {
+          OR: [
+            {
+              senderid: req.user.sub,
+              receiverid: Number(dto.id),
+            },
+            {
+              senderid: Number(dto.id),
+              receiverid: req.user.sub,
+            },
+          ],
+        },
+      });
+      // Delete Friend if exists
       await this.prisma.friends.deleteMany({
         where: {
           OR: [
@@ -251,6 +322,7 @@ export class FriendsService {
           ],
         },
       });
+      // Block Friend
       const blocked = await this.prisma.blocked.findMany({
         where: {
           OR: [
@@ -304,6 +376,36 @@ export class FriendsService {
         return res.status(200).json({
           message: 'You have no blocked users',
         });
+    } catch (error) {
+      return res.status(400).json({
+        message: 'Something went wrong',
+        error: error,
+      });
+    }
+  }
+
+  // unblock user
+  async unblockUser(dto: blockRequestBody, req: any, res: Response) {
+    try {
+      const data = await this.prisma.blocked.findMany({
+        where: {
+          userid: req.user.sub,
+          blockedid: Number(dto.id),
+        },
+      });
+      if (data.length > 0) {
+        await this.prisma.blocked.delete({
+          where: {
+            id: data[0].id,
+          },
+        });
+        return res.status(200).json({
+          message: 'User Unblocked',
+        });
+      }
+      return res.status(400).json({
+        message: 'User is not blocked',
+      });
     } catch (error) {
       return res.status(400).json({
         message: 'Something went wrong',

@@ -80,7 +80,6 @@ CREATE TABLE invites (
   senderId SERIAL NOT NULL,
   receiverId SERIAL NOT NULL,
   created_at timestamp NOT NULL DEFAULT now(),
-  accepted BOOLEAN DEFAULT false,
   FOREIGN KEY (senderId) REFERENCES users (intra_id),
   FOREIGN KEY (receiverId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
