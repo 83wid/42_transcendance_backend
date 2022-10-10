@@ -24,7 +24,7 @@ export class FriendsService {
               userid: userId,
             },
             {
-              blockedid: Number(dto.requestedId),
+              blockedid: Number(dto.id),
             },
           ],
         },
@@ -35,17 +35,17 @@ export class FriendsService {
           OR: [
             {
               senderid: userId,
-              receiverid: Number(dto.requestedId),
+              receiverid: Number(dto.id),
             },
             {
-              senderid: Number(dto.requestedId),
+              senderid: Number(dto.id),
               receiverid: userId,
             },
           ],
         },
       });
       // check if the user not sending the request to himself
-      if (Number(dto.requestedId) === userId) {
+      if (Number(dto.id) === userId) {
         return res.status(400).json({
           message: 'You cannot send a request to yourself',
         });
@@ -61,7 +61,7 @@ export class FriendsService {
         await this.prisma.invites.create({
           data: {
             senderid: userId,
-            receiverid: Number(dto.requestedId),
+            receiverid: Number(dto.id),
             accepted: false,
           },
         });
