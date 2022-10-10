@@ -383,4 +383,34 @@ export class FriendsService {
       });
     }
   }
+
+  // unblock user
+  async unblockUser(dto: blockRequestBody, req: any, res: Response) {
+    try {
+      const data = await this.prisma.blocked.findMany({
+        where: {
+          userid: req.user.sub,
+          blockedid: Number(dto.id),
+        },
+      });
+      if (data.length > 0) {
+        await this.prisma.blocked.delete({
+          where: {
+            id: data[0].id,
+          },
+        });
+        return res.status(200).json({
+          message: 'User Unblocked',
+        });
+      }
+      return res.status(400).json({
+        message: 'User is not blocked',
+      });
+    } catch (error) {
+      return res.status(400).json({
+        message: 'Something went wrong',
+        error: error,
+      });
+    }
+  }
 }

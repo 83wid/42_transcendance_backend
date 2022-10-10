@@ -139,10 +139,25 @@ export class FriendsController {
   }
 
   /*
+   ** unblock a user
+   ** @param {string} id
+   ** @return {object} response
+   */
+  @Post('unblock')
+  @UseGuards(JwtAuthGuard)
+  unblockUser(
+    @Req() req: any,
+    @Res() res: Response,
+    @Body() dto: blockRequestBody,
+  ) {
+    return this.friendsService.unblockUser(dto, req, res);
+  }
+
+  /*
    ** To do
    ** get friends by username √
    ** get blocked users √
-   ** unfriend route
-   ** unblock route
+   ** unfriend route √
+   ** unblock route √
    */
 }
