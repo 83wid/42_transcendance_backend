@@ -155,28 +155,33 @@ CREATE TABLE users_achievements (
 INSERT INTO
   achievements(name, level, xp, description)
 VALUES
-  ('friendly', 'SILVER', 100, 'description'),
-  ('friendly', 'BRONZE', 200, 'description'),
-  ('friendly', 'GOLD', 300, 'description'),
-  ('friendly', 'PLATINUM', 500, 'description'),
-  ('legendary', 'SILVER', 100, 'description'),
-  ('legendary', 'BRONZE', 200, 'description'),
-  ('legendary', 'GOLD', 300, 'description'),
-  ('legendary', 'PLATINUM', 500, 'description'),
-  ('sharpshooter', 'SILVER', 100, 'description'),
-  ('sharpshooter', 'BRONZE', 200, 'description'),
-  ('sharpshooter', 'GOLD', 300, 'description'),
-  ('sharpshooter', 'PLATINUM', 500, 'description'),
-  ('wildfire', 'SILVER', 100, 'description'),
-  ('wildfire', 'BRONZE', 200, 'description'),
-  ('wildfire', 'GOLD', 300, 'description'),
-  ('wildfire', 'PLATINUM', 500, 'description'),
-  ('winner', 'SILVER', 100, 'description'),
-  ('winner', 'BRONZE', 200, 'description'),
-  ('winner', 'GOLD', 300, 'description'),
-  ('winner', 'PLATINUM', 500, 'description'),
-  ('photogenic', 'GOLD', 300, 'description'),
-  ('photogenic', 'PLATINUM', 500, 'description');
+  ('friendly', 'SILVER', 10, 'add 10 friends'),
+  ('friendly', 'BRONZE', 20, 'add 20 friends'),
+  ('friendly', 'GOLD', 50, 'add 50 friends'),
+  ('friendly', 'PLATINUM', 100, 'add 100 friends'),
+  
+  ('legendary', 'SILVER', 100, 'win 1 matche with a max score'),
+  ('legendary', 'BRONZE', 250, 'win 2 matches with max a score'),
+  ('legendary', 'GOLD', 350, 'win 3 matches with max a score'),
+  ('legendary', 'PLATINUM', 500, 'winn 4 matches with max a score'),
+  
+  ('sharpshooter', 'SILVER', 100, 'win 2 matches in one day'),
+  ('sharpshooter', 'BRONZE', 250, 'win 3 matches in one day'),
+  ('sharpshooter', 'GOLD', 350, 'win 4 matches in one day'),
+  ('sharpshooter', 'PLATINUM', 500, 'win 5 matches in one day'),
+  
+  ('wildfire', 'SILVER', 500, 'play 5 matches in one day'),
+  ('wildfire', 'BRONZE', 1400, 'play 10 matches in one day'),
+  ('wildfire', 'GOLD', 2000, 'play 15 matches in one day'),
+  ('wildfire', 'PLATINUM', 5000, 'play 20 matches in one day'),
+  
+  ('winner', 'SILVER', 500, 'Be ranked #1 for 1 day'),
+  ('winner', 'BRONZE', 1000, 'Be ranked #1 for 2 day'),
+  ('winner', 'GOLD', 3000, 'Be ranked #1 for 3 day'),
+  ('winner', 'PLATINUM', 7000, 'Be ranked #1 for 4 day'),
+  
+  ('photogenic', 'GOLD', 100, 'change your avatar'),
+  ('photogenic', 'PLATINUM', 100, 'change your cover');
 
 INSERT INTO
   users (
@@ -200,14 +205,6 @@ VALUES
   );
 
 INSERT INTO
-  users_achievements (userId, achievementId)
-SELECT
-  51111,
-  id * 2
-FROM
-  generate_series(1, 10) AS id;
-
-INSERT INTO
   users (
     intra_id,
     username,
@@ -227,6 +224,22 @@ SELECT
   'https://random.imagecdn.app/1800/800'
 FROM
   generate_series(1, 50) AS id;
+
+INSERT INTO
+  users_achievements (userId, achievementId)
+SELECT
+  51111,
+  id * 2
+FROM
+  generate_series(1, 10) AS id;
+
+INSERT INTO
+  users_achievements (userId, achievementId)
+SELECT
+  id,
+  id
+FROM
+  generate_series(1, 20) AS id;
 
 INSERT INTO
   invites (senderId, receiverId)

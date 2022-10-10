@@ -7,12 +7,9 @@ export class AchievementsService {
   constructor(private prisma: PrismaService) {}
 
   async getAllAchievements(req: Request, res: Response) {
-    // return res.status(200).json({ ...req.user });
     try {
-      const achievList = await this.prisma.users_achievements.findMany({
-        where: {
-          userid: req.user.sub,
-        },include: {achievements: true}
+      const achievList = await this.prisma.achievements.findMany({
+        include: { users_achievements: { where: { userid: req.user.sub } } },
       });
 
       return res.status(200).json(achievList);
