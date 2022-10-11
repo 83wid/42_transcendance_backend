@@ -101,18 +101,18 @@ export class ProfileService {
       });
     }
   }
-  async updateProfile(params: {
-    where: Prisma.usersWhereUniqueInput;
-    data: Prisma.usersUpdateInput;
-  }): Promise<users> {
-    const { where, data } = params;
-    try {
-      return await this.prisma.users.update({
-        data,
-        where,
-      });
-    } catch (error) {
-      return error;
-    }
-  }
+  // async updateProfile(params: {
+  //   where: Prisma.usersWhereUniqueInput;
+  //   data: Prisma.usersUpdateInput;
+  // }): Promise<users> {
+  //   const { where, data } = params;
+  //   try {
+  //     return await this.prisma.users.update({
+  //       data,
+  //       where,
+  //     });
+  //   } catch (error) {
+  //     return error;
+  //   }
+  // }
 }

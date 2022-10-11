@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { users, Prisma } from '@prisma/client';
+import { Request, Response } from 'express';
 
 @Injectable()
 export class UsersService {
@@ -49,20 +50,20 @@ export class UsersService {
     }
   }
 
-  // async updateUser(params: {
-  //   where: Prisma.usersWhereUniqueInput;
-  //   data: Prisma.usersUpdateInput;
-  // }): Promise<users> {
-  //   const { where, data } = params;
-  //   try {
-  //     return await this.prisma.users.update({
-  //       data,
-  //       where,
-  //     });
-  //   } catch (error) {
-  //     return error;
-  //   }
-  // }
+  async updateUser(params: {
+    where: Prisma.usersWhereUniqueInput;
+    data: Prisma.usersUpdateInput;
+  }): Promise<users> {
+    const { where, data } = params;
+    try {
+      return await this.prisma.users.update({
+        data,
+        where,
+      });
+    } catch (error) {
+      return error;
+    }
+  }
 
   async deleteUser(where: Prisma.usersWhereUniqueInput): Promise<users> {
     try {
@@ -71,6 +72,31 @@ export class UsersService {
       });
     } catch (error) {
       return error;
+    }
+  }
+
+  async getAllUsers(cursor: number, res: Response) {
+    const pageSize = 20;
+    // console.log(cursor);
+
+    try {
+      const data = await this.prisma.users.findMany({
+        take: pageSize,
+        cursor: { id: cursor },
+        where: {
+          AND: [
+            {
+              blocked_blocked_useridTousers: { none: {} },
+            },
+            {
+              blocked_blocked_blockedidTousers: { none: {} },
+            },
+          ],
+        },
+      });
+      return res.status(200).json(data);
+    } catch (error) {
+      return res.status(400).json(error);
     }
   }
 }

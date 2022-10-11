@@ -24,14 +24,14 @@ export class ProfileController {
     // return req.user;
     return this.appService.profile(req, res, username);
   }
-  @Put('update')
-  @UseGuards(JwtAuthGuard)
-  async updateUser(@Req() req: any, @Res() res: Response) {
-    // console.log(req.body);
-    const user = await this.appService.updateProfile({
-      data: req.body,
-      where: { intra_id: req.user.sub },
-    });
-    return res.status(201).json(user);
-  }
+  // @Put('update')
+  // @UseGuards(JwtAuthGuard)
+  // async updateUser(@Req() req: any, @Res() res: Response) {
+  //   // console.log(req.body);
+  //   const user = await this.appService.updateProfile({
+  //     data: req.body,
+  //     where: { intra_id: req.user.sub },
+  //   });
+  //   return res.status(201).json(user);
+  // }
 }

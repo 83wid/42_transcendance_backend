@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 // import { Response as Res, Request as Req } from 'express';
 
 // Global Interface declare
@@ -47,14 +47,13 @@ export class ProfileBody {
 export class InvitePlayGame {
   @IsNotEmpty()
   @IsString()
-  userId: string
+  userId: string;
 }
 export class rejectGame {}
 
 export class acceptGame {}
 
 export class endGame {}
-
 
 /***********    Friends & Friends Requests    ***********/
 //sendRequest DTO
