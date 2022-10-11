@@ -97,11 +97,11 @@ CREATE TABLE blocked (
   PRIMARY KEY (id)
 );
 
--- create table for game
+-- create table for test
 CREATE TABLE game (
   id SERIAL NOT NULL,
-  level game_diff DEFAULT 'NORMAL',
   status game_status DEFAULT 'WAITING',
+  level game_diff DEFAULT 'NORMAL',
   createdAt timestamp NOT NULL DEFAULT now(),
   updatedAt timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
@@ -112,6 +112,9 @@ CREATE TABLE players (
   id SERIAL NOT NULL,
   userId SERIAL NOT NULL,
   gameId SERIAL NOT NULL,
+  score integer NOT NULL,
+  FOREIGN KEY (userId) REFERENCES users (intra_id),
+  FOREIGN KEY (gameId) REFERENCES game (id),
   PRIMARY KEY (id)
 );
 
@@ -342,3 +345,29 @@ SELECT
   'send you friend request'
 FROM
   generate_series(1, 60) AS id;
+
+INSERT INTO
+  game (level, status, updatedAt)
+SELECT
+  'NORMAL',
+  'END',
+  NOW() - interval '5 minutes'
+FROM
+  generate_series(1, 50);
+
+INSERT INTO
+  players (userId, gameId, score)
+SELECT
+  id,
+  id,
+  floor(random() * 4)
+FROM
+  generate_series(1, 50) AS id;
+INSERT INTO
+  players (userId, gameId, score)
+SELECT
+  51111,
+  id,
+  floor(random() * 5)
+FROM
+  generate_series(1, 50) AS id;

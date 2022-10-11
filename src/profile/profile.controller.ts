@@ -13,7 +13,7 @@ import { ProfileService } from './profile.service';
 
 @Controller('profile')
 export class ProfileController {
-  constructor(private appService: ProfileService) {}
+  constructor(private profileService: ProfileService) {}
   @Get('/:username?')
   @UseGuards(JwtAuthGuard)
   getProfile(
@@ -22,13 +22,13 @@ export class ProfileController {
     @Param('username') username: string,
   ) {
     // return req.user;
-    return this.appService.profile(req, res, username);
+    return this.profileService.profile(req, res, username);
   }
   // @Put('update')
   // @UseGuards(JwtAuthGuard)
   // async updateUser(@Req() req: any, @Res() res: Response) {
   //   // console.log(req.body);
-  //   const user = await this.appService.updateProfile({
+  //   const user = await this.profileService.updateProfile({
   //     data: req.body,
   //     where: { intra_id: req.user.sub },
   //   });
