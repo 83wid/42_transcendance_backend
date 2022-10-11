@@ -368,10 +368,7 @@ export class FriendsService {
           users_blocked_blockedidTousers: true,
         },
       });
-      if (data.length > 0)
-        return res.status(200).json({
-          data,
-        });
+      if (data.length > 0) return res.status(200).json(data);
       else
         return res.status(200).json({
           message: 'You have no blocked users',
