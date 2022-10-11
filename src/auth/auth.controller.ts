@@ -19,7 +19,7 @@ export class AuthController {
     const token = await this.authService.authenticate(req);
     // console.log(req.headers, '<<<<<<<<<<<<<<<<');
 
-    return res.redirect(`http://localhost:5000?token=${token}`);
+    return res.redirect(`http://localhost:3000?token=${token}`);
   }
 
   @Post('/me')

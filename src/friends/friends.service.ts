@@ -251,6 +251,8 @@ export class FriendsService {
           username: req.params.username,
         },
       });
+      console.log(user);
+      
       const data = await this.prisma.friends.findMany({
         where: {
           OR: [
@@ -278,6 +280,8 @@ export class FriendsService {
         friends,
       });
     } catch (error) {
+      console.log(error);
+      
       return res.status(400).json({
         message: error,
       });

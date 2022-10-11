@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Response, Request } from 'express';
+import { users, Prisma } from '@prisma/client';
 
 @Injectable()
 export class ProfileService {
@@ -98,6 +99,20 @@ export class ProfileService {
       return res.status(500).json({
         message: 'server error',
       });
+    }
+  }
+  async updateProfile(params: {
+    where: Prisma.usersWhereUniqueInput;
+    data: Prisma.usersUpdateInput;
+  }): Promise<users> {
+    const { where, data } = params;
+    try {
+      return await this.prisma.users.update({
+        data,
+        where,
+      });
+    } catch (error) {
+      return error;
     }
   }
 }

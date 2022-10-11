@@ -49,20 +49,20 @@ export class UsersService {
     }
   }
 
-  async updateUser(params: {
-    where: Prisma.usersWhereUniqueInput;
-    data: Prisma.usersUpdateInput;
-  }): Promise<users> {
-    const { where, data } = params;
-    try {
-      return await this.prisma.users.update({
-        data,
-        where,
-      });
-    } catch (error) {
-      return error;
-    }
-  }
+  // async updateUser(params: {
+  //   where: Prisma.usersWhereUniqueInput;
+  //   data: Prisma.usersUpdateInput;
+  // }): Promise<users> {
+  //   const { where, data } = params;
+  //   try {
+  //     return await this.prisma.users.update({
+  //       data,
+  //       where,
+  //     });
+  //   } catch (error) {
+  //     return error;
+  //   }
+  // }
 
   async deleteUser(where: Prisma.usersWhereUniqueInput): Promise<users> {
     try {

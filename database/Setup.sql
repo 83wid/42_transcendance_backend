@@ -298,7 +298,7 @@ SELECT
   'https://joeschmoe.io/api/v1/random',
   'https://random.imagecdn.app/1800/800'
 FROM
-  generate_series(1, 50) AS id;
+  generate_series(1, 80) AS id;
 
 INSERT INTO
   users_achievements (userId, achievementId)
@@ -322,7 +322,7 @@ SELECT
   id,
   51111
 FROM
-  generate_series(1, 20) AS id;
+  generate_series(1, 60) AS id;
 
 INSERT INTO
   invites (senderId, receiverId)
@@ -330,7 +330,7 @@ SELECT
   51111,
   id
 FROM
-  generate_series(11, 20) AS id;
+  generate_series(60, 80) AS id;
 
 INSERT INTO
   notification (userId, fromId, type, targetId, content)
@@ -341,4 +341,4 @@ SELECT
   id,
   'send you friend request'
 FROM
-  generate_series(1, 20) AS id;
+  generate_series(1, 60) AS id;
