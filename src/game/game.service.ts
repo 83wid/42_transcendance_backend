@@ -12,14 +12,40 @@ export class GameService {
    * @param res Request
    */
   async getUserGames(req: Request, res: Response) {
-    // return res.status(200).json({message: 'test done'})
     try {
-      const games = await this.prisma.game.findMany({
-        where: {status: 'END'},
+      const games = await this.prisma.users.findMany({
+        where: { intra_id: req.user.sub },
+        select: {
+          players: {
+            select: {
+              game: {
+                include: {
+                  players: {
+                    include: {
+                      users: {
+                        select: {
+                          intra_id: true,
+                          username: true,
+                          email: true,
+                          first_name: true,
+                          last_name: true,
+                          img_url: true,
+                          status: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       });
 
-      return res.status(200).json(games);
+      return res.status(200).json(games[0]?.players || {});
     } catch (error) {
+      console.log(error);
+
       return res.status(500).json({ message: 'server error' });
     }
   }

@@ -8,7 +8,7 @@ import { GameService } from './game.service';
 export class GameController {
   constructor(private gameService: GameService){}
   
-  @Get('/')
+  @Get('/history')
   @UseGuards(JwtAuthGuard)
   getUserGame(@Req() req: Request, @Res() res: Response){
     return this.gameService.getUserGames(req, res)

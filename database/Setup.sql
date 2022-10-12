@@ -20,9 +20,10 @@ CREATE TABLE users (
   email varchar(255) NOT NULL unique,
   first_name varchar(255) NOT NULL,
   last_name varchar(255) NOT NULL,
+  status STATUS_T DEFAULT 'OFFLINE',
+  xp INT DEFAULT 0,
   img_url varchar(255),
   cover varchar(255),
-  status STATUS_T DEFAULT 'OFFLINE',
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
   PRIMARY KEY (id)
@@ -39,8 +40,8 @@ CREATE TABLE conversation (
 -- create table for for group members 
 CREATE TABLE group_member (
   id SERIAL NOT NULL unique,
-  user_id SERIAL NOT NULL,
-  conversation_id SERIAL NOT NULL,
+  user_id INT NOT NULL,
+  conversation_id INT NOT NULL,
   joint_date timestamp DEFAULT now(),
   left_date timestamp,
   FOREIGN KEY (user_id) REFERENCES users (intra_id),
@@ -51,9 +52,9 @@ CREATE TABLE group_member (
 -- create table for messages
 CREATE TABLE message (
   id SERIAL NOT NULL unique,
-  sender_id SERIAL NOT NULL,
+  sender_id INT NOT NULL,
   content text NOT NULL,
-  conversation_id SERIAL NOT NULL,
+  conversation_id INT NOT NULL,
   created_at timestamp NOT NULL DEFAULT now(),
   updated_at timestamp NOT NULL DEFAULT now(),
   read_by integer [],
@@ -66,8 +67,8 @@ CREATE TABLE message (
 -- create table for Friends
 CREATE TABLE friends (
   id SERIAL NOT NULL,
-  userId SERIAL NOT NULL,
-  friendId SERIAL NOT NULL,
+  userId INT NOT NULL,
+  friendId INT NOT NULL,
   created_at timestamp NOT NULL DEFAULT now(),
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (friendId) REFERENCES users (intra_id),
@@ -77,8 +78,8 @@ CREATE TABLE friends (
 -- create table for Friends requests
 CREATE TABLE invites (
   id SERIAL NOT NULL,
-  senderId SERIAL NOT NULL,
-  receiverId SERIAL NOT NULL,
+  senderId INT NOT NULL,
+  receiverId INT NOT NULL,
   accepted BOOLEAN DEFAULT false,
   created_at timestamp NOT NULL DEFAULT now(),
   FOREIGN KEY (senderId) REFERENCES users (intra_id),
@@ -89,8 +90,8 @@ CREATE TABLE invites (
 -- create table for Blocked users
 CREATE TABLE blocked (
   id SERIAL NOT NULL,
-  userId SERIAL NOT NULL,
-  blockedId SERIAL NOT NULL,
+  userId INT NOT NULL,
+  blockedId INT NOT NULL,
   created_at timestamp NOT NULL DEFAULT now(),
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (blockedId) REFERENCES users (intra_id),
@@ -110,8 +111,8 @@ CREATE TABLE game (
 -- create table from players
 CREATE TABLE players (
   id SERIAL NOT NULL,
-  userId SERIAL NOT NULL,
-  gameId SERIAL NOT NULL,
+  userId INT NOT NULL,
+  gameId INT NOT NULL,
   score integer NOT NULL,
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (gameId) REFERENCES game (id),
@@ -122,9 +123,9 @@ CREATE TABLE players (
 CREATE TABLE notification (
   id SERIAL,
   type NOTIFICATION_T NOT NULL DEFAULT 'OTHER',
-  userId SERIAL NOT NULL,
-  fromId SERIAL NOT NULL,
-  targetId SERIAL NOT NULL,
+  userId INT NOT NULL,
+  fromId INT NOT NULL,
+  targetId INT NOT NULL,
   content TEXT,
   read BOOLEAN DEFAULT false,
   createdAt timestamp NOT NULL DEFAULT now(),
@@ -268,6 +269,7 @@ INSERT INTO
     email,
     first_name,
     last_name,
+    xp,
     img_url,
     cover
   )
@@ -278,6 +280,7 @@ VALUES
     'alzaynou@student.1337.ma',
     'Ali',
     'Zaynoune',
+    floor(random() * 800) :: int,
     'https://cdn.intra.42.fr/users/alzaynou.jpg',
     'https://random.imagecdn.app/1800/800'
   );
@@ -289,6 +292,7 @@ INSERT INTO
     email,
     first_name,
     last_name,
+    xp,
     img_url,
     cover
   )
@@ -298,6 +302,7 @@ SELECT
   'zaynoune' || id || '@ali.ali',
   'ali',
   'zaynoune',
+  floor(random() * 800) :: int,
   'https://joeschmoe.io/api/v1/random',
   'https://random.imagecdn.app/1800/800'
 FROM
@@ -351,9 +356,9 @@ INSERT INTO
 SELECT
   'NORMAL',
   'END',
-  NOW() - interval '5 minutes'
+  NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
 FROM
-  generate_series(1, 50);
+  generate_series(1, 50) AS id;
 
 INSERT INTO
   players (userId, gameId, score)
@@ -363,6 +368,7 @@ SELECT
   floor(random() * 4)
 FROM
   generate_series(1, 50) AS id;
+
 INSERT INTO
   players (userId, gameId, score)
 SELECT
