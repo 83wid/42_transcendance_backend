@@ -280,7 +280,7 @@ VALUES
     'alzaynou@student.1337.ma',
     'Ali',
     'Zaynoune',
-    floor(random() * 800) :: int,
+    floor(random() * 8800) :: int,
     'https://cdn.intra.42.fr/users/alzaynou.jpg',
     'https://random.imagecdn.app/1800/800'
   );
@@ -302,11 +302,11 @@ SELECT
   'zaynoune' || id || '@ali.ali',
   'ali',
   'zaynoune',
-  floor(random() * 800) :: int,
+  floor(random() * 8000) :: int,
   'https://joeschmoe.io/api/v1/random',
   'https://random.imagecdn.app/1800/800'
 FROM
-  generate_series(1, 80) AS id;
+  generate_series(1, 200) AS id;
 
 INSERT INTO
   users_achievements (userId, achievementId)
@@ -354,8 +354,8 @@ FROM
 INSERT INTO
   game (level, status, updatedAt)
 SELECT
-  'NORMAL',
-  'END',
+  (array['EASY', 'NORMAL', 'DIFFICULT'])[floor(random() * 3 + 1)]::game_diff,
+  (array['WAITING', 'PLAYING', 'END'])[floor(random() * 3 + 1)]::game_status,
   NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
 FROM
   generate_series(1, 50) AS id;
@@ -377,3 +377,30 @@ SELECT
   floor(random() * 5)
 FROM
   generate_series(1, 50) AS id;
+
+INSERT INTO
+  game (level, status, updatedAt)
+SELECT
+  (array['EASY', 'NORMAL', 'DIFFICULT'])[floor(random() * 3 + 1)]::game_diff,
+  (array['WAITING', 'PLAYING', 'END'])[floor(random() * 3 + 1)]::game_status,
+  NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
+FROM
+  generate_series(50, 100) AS id;
+
+INSERT INTO
+  players (userId, gameId, score)
+SELECT
+  id,
+  id,
+  floor(random() * 4)
+FROM
+  generate_series(51, 101) AS id;
+
+INSERT INTO
+  players (userId, gameId, score)
+SELECT
+  id,
+  id - 50,
+  floor(random() * 4)
+FROM
+  generate_series(101, 151) AS id;
