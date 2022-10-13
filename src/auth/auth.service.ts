@@ -63,9 +63,7 @@ export class AuthService {
         include: {
           notification_notification_useridTousers: {
             include: {
-              users_notification_fromidTousers: {
-                select: { username: true, img_url: true, intra_id: true },
-              },
+              users_notification_fromidTousers: true,
             },
           },
         },
