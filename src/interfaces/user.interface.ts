@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 // import { Response as Res, Request as Req } from 'express';
 
 // Global Interface declare
@@ -82,3 +88,36 @@ export class blockRequestBody {
   id: string;
 }
 /***********    Friends & Friends Requests    ***********/
+
+/************** QUEUE Interface ***********************/
+// queue interface
+export interface QueueInterface {
+  GameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
+  users: number[];
+}
+
+// register to queue dto
+export class RegisterToQueueBody {
+  @IsNotEmpty()
+  @IsIn(['EASY', 'NORMAL', 'DIFFICULT'])
+  gameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
+}
+
+// create game dto
+export class CreateGameBody extends RegisterToQueueBody {
+  @IsNotEmpty()
+  @IsNumber()
+  userId: number;
+}
+
+/************** QUEUE Interface ***********************/
+
+/*************** Game Interface ***********************/
+// leave game dto
+export class LeaveGameBody {
+  @IsNotEmpty()
+  @IsNumber()
+  gameId: number;
+}
+
+/*************** Game Interface ***********************/

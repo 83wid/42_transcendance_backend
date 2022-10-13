@@ -113,7 +113,7 @@ CREATE TABLE players (
   id SERIAL NOT NULL,
   userId INT NOT NULL,
   gameId INT NOT NULL,
-  score integer NOT NULL,
+  score integer DEFAULT 0,
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (gameId) REFERENCES game (id),
   PRIMARY KEY (id)
@@ -351,56 +351,56 @@ SELECT
 FROM
   generate_series(1, 60) AS id;
 
-INSERT INTO
-  game (level, status, updatedAt)
-SELECT
-  (array['EASY', 'NORMAL', 'DIFFICULT'])[floor(random() * 3 + 1)]::game_diff,
-  (array['WAITING', 'PLAYING', 'END'])[floor(random() * 3 + 1)]::game_status,
-  NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
-FROM
-  generate_series(1, 50) AS id;
+-- INSERT INTO
+--   game (level, status, updatedAt)
+-- SELECT
+--   (array['EASY', 'NORMAL', 'DIFFICULT'])[floor(random() * 3 + 1)]::game_diff,
+--   (array['WAITING', 'PLAYING', 'END'])[floor(random() * 3 + 1)]::game_status,
+--   NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
+-- FROM
+--   generate_series(1, 50) AS id;
 
-INSERT INTO
-  players (userId, gameId, score)
-SELECT
-  id,
-  id,
-  floor(random() * 4)
-FROM
-  generate_series(1, 50) AS id;
+-- INSERT INTO
+--   players (userId, gameId, score)
+-- SELECT
+--   id,
+--   id,
+--   floor(random() * 4)
+-- FROM
+--   generate_series(1, 50) AS id;
 
-INSERT INTO
-  players (userId, gameId, score)
-SELECT
-  51111,
-  id,
-  floor(random() * 5)
-FROM
-  generate_series(1, 50) AS id;
+-- INSERT INTO
+--   players (userId, gameId, score)
+-- SELECT
+--   51111,
+--   id,
+--   floor(random() * 5)
+-- FROM
+--   generate_series(1, 50) AS id;
 
-INSERT INTO
-  game (level, status, updatedAt)
-SELECT
-  (array['EASY', 'NORMAL', 'DIFFICULT'])[floor(random() * 3 + 1)]::game_diff,
-  (array['WAITING', 'PLAYING', 'END'])[floor(random() * 3 + 1)]::game_status,
-  NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
-FROM
-  generate_series(50, 100) AS id;
+-- INSERT INTO
+--   game (level, status, updatedAt)
+-- SELECT
+--   (array['EASY', 'NORMAL', 'DIFFICULT'])[floor(random() * 3 + 1)]::game_diff,
+--   (array['WAITING', 'PLAYING', 'END'])[floor(random() * 3 + 1)]::game_status,
+--   NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
+-- FROM
+--   generate_series(50, 100) AS id;
 
-INSERT INTO
-  players (userId, gameId, score)
-SELECT
-  id,
-  id,
-  floor(random() * 4)
-FROM
-  generate_series(51, 101) AS id;
+-- INSERT INTO
+--   players (userId, gameId, score)
+-- SELECT
+--   id,
+--   id,
+--   floor(random() * 4)
+-- FROM
+--   generate_series(51, 101) AS id;
 
-INSERT INTO
-  players (userId, gameId, score)
-SELECT
-  id,
-  id - 50,
-  floor(random() * 4)
-FROM
-  generate_series(101, 151) AS id;
+-- INSERT INTO
+--   players (userId, gameId, score)
+-- SELECT
+--   id,
+--   id - 50,
+--   floor(random() * 4)
+-- FROM
+--   generate_series(101, 151) AS id;

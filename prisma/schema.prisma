@@ -129,7 +129,7 @@ model players {
   id     Int   @id @default(autoincrement())
   userid Int
   gameid Int
-  score  Int
+  score  Int?  @default(0)
   game   game  @relation(fields: [gameid], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users  users @relation(fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
 }
