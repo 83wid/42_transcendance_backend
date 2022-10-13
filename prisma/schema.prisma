@@ -52,24 +52,6 @@ model users {
   users_achievements                      users_achievements[]
 }
 
-model achievements {
-  id                 Int                  @id @default(autoincrement())
-  name               String               @db.VarChar(25)
-  level              level_type?          @default(BRONZE)
-  xp                 Int
-  description        String?
-  users_achievements users_achievements[]
-}
-
-model blocked {
-  id                             Int      @id @default(autoincrement())
-  userid                         Int
-  blockedid                      Int
-  created_at                     DateTime @default(now()) @db.Timestamp(6)
-  users_blocked_blockedidTousers users    @relation("blocked_blockedidTousers", fields: [blockedid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
-  users_blocked_useridTousers    users    @relation("blocked_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
 model friends {
   id                            Int      @id @default(autoincrement())
   userid                        Int
@@ -77,15 +59,6 @@ model friends {
   created_at                    DateTime @default(now()) @db.Timestamp(6)
   users_friends_friendidTousers users    @relation("friends_friendidTousers", fields: [friendid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
   users_friends_useridTousers   users    @relation("friends_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-model game {
-  id        Int          @id @default(autoincrement())
-  status    game_status? @default(WAITING)
-  level     game_diff?   @default(NORMAL)
-  createdat DateTime     @default(now()) @db.Timestamp(6)
-  updatedat DateTime     @default(now()) @db.Timestamp(6)
-  players   players[]
 }
 
 model invites {
@@ -109,6 +82,33 @@ model message {
   delivered_to    Int[]
   conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users           users        @relation(fields: [sender_id], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model achievements {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar(25)
+  level              level_type?          @default(BRONZE)
+  xp                 Int
+  description        String?
+  users_achievements users_achievements[]
+}
+
+model blocked {
+  id                             Int      @id @default(autoincrement())
+  userid                         Int
+  blockedid                      Int
+  created_at                     DateTime @default(now()) @db.Timestamp(6)
+  users_blocked_blockedidTousers users    @relation("blocked_blockedidTousers", fields: [blockedid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  users_blocked_useridTousers    users    @relation("blocked_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model game {
+  id        Int          @id @default(autoincrement())
+  status    game_status? @default(WAITING)
+  level     game_diff?   @default(NORMAL)
+  createdat DateTime     @default(now()) @db.Timestamp(6)
+  updatedat DateTime     @default(now()) @db.Timestamp(6)
+  players   players[]
 }
 
 model notification {

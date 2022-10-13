@@ -49,17 +49,7 @@ export class ProfileBody {
   id: string;
 }
 
-/************* Game DTO ***************/
-export class InvitePlayGame {
-  @IsNotEmpty()
-  @IsString()
-  userId: string;
-}
-export class rejectGame {}
-
-export class acceptGame {}
-
-export class endGame {}
+/************ Profile DTO **************/
 
 /***********    Friends & Friends Requests    ***********/
 //sendRequest DTO
@@ -103,16 +93,23 @@ export class RegisterToQueueBody {
   gameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
 }
 
-// create game dto
-export class CreateGameBody extends RegisterToQueueBody {
+/************** QUEUE Interface ***********************/
+
+/*************** Game Interface ***********************/
+// invite user to play game
+export class InvitePlayGame {
   @IsNotEmpty()
   @IsNumber()
   userId: number;
 }
 
-/************** QUEUE Interface ***********************/
+// create game dto
+export class CreateGameBody extends InvitePlayGame {
+  @IsNotEmpty()
+  @IsIn(['EASY', 'NORMAL', 'DIFFICULT'])
+  gameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
+}
 
-/*************** Game Interface ***********************/
 // leave game dto
 export class LeaveGameBody {
   @IsNotEmpty()

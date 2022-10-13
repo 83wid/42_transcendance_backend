@@ -5,6 +5,7 @@ import {
   Post,
   Req,
   Res,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -13,6 +14,8 @@ import { GameService } from './game.service';
 import {
   RegisterToQueueBody,
   LeaveGameBody,
+  CreateGameBody,
+  InvitePlayGame,
 } from 'src/interfaces/user.interface';
 
 @Controller('game')
@@ -40,13 +43,23 @@ export class GameController {
     return this.gameService.registerToQueue(req, res, dto);
   }
 
-  @Get('leavequeue')
+  @Post('creategame')
+  @UseGuards(JwtAuthGuard)
+  createGame(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() dto: CreateGameBody,
+  ) {
+    return this.gameService.createGame(req, res, dto);
+  }
+
+  @Put('leavequeue')
   @UseGuards(JwtAuthGuard)
   leaveQueue(@Req() req: Request, @Res() res: Response) {
     return this.gameService.leaveQueue(req, res);
   }
 
-  @Post('leaveGame')
+  @Put('leaveGame')
   @UseGuards(JwtAuthGuard)
   leaveGame(
     @Req() req: Request,
@@ -54,5 +67,15 @@ export class GameController {
     @Body() dto: LeaveGameBody,
   ) {
     return this.gameService.leaveGame(req, res, dto);
+  }
+
+  @Post('invite')
+  @UseGuards(JwtAuthGuard)
+  inviteToPlayGame(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() dto: InvitePlayGame,
+  ) {
+    return this.gameService.inviteUserToGame(req, res, dto);
   }
 }

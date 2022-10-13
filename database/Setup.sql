@@ -292,6 +292,7 @@ INSERT INTO
     email,
     first_name,
     last_name,
+    status,
     xp,
     img_url,
     cover
@@ -302,6 +303,7 @@ SELECT
   'zaynoune' || id || '@ali.ali',
   'ali',
   'zaynoune',
+  (array['ONLINE', 'OFFLINE'])[floor(random() * 2 + 1)]::STATUS_T,
   floor(random() * 8000) :: int,
   'https://joeschmoe.io/api/v1/random',
   'https://random.imagecdn.app/1800/800'
