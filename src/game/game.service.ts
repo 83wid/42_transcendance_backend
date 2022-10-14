@@ -7,6 +7,8 @@ import {
   CreateGameBody,
   LeaveGameBody,
   InvitePlayGame,
+  AcceptePlayGame,
+  RejectPlayGame,
 } from 'src/interfaces/user.interface';
 import { prisma } from '@prisma/client';
 
@@ -91,9 +93,8 @@ export class GameService {
    * @param dto {gameLeve, userId}
    */
   async createGame(req: Request, res: Response, dto: CreateGameBody) {
-    // return res.status(201).json(dto);
     if (dto.userId === req.user.sub)
-      return res.status(400).json({ message: 'your play with yourself' });
+      return res.status(400).json({ message: "you can't play with yourself" });
     try {
       const user = await this.prisma.users.findUnique({
         where: { id: dto.userId },
@@ -125,6 +126,7 @@ export class GameService {
           },
         },
       });
+      //! delet this update (^_^)
       await this.prisma.users.updateMany({
         where: { OR: [{ intra_id: req.user.sub }, { intra_id: dto.userId }] },
         data: { status: 'PLAYING' },
@@ -145,33 +147,119 @@ export class GameService {
    */
   async inviteUserToGame(req: Request, res: Response, dto: InvitePlayGame) {
     try {
-      if (dto.userId === req.user.sub) return res.status(400).json({message: 'your invite yourself'})
+      if (dto.userId === req.user.sub)
+        return res.status(400).json({ message: "you can't invite yourself" });
       const user = await this.prisma.users.findUnique({
         where: { intra_id: dto.userId },
       });
       if (!user) return res.status(400).json({ message: 'user not found' });
+      console.log(req.user.sub);
+      const oldInvite = await this.prisma.gameinvites.findFirst({
+        where: {
+          AND: [{ fromid: req.user.sub }, { userid: dto.userId }],
+        },
+      });
+      if (oldInvite)
+        return res
+          .status(400)
+          .json({ message: 'you already invite this user to play game' });
+      const gameInvite = await this.prisma.game
+        .create({
+          data: {
+            status: 'WAITING',
+            players: {
+              create: [{ userid: dto.userId }, { userid: req.user.sub }],
+            },
+            gameinvites: {
+              create: { fromid: req.user.sub, userid: dto.userId },
+            },
+          },
+        })
+        .gameinvites();
+      console.log(gameInvite);
+
       const notif = await this.prisma.notification.create({
         data: {
           userid: user.intra_id,
           type: 'GAME_INVITE',
           fromid: req.user.sub,
-          targetid: 0,
+          targetid: gameInvite[0].id,
           content: 'invet you to play game',
         },
       });
       //todo emit notif to user
       return res.status(200).json({ message: 'invitation success send' });
     } catch (error) {
+      console.log(error);
+
       return res.status(500).json({ message: 'server error' });
     }
   }
 
   /**
-   *
+   * accepte game invitaion
    * @param req
    * @param res
    */
-  async accepteGame(req: Request, res: Response) {}
+  async accepteGame(req: Request, res: Response, dto: AcceptePlayGame) {
+    try {
+      const invite = await this.prisma.gameinvites.findUnique({
+        where: { id: dto.inviteId },
+      });
+      if (!invite || invite.accepted || invite.userid !== req.user.sub)
+        return res.status(404).json({ message: 'invitation not found' });
+      const users = await this.prisma.users.findMany({
+        where: {
+          OR: [{ intra_id: invite.userid }, { intra_id: invite.fromid }],
+        },
+      });
+      const currentUser = users.find((u) => u.intra_id === req.user.sub);
+      const senderUser = users.find((u) => u.intra_id === invite.fromid);
+      const error =
+        senderUser.status === 'OFFLINE'
+          ? `${senderUser.username} is offline now`
+          : senderUser.status === 'PLAYING'
+          ? `${senderUser.username} is playing game now`
+          : currentUser.status === 'PLAYING'
+          ? "you can't play multi games at same time"
+          : null;
+      if (error) return res.status(400).json({ message: error });
+      const game = await this.prisma.gameinvites.update({
+        where: { id: invite.id },
+        data: {
+          accepted: true,
+          game: { update: { status: 'PLAYING' } },
+          users_gameinvites_fromidTousers: { update: { status: 'PLAYING' } },
+          users_gameinvites_useridTousers: { update: { status: 'PLAYING' } },
+        },
+      });
+      //todo emit invite.fromId to play game
+      return res.status(200).json(game);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: 'error server' });
+    }
+  }
+  /**
+   * Reject play game
+   * @param req
+   * @param res
+   * @param dto
+   * @returns
+   */
+  async rejectGame(req: Request, res: Response, dto: RejectPlayGame) {
+    try {
+      const invite = await this.prisma.gameinvites.findUnique({
+        where: { id: dto.inviteId },
+      });
+      if (!invite || invite.accepted || invite.userid !== req.user.sub)
+        return res.status(404).json({ message: 'invitation not found' });
+      await this.prisma.game.delete({ where: { id: invite.gameid } });
+      return res.status(200).json(invite);
+    } catch (error) {
+      return res.status(500).json({ message: 'server error' });
+    }
+  }
 
   /**
    *
@@ -201,7 +289,7 @@ export class GameService {
           },
         })
         .players();
-
+      //! delet this update (^_^)
       await this.prisma.users.updateMany({
         where: {
           OR: [{ intra_id: update[0].userid }, { intra_id: update[1].userid }],
@@ -228,11 +316,9 @@ export class GameService {
       const userInGame = await this.prisma.players.findFirst({
         where: {
           userid: req.user.sub,
-          game: { OR: [{ status: 'PLAYING' }, { status: 'WAITING' }] },
+          game: { OR: [{ status: 'PLAYING' }] },
         },
       });
-
-      console.log(userInGame);
       if (userInGame)
         return res.status(400).json({
           message:

@@ -108,14 +108,29 @@ CREATE TABLE game (
   PRIMARY KEY (id)
 );
 
--- create table from players
+-- create table for players
 CREATE TABLE players (
   id SERIAL NOT NULL,
   userId INT NOT NULL,
   gameId INT NOT NULL,
   score integer DEFAULT 0,
-  FOREIGN KEY (userId) REFERENCES users (intra_id),
-  FOREIGN KEY (gameId) REFERENCES game (id),
+  FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
+  FOREIGN KEY (gameId) REFERENCES game (id) ON DELETE CASCADE,
+  PRIMARY KEY (id)
+);
+
+-- create table for gameInvites
+CREATE TABLE gameInvites(
+  id SERIAL NOT NULL,
+  userId INT NOT NULL,
+  fromId INT NOT NULL,
+  gameId INT NOT NULL,
+  accepted BOOLEAN DEFAULT false,
+  FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
+  FOREIGN KEY (fromId) REFERENCES users (intra_id) ON DELETE CASCADE,
+  FOREIGN KEY (gameId) REFERENCES game (id) ON DELETE CASCADE,
+  createdAt timestamp NOT NULL DEFAULT now(),
+  updatedAt timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
 );
 
@@ -303,7 +318,7 @@ SELECT
   'zaynoune' || id || '@ali.ali',
   'ali',
   'zaynoune',
-  (array['ONLINE', 'OFFLINE'])[floor(random() * 2 + 1)]::STATUS_T,
+  (array ['ONLINE', 'OFFLINE']) [floor(random() * 2 + 1)] :: STATUS_T,
   floor(random() * 8000) :: int,
   'https://joeschmoe.io/api/v1/random',
   'https://random.imagecdn.app/1800/800'
@@ -361,7 +376,6 @@ FROM
 --   NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
 -- FROM
 --   generate_series(1, 50) AS id;
-
 -- INSERT INTO
 --   players (userId, gameId, score)
 -- SELECT
@@ -370,7 +384,6 @@ FROM
 --   floor(random() * 4)
 -- FROM
 --   generate_series(1, 50) AS id;
-
 -- INSERT INTO
 --   players (userId, gameId, score)
 -- SELECT
@@ -379,7 +392,6 @@ FROM
 --   floor(random() * 5)
 -- FROM
 --   generate_series(1, 50) AS id;
-
 -- INSERT INTO
 --   game (level, status, updatedAt)
 -- SELECT
@@ -388,7 +400,6 @@ FROM
 --   NOW() + (floor(random() * 800) :: int) * interval '1 seconds'
 -- FROM
 --   generate_series(50, 100) AS id;
-
 -- INSERT INTO
 --   players (userId, gameId, score)
 -- SELECT
@@ -397,7 +408,6 @@ FROM
 --   floor(random() * 4)
 -- FROM
 --   generate_series(51, 101) AS id;
-
 -- INSERT INTO
 --   players (userId, gameId, score)
 -- SELECT

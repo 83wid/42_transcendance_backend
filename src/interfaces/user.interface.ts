@@ -103,6 +103,20 @@ export class InvitePlayGame {
   userId: number;
 }
 
+// accepte game invite
+export class AcceptePlayGame{
+  @IsNotEmpty()
+  @IsNumber()
+  inviteId: number
+}
+
+// reject game invite
+export class RejectPlayGame{
+  @IsNotEmpty()
+  @IsNumber()
+  inviteId: number
+}
+
 // create game dto
 export class CreateGameBody extends InvitePlayGame {
   @IsNotEmpty()

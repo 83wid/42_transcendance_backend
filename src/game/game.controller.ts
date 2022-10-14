@@ -16,6 +16,8 @@ import {
   LeaveGameBody,
   CreateGameBody,
   InvitePlayGame,
+  AcceptePlayGame,
+  RejectPlayGame,
 } from 'src/interfaces/user.interface';
 
 @Controller('game')
@@ -68,7 +70,6 @@ export class GameController {
   ) {
     return this.gameService.leaveGame(req, res, dto);
   }
-
   @Post('invite')
   @UseGuards(JwtAuthGuard)
   inviteToPlayGame(
@@ -77,5 +78,24 @@ export class GameController {
     @Body() dto: InvitePlayGame,
   ) {
     return this.gameService.inviteUserToGame(req, res, dto);
+  }
+  @Put('invite/accepte')
+  @UseGuards(JwtAuthGuard)
+  accepteInvite(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() dto: AcceptePlayGame,
+  ) {
+    return this.gameService.accepteGame(req, res, dto);
+  }
+
+  @Put('invite/reject')
+  @UseGuards(JwtAuthGuard)
+  rejecteInvite(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() dto: RejectPlayGame,
+  ) {
+    return this.gameService.rejectGame(req, res, dto);
   }
 }
