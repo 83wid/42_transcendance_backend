@@ -108,7 +108,7 @@ model game {
   id          Int           @id @default(autoincrement())
   status      game_status?  @default(WAITING)
   level       game_diff?    @default(NORMAL)
-  createdat   DateTime      @default(now()) @db.Timestamp(6)
+  createdat   DateTime      @db.Timestamp(6)
   updatedat   DateTime      @default(now()) @db.Timestamp(6)
   gameinvites gameinvites[]
   players     players[]
@@ -122,10 +122,10 @@ model notification {
   targetid                         Int
   content                          String?
   read                             Boolean?       @default(false)
-  createdat                        DateTime       @default(now()) @db.Timestamp(6)
+  createdat                        DateTime       @db.Timestamp(6)
   updatedat                        DateTime       @default(now()) @db.Timestamp(6)
-  users_notification_fromidTousers users          @relation("notification_fromidTousers", fields: [fromid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
-  users_notification_useridTousers users          @relation("notification_useridTousers", fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  users_notification_fromidTousers users          @relation("notification_fromidTousers", fields: [fromid], references: [intra_id], onDelete: Cascade, onUpdate: NoAction)
+  users_notification_useridTousers users          @relation("notification_useridTousers", fields: [userid], references: [intra_id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model players {
@@ -152,8 +152,6 @@ model gameinvites {
   fromid                          Int
   gameid                          Int
   accepted                        Boolean? @default(false)
-  createdat                       DateTime @default(now()) @db.Timestamp(6)
-  updatedat                       DateTime @default(now()) @db.Timestamp(6)
   users_gameinvites_fromidTousers users    @relation("gameinvites_fromidTousers", fields: [fromid], references: [intra_id], onDelete: Cascade, onUpdate: NoAction)
   game                            game     @relation(fields: [gameid], references: [id], onDelete: Cascade, onUpdate: NoAction)
   users_gameinvites_useridTousers users    @relation("gameinvites_useridTousers", fields: [userid], references: [intra_id], onDelete: Cascade, onUpdate: NoAction)

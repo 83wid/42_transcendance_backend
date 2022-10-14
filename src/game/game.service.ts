@@ -11,6 +11,7 @@ import {
   RejectPlayGame,
 } from 'src/interfaces/user.interface';
 import { prisma } from '@prisma/client';
+import { now } from 'lodash';
 
 @Injectable()
 export class GameService {
@@ -121,6 +122,7 @@ export class GameService {
         data: {
           level: dto.gameLevel,
           status: 'PLAYING',
+          createdat: new Date(),
           players: {
             create: [{ userid: dto.userId }, { userid: req.user.sub }],
           },
@@ -167,6 +169,7 @@ export class GameService {
         .create({
           data: {
             status: 'WAITING',
+            createdat: new Date(),
             players: {
               create: [{ userid: dto.userId }, { userid: req.user.sub }],
             },
@@ -185,6 +188,7 @@ export class GameService {
           fromid: req.user.sub,
           targetid: gameInvite[0].id,
           content: 'invet you to play game',
+          createdat: new Date(),
         },
       });
       //todo emit notif to user

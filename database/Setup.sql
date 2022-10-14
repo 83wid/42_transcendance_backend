@@ -103,7 +103,7 @@ CREATE TABLE game (
   id SERIAL NOT NULL,
   status game_status DEFAULT 'WAITING',
   level game_diff DEFAULT 'NORMAL',
-  createdAt timestamp NOT NULL DEFAULT now(),
+  createdAt timestamp NOT NULL,
   updatedAt timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
 );
@@ -129,8 +129,6 @@ CREATE TABLE gameInvites(
   FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
   FOREIGN KEY (fromId) REFERENCES users (intra_id) ON DELETE CASCADE,
   FOREIGN KEY (gameId) REFERENCES game (id) ON DELETE CASCADE,
-  createdAt timestamp NOT NULL DEFAULT now(),
-  updatedAt timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
 );
 
@@ -143,10 +141,10 @@ CREATE TABLE notification (
   targetId INT NOT NULL,
   content TEXT,
   read BOOLEAN DEFAULT false,
-  createdAt timestamp NOT NULL DEFAULT now(),
+  createdAt timestamp NOT NULL,
   updatedAt timestamp NOT NULL DEFAULT now(),
-  FOREIGN KEY (userId) REFERENCES users (intra_id),
-  FOREIGN KEY (fromId) REFERENCES users (intra_id),
+  FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
+  FOREIGN KEY (fromId) REFERENCES users (intra_id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
 
@@ -358,13 +356,21 @@ FROM
   generate_series(60, 80) AS id;
 
 INSERT INTO
-  notification (userId, fromId, type, targetId, content)
+  notification (
+    userId,
+    fromId,
+    type,
+    targetId,
+    content,
+    createdAt
+  )
 SELECT
   51111,
   id,
   'FRIEND_REQUEST',
   id,
-  'send you friend request'
+  'send you friend request',
+  now()
 FROM
   generate_series(1, 60) AS id;
 
