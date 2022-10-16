@@ -43,6 +43,22 @@ export interface Friends {
   updated_at: string;
 }
 
+/*************** Users DTO **************/
+export class GetUserQuery {
+  @IsString()
+  @IsOptional()
+  cursor: string;
+  @IsString()
+  @IsOptional()
+  @IsIn(['ONLINE', 'OFFLINE', 'PLAYING'])
+  status: 'ONLINE' | 'OFFLINE' | 'PLAYING';
+  @IsString()
+  @IsOptional()
+  findBy: string;
+}
+
+/*************** Users DTO **************/
+
 /************ Profile DTO **************/
 export class ProfileBody {
   @IsString()
@@ -104,17 +120,17 @@ export class InvitePlayGame {
 }
 
 // accepte game invite
-export class AcceptePlayGame{
+export class AcceptePlayGame {
   @IsNotEmpty()
   @IsNumber()
-  inviteId: number
+  inviteId: number;
 }
 
 // reject game invite
-export class RejectPlayGame{
+export class RejectPlayGame {
   @IsNotEmpty()
   @IsNumber()
-  inviteId: number
+  inviteId: number;
 }
 
 // create game dto

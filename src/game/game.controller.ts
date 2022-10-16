@@ -6,6 +6,7 @@ import {
   Req,
   Res,
   Put,
+  Delete,
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -55,7 +56,7 @@ export class GameController {
     return this.gameService.createGame(req, res, dto);
   }
 
-  @Put('leavequeue')
+  @Delete('leavequeue')
   @UseGuards(JwtAuthGuard)
   leaveQueue(@Req() req: Request, @Res() res: Response) {
     return this.gameService.leaveQueue(req, res);
@@ -89,7 +90,7 @@ export class GameController {
     return this.gameService.accepteGame(req, res, dto);
   }
 
-  @Put('invite/reject')
+  @Delete('invite/reject')
   @UseGuards(JwtAuthGuard)
   rejecteInvite(
     @Req() req: Request,

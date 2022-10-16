@@ -259,7 +259,7 @@ export class GameService {
       if (!invite || invite.accepted || invite.userid !== req.user.sub)
         return res.status(404).json({ message: 'invitation not found' });
       await this.prisma.game.delete({ where: { id: invite.gameid } });
-      return res.status(200).json(invite);
+      return res.status(200).json({message: 'success reject'})
     } catch (error) {
       return res.status(500).json({ message: 'server error' });
     }

@@ -7,11 +7,13 @@ import {
   Put,
   Req,
   Res,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { Response, Request } from 'express';
+import { GetUserQuery } from 'src/interfaces/user.interface';
 
 @Controller('users')
 export class UsersController {
@@ -28,9 +30,9 @@ export class UsersController {
   }
   @Get('all')
   @UseGuards(JwtAuthGuard)
-  async getAllUsers(@Req() req: Request, @Res() res: Response) {
-    console.log(Number(req.query.cursor));
-    return this.usersService.getAllUsers(Number(req.query.cursor) || 1 , res);
+  async getAllUsers(@Query() query: GetUserQuery, @Res() res: Response) {
+    console.log(query);
+    return this.usersService.getAllUsers(query, res);
   }
   @Get(':username')
   @UseGuards(JwtAuthGuard)

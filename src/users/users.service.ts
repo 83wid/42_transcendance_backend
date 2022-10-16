@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { users, Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
+import { GetUserQuery } from 'src/interfaces/user.interface';
 
 @Injectable()
 export class UsersService {
@@ -75,21 +76,25 @@ export class UsersService {
     }
   }
 
-  async getAllUsers(cursor: number, res: Response) {
+  async getAllUsers(dto: GetUserQuery, res: Response) {
     const pageSize = 20;
+    const cursor = Number(dto.cursor) || 1;
     try {
       const data = await this.prisma.users.findMany({
         take: pageSize,
         cursor: { id: cursor },
         where: {
           AND: [
+            { status: dto.status },
             {
               blocked_blocked_useridTousers: { none: {} },
             },
             {
               blocked_blocked_blockedidTousers: { none: {} },
             },
+            {OR: [{username: {contains: dto.findBy}}, {email: {contains: dto.findBy}}]}
           ],
+          
         },
       });
       return res.status(200).json(data);
