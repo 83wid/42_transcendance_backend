@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Matches,
 } from 'class-validator';
 // import { Response as Res, Request as Req } from 'express';
 
@@ -145,6 +146,12 @@ export class LeaveGameBody {
   @IsNotEmpty()
   @IsNumber()
   gameId: number;
+}
+
+export class GetGameQuery{
+  @IsOptional()
+  @Matches('^[0-9]*$')
+  gameId: string
 }
 
 /*************** Game Interface ***********************/

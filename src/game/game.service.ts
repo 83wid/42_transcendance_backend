@@ -9,9 +9,8 @@ import {
   InvitePlayGame,
   AcceptePlayGame,
   RejectPlayGame,
+  GetGameQuery,
 } from 'src/interfaces/user.interface';
-import { prisma } from '@prisma/client';
-import { now } from 'lodash';
 
 @Injectable()
 export class GameService {
@@ -21,6 +20,38 @@ export class GameService {
     { GameLevel: 'DIFFICULT', users: [3] },
   ];
   constructor(private prisma: PrismaService) {}
+
+  /**
+   *
+   * @param query
+   * @param res
+   * @returns
+   */
+  async getGame(req: Request, res: Response, query: GetGameQuery) {
+    const gameId = Number(query.gameId);
+    console.log(gameId);
+
+    try {
+      let game: any;
+      if (gameId)
+        game = await this.prisma.game.findFirst({
+          where: { id: gameId, status: 'PLAYING' },
+          include: { players: { include: { users: true } } },
+        });
+      else
+        game = await this.prisma.players
+          .findFirst({
+            where: { userid: req.user.sub, game: { status: 'PLAYING' } },
+          })
+          .game({
+            include: { players: { include: { users: true } } },
+          });
+      if (!game) return res.status(404).json({ message: 'game not found' });
+      return res.status(200).json(game);
+    } catch (error) {
+      return res.status(500).json({ message: 'server error' });
+    }
+  }
 
   /**
    * get history games from current user
@@ -111,7 +142,8 @@ export class GameService {
       const userInGame = await this.prisma.players.findFirst({
         where: {
           userid: req.user.sub,
-          NOT: { game: { status: 'END' } },
+          game: { status: 'PLAYING' },
+          // NOT: { game: { OR:[{status: 'END'}, {status: 'WAITING'}] } },
         },
       });
       if (userInGame)
@@ -134,7 +166,7 @@ export class GameService {
         data: { status: 'PLAYING' },
       });
       //todo emit user to play game
-      return res.status(200).json(newGame);
+      return res.status(200).json({ game: newGame });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: 'server error' });
@@ -259,7 +291,7 @@ export class GameService {
       if (!invite || invite.accepted || invite.userid !== req.user.sub)
         return res.status(404).json({ message: 'invitation not found' });
       await this.prisma.game.delete({ where: { id: invite.gameid } });
-      return res.status(200).json({message: 'success reject'})
+      return res.status(200).json({ message: 'success reject' });
     } catch (error) {
       return res.status(500).json({ message: 'server error' });
     }
@@ -290,6 +322,7 @@ export class GameService {
           where: { id: dto.gameId },
           data: {
             status: 'END',
+            updatedat: new Date()
           },
         })
         .players();
@@ -320,9 +353,11 @@ export class GameService {
       const userInGame = await this.prisma.players.findFirst({
         where: {
           userid: req.user.sub,
-          game: { OR: [{ status: 'PLAYING' }] },
+          game: { status: 'PLAYING' },
         },
       });
+      console.log(userInGame);
+
       if (userInGame)
         return res.status(400).json({
           message:

@@ -8,6 +8,7 @@ import {
   Put,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
@@ -19,11 +20,22 @@ import {
   InvitePlayGame,
   AcceptePlayGame,
   RejectPlayGame,
+  GetGameQuery,
 } from 'src/interfaces/user.interface';
 
 @Controller('game')
 export class GameController {
   constructor(private gameService: GameService) {}
+
+  @Get('/')
+  @UseGuards(JwtAuthGuard)
+  getGameById(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Query() query: GetGameQuery,
+  ) {
+    return this.gameService.getGame(req, res, query);
+  }
 
   @Get('/history')
   @UseGuards(JwtAuthGuard)
