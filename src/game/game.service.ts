@@ -190,7 +190,7 @@ export class GameService {
       console.log(req.user.sub);
       const oldInvite = await this.prisma.gameinvites.findFirst({
         where: {
-          AND: [{ fromid: req.user.sub }, { userid: dto.userId }],
+          AND: [{ fromid: req.user.sub }, { userid: dto.userId }, {accepted: false}],
         },
       });
       if (oldInvite)
@@ -239,6 +239,8 @@ export class GameService {
    */
   async accepteGame(req: Request, res: Response, dto: AcceptePlayGame) {
     try {
+      console.log(dto);
+      
       const invite = await this.prisma.gameinvites.findUnique({
         where: { id: dto.inviteId },
       });
@@ -285,6 +287,8 @@ export class GameService {
    */
   async rejectGame(req: Request, res: Response, dto: RejectPlayGame) {
     try {
+      console.log(dto);
+      
       const invite = await this.prisma.gameinvites.findUnique({
         where: { id: dto.inviteId },
       });
