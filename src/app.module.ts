@@ -16,6 +16,7 @@ import { FriendsModule } from './friends/friends.module';
 import { ProfileModule } from './profile/profile.module';
 import { GameModule } from './game/game.module';
 import { AchievementsModule } from './achievements/achievements.module';
+import { AppGateway } from './app.gateway';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { AchievementsModule } from './achievements/achievements.module';
     JwtStategy,
     FriendsService,
     ChatService,
+    AppGateway,
   ],
 })
 export class AppModule {}
