@@ -8,7 +8,7 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
+import io, { Socket, Server } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from './prisma/prisma.service';
 
@@ -26,8 +26,8 @@ export class AppGateway
   ) {}
 
   @WebSocketServer()
-  server: Server;
-  users: { intra_id: number; socketId: string }[];
+  private server: Server;
+  private users: { intra_id: number; socketId: string }[] = [];
   private logger: Logger = new Logger('AppGateway');
 
   /**
@@ -37,7 +37,7 @@ export class AppGateway
   afterInit(server: Server) {
     this.logger.log('AppGateway init');
   }
-  
+
   /**
    * handle socket connection
    * @param client
@@ -46,7 +46,6 @@ export class AppGateway
    */
   async handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(`socket new client ${client.id} connected`);
-    this.logger.log(client.handshake.headers.authorization);
     try {
       const decoded = await this.authService.verifyJwt(
         client.handshake.headers.authorization,
@@ -55,8 +54,14 @@ export class AppGateway
         where: { intra_id: decoded.sub },
       });
       if (!user) return this.disconnect(client);
-      client.join('online');
-      console.log(user.intra_id, client);
+      await this.prismaService.users.update({
+        where: { intra_id: user.intra_id },
+        data: { status: 'ONLINE' },
+      });
+      await client.join('online');
+      // console.log(await this.server.in('online').fetchSockets());
+
+      this.users.push({ intra_id: user.intra_id, socketId: client.id });
     } catch (error) {
       console.log('error', error);
       return this.disconnect(client);
@@ -67,7 +72,19 @@ export class AppGateway
    * handle socket disconnect
    * @param client
    */
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
+    console.log(this.server.sockets.adapter.rooms);
+    const userIndex = this.users.findIndex((u) => u.socketId === client.id);
+
+    if (userIndex > -1) {
+      const { intra_id } = this.users[userIndex];
+      await this.prismaService.users.update({
+        where: { intra_id },
+        data: { status: 'OFFLINE' },
+      });
+      this.users.splice(userIndex, 1);
+    }
+    console.log(this.server.sockets.adapter.rooms);
     this.logger.log(`socket client ${client.id} disconnect`);
   }
   @SubscribeMessage('events')
