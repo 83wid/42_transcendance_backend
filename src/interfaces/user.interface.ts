@@ -13,7 +13,9 @@ export {};
 declare global {
   namespace Express {
     interface Request {
-      user: any;
+      user: {
+        sub: number;
+      };
     }
   }
 }
@@ -148,10 +150,10 @@ export class LeaveGameBody {
   gameId: number;
 }
 
-export class GetGameQuery{
+export class GetGameQuery {
   @IsOptional()
   @Matches('^[0-9]*$')
-  gameId: string
+  gameId: string;
 }
 
 /*************** Game Interface ***********************/

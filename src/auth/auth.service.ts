@@ -65,7 +65,7 @@ export class AuthService {
             include: {
               users_notification_fromidTousers: true,
             },
-            orderBy: {createdat: 'desc'}
+            orderBy: { createdat: 'desc' },
           },
         },
       });
@@ -79,7 +79,7 @@ export class AuthService {
         'img_url',
         'notification_notification_useridTousers',
       ]);
-      console.log(this.jwtService.sign({sub: 2}));
+      console.log(this.jwtService.sign({ sub: 2 }));
       return res.status(200).json(ret);
     } catch (error) {
       console.log(error);
@@ -88,5 +88,8 @@ export class AuthService {
         message: error,
       });
     }
+  }
+  verifyJwt(jwt: string): Promise<any> {
+    return this.jwtService.verifyAsync(jwt);
   }
 }

@@ -17,6 +17,7 @@ import { ProfileModule } from './profile/profile.module';
 import { GameModule } from './game/game.module';
 import { AchievementsModule } from './achievements/achievements.module';
 import { AppGateway } from './app.gateway';
+import { AuthService } from './auth/auth.service';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AppGateway } from './app.gateway';
   ],
   controllers: [AppController],
   providers: [
+    AuthService,
     AppService,
     JwtStategy,
     FriendsService,
