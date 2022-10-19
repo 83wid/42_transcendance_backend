@@ -7,8 +7,8 @@ import {
   OnGatewayDisconnect,
   MessageBody,
 } from '@nestjs/websockets';
-import { Logger, UnauthorizedException, UseGuards } from '@nestjs/common';
-import io, { Socket, Server } from 'socket.io';
+import { Logger, UnauthorizedException } from '@nestjs/common';
+import { Socket, Server } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { PrismaService } from './prisma/prisma.service';
 
@@ -59,9 +59,9 @@ export class AppGateway
         data: { status: 'ONLINE' },
       });
       await client.join('online');
-      // console.log(await this.server.in('online').fetchSockets());
-
       this.users.push({ intra_id: user.intra_id, socketId: client.id });
+      this.server.to('online').emit('userChangeStatus', {intra_id: user.intra_id, status: 'ONLINE'})
+      client.user = user.intra_id
     } catch (error) {
       console.log('error', error);
       return this.disconnect(client);
@@ -75,7 +75,6 @@ export class AppGateway
   async handleDisconnect(client: Socket) {
     console.log(this.server.sockets.adapter.rooms);
     const userIndex = this.users.findIndex((u) => u.socketId === client.id);
-
     if (userIndex > -1) {
       const { intra_id } = this.users[userIndex];
       await this.prismaService.users.update({
@@ -83,10 +82,12 @@ export class AppGateway
         data: { status: 'OFFLINE' },
       });
       this.users.splice(userIndex, 1);
+      this.server.to('online').emit('userChangeStatus', {intra_id, status: 'OFFLINE'})
     }
     console.log(this.server.sockets.adapter.rooms);
     this.logger.log(`socket client ${client.id} disconnect`);
   }
+  // ! for test pleas remove it
   @SubscribeMessage('events')
   handleEvent(@MessageBody() data: any): any {
     this.logger.log(`events data ${data}`);

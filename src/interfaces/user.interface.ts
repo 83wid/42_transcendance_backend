@@ -20,6 +20,13 @@ declare global {
   }
 }
 
+// inject user in Socket interface
+declare module 'socket.io' {
+  interface Socket {
+    user: number
+  }
+}
+
 export interface User {
   id: number;
   intra_id: string;

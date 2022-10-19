@@ -15,9 +15,9 @@ import {
 @Injectable()
 export class GameService {
   private queue: QueueInterface[] = [
-    { GameLevel: 'EASY', users: [1] },
-    { GameLevel: 'NORMAL', users: [2] },
-    { GameLevel: 'DIFFICULT', users: [3] },
+    { GameLevel: 'EASY', users: [1, 4, 9] },
+    { GameLevel: 'NORMAL', users: [2, 5, 8] },
+    { GameLevel: 'DIFFICULT', users: [3, 6, 9] },
   ];
   constructor(private prisma: PrismaService) {}
 
