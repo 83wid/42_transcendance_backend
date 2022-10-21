@@ -45,11 +45,12 @@ export class AppGateway
    * @returns
    */
   async handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(`socket new client ${client.id} connected`);
+    this.logger.log(
+      `socket new client ${client.id} connected token ${client.handshake.headers.authorization}`,
+    );
     try {
       const decoded = await this.authService.verifyJwt(
-        // client.handshake.headers.authorization,
-        client.handshake.auth.token,
+        client.handshake.headers.authorization,
       );
       const user = await this.prismaService.users.findUnique({
         where: { intra_id: decoded.sub },
@@ -61,16 +62,15 @@ export class AppGateway
       });
       await client.join('online');
       this.users.push({ intra_id: user.intra_id, socketId: client.id });
-      this.server
-        .to('online')
-        .emit('userChangeStatus', {
-          intra_id: user.intra_id,
-          status: 'ONLINE',
-        });
+
+      client.to('online').emit('userChangeStatus', {
+        intra_id: user.intra_id,
+        status: 'ONLINE',
+      });
       client.user = user.intra_id;
     } catch (error) {
-      // console.log('error', error);
-      console.log(`token =====> `, client.handshake.auth);
+      console.log('error', error);
+      console.log(`token =====> `, client.handshake.headers.authorization);
 
       return this.disconnect(client);
     }
@@ -99,8 +99,8 @@ export class AppGateway
   }
   // ! for test pleas remove it
   @SubscribeMessage('events')
-  handleEvent(@MessageBody() data: any): any {
-    this.logger.log(`events data ${data}`);
+  handleEvent(client: Socket, data: any): any {
+    this.logger.log(`events data ${data.message} ${client.id}`);
     return { message: 'done' };
   }
 
@@ -109,7 +109,7 @@ export class AppGateway
    * @param socket
    */
   private disconnect(socket: Socket) {
-    socket.emit('Error', new UnauthorizedException());
+    socket.emit('error', new UnauthorizedException());
     socket.disconnect();
   }
 }
