@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -11,6 +11,7 @@ import {
   RejectPlayGame,
   GetGameQuery,
 } from 'src/interfaces/user.interface';
+import { GameGateway } from './game.gateway';
 
 @Injectable()
 export class GameService {
@@ -19,7 +20,10 @@ export class GameService {
     { GameLevel: 'NORMAL', users: [2, 5, 8] },
     { GameLevel: 'DIFFICULT', users: [3, 6, 9] },
   ];
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private gameGateway: GameGateway,
+  ) {}
 
   /**
    *
@@ -190,7 +194,11 @@ export class GameService {
       console.log(req.user.sub);
       const oldInvite = await this.prisma.gameinvites.findFirst({
         where: {
-          AND: [{ fromid: req.user.sub }, { userid: dto.userId }, {accepted: false}],
+          AND: [
+            { fromid: req.user.sub },
+            { userid: dto.userId },
+            { accepted: false },
+          ],
         },
       });
       if (oldInvite)
@@ -240,7 +248,7 @@ export class GameService {
   async accepteGame(req: Request, res: Response, dto: AcceptePlayGame) {
     try {
       console.log(dto);
-      
+
       const invite = await this.prisma.gameinvites.findUnique({
         where: { id: dto.inviteId },
       });
@@ -288,7 +296,7 @@ export class GameService {
   async rejectGame(req: Request, res: Response, dto: RejectPlayGame) {
     try {
       console.log(dto);
-      
+
       const invite = await this.prisma.gameinvites.findUnique({
         where: { id: dto.inviteId },
       });
@@ -310,12 +318,11 @@ export class GameService {
 
   /**
    *
-   * @param req
    * @param res
    * @param dto
    * @returns
    */
-  async leaveGame(req: Request, res: Response, dto: LeaveGameBody) {
+  async leaveGame(res: Response, dto: LeaveGameBody) {
     try {
       const game = await this.prisma.game.findFirst({
         where: { id: dto.gameId, NOT: { status: 'END' } },
@@ -326,7 +333,7 @@ export class GameService {
           where: { id: dto.gameId },
           data: {
             status: 'END',
-            updatedat: new Date()
+            updatedat: new Date(),
           },
         })
         .players();
@@ -354,6 +361,7 @@ export class GameService {
    */
   async registerToQueue(req: Request, res: Response, dto: RegisterToQueueBody) {
     try {
+      this.gameGateway.userStartGame(5111);
       const userInGame = await this.prisma.players.findFirst({
         where: {
           userid: req.user.sub,

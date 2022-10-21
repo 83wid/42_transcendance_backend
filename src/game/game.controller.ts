@@ -81,7 +81,7 @@ export class GameController {
     @Res() res: Response,
     @Body() dto: LeaveGameBody,
   ) {
-    return this.gameService.leaveGame(req, res, dto);
+    return this.gameService.leaveGame(res, dto);
   }
   @Post('invite')
   @UseGuards(JwtAuthGuard)

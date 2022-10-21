@@ -48,7 +48,8 @@ export class AppGateway
     this.logger.log(`socket new client ${client.id} connected`);
     try {
       const decoded = await this.authService.verifyJwt(
-        client.handshake.headers.authorization,
+        // client.handshake.headers.authorization,
+        client.handshake.auth.token,
       );
       const user = await this.prismaService.users.findUnique({
         where: { intra_id: decoded.sub },
@@ -60,10 +61,17 @@ export class AppGateway
       });
       await client.join('online');
       this.users.push({ intra_id: user.intra_id, socketId: client.id });
-      this.server.to('online').emit('userChangeStatus', {intra_id: user.intra_id, status: 'ONLINE'})
-      client.user = user.intra_id
+      this.server
+        .to('online')
+        .emit('userChangeStatus', {
+          intra_id: user.intra_id,
+          status: 'ONLINE',
+        });
+      client.user = user.intra_id;
     } catch (error) {
-      console.log('error', error);
+      // console.log('error', error);
+      console.log(`token =====> `, client.handshake.auth);
+
       return this.disconnect(client);
     }
   }
@@ -82,7 +90,9 @@ export class AppGateway
         data: { status: 'OFFLINE' },
       });
       this.users.splice(userIndex, 1);
-      this.server.to('online').emit('userChangeStatus', {intra_id, status: 'OFFLINE'})
+      this.server
+        .to('online')
+        .emit('userChangeStatus', { intra_id, status: 'OFFLINE' });
     }
     console.log(this.server.sockets.adapter.rooms);
     this.logger.log(`socket client ${client.id} disconnect`);
