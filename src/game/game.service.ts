@@ -12,6 +12,7 @@ import {
   GetGameQuery,
 } from 'src/interfaces/user.interface';
 import { GameGateway } from './game.gateway';
+import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 
 @Injectable()
 export class GameService {
@@ -23,6 +24,7 @@ export class GameService {
   constructor(
     private prisma: PrismaService,
     private gameGateway: GameGateway,
+    private notificationsGateway: NotificationsGateway,
   ) {}
 
   /**
@@ -230,8 +232,10 @@ export class GameService {
           content: 'invet you to play game',
           createdat: new Date(),
         },
+        include: { users_notification_fromidTousers: true },
       });
-      //todo emit notif to user
+      if (user.status !== 'OFFLINE')
+        this.notificationsGateway.notificationsToUser(user.intra_id, notif);
       return res.status(200).json({ message: 'invitation success send' });
     } catch (error) {
       console.log(error);
@@ -280,6 +284,18 @@ export class GameService {
         },
       });
       //todo emit invite.fromId to play game
+      const notif = await this.prisma.notification.create({
+        data: {
+          userid: invite.fromid,
+          type: 'GAME_INVITE',
+          fromid: req.user.sub,
+          targetid: game.id,
+          content: 'invet you to play game',
+          createdat: new Date(),
+        },
+        include: { users_notification_fromidTousers: true },
+      });
+      this.notificationsGateway.notificationsToUser(invite.fromid, notif);
       return res.status(200).json(game);
     } catch (error) {
       console.log(error);

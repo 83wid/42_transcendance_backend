@@ -10,7 +10,8 @@ export class NotificationsService {
     try {
       const notifications = await this.prismaService.notification.findMany({
         where: { AND: [{ userid: req.user.sub }, { read: false }] },
-        include: {users_notification_fromidTousers: true}
+        include: {users_notification_fromidTousers: true},
+        orderBy: {createdat: "desc"}
       });
       return res.status(200).json(notifications);
     } catch (error) {

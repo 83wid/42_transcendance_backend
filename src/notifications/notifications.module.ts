@@ -4,9 +4,12 @@ import { NotificationsService } from './notifications.service';
 import { NotificationsGateway } from './notifications.gateway';
 import { SocketModule } from 'src/socket/socket.module';
 import { JwtModule } from '@nestjs/jwt';
+
+
 @Module({
-  imports: [SocketModule, JwtModule],
+  imports: [SocketModule],
   controllers: [NotificationsController],
   providers: [NotificationsService, NotificationsGateway],
+  exports: [NotificationsGateway],
 })
 export class NotificationsModule {}

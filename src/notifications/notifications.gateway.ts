@@ -10,7 +10,10 @@ import { SocketGateway } from 'src/socket/socket.gateway';
 
 @WebSocketGateway()
 export class NotificationsGateway {
-  constructor(private prismaService: PrismaService, private socketGateway: SocketGateway) {}
+  constructor(
+    private prismaService: PrismaService,
+    private socketGateway: SocketGateway,
+  ) {}
   @WebSocketServer()
   private server: Server;
   @SubscribeMessage('readNotification')
@@ -27,7 +30,15 @@ export class NotificationsGateway {
     }
   }
 
-  notificationsToUser(notif: {}){
-    this.server.emit('nowNotification', notif)
+  notificationsToUser(userId: number, notif: {}) {
+    const userSocketId = this.socketGateway.getSocketIdFromUserId(userId);
+    if (userSocketId)
+    this.server.to(userSocketId).emit('newNotification', notif);
   }
+
+  // notificationsToUserAcceptGame(userId: number, notif: {}){
+  //   const userSocketId = this.socketGateway.getSocketIdFromUserId(userId)
+  //   if (userSocketId)
+  //   this.server.to(userSocketId).emit('notification', notif)
+  // }
 }

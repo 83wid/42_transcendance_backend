@@ -184,6 +184,7 @@ enum level_type {
 enum notification_t {
   FRIEND_REQUEST
   GAME_INVITE
+  GAME_ACCEPTE
   OTHER
 }
 
