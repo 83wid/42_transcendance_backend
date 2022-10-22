@@ -10,14 +10,14 @@ import {
 import { Logger, UnauthorizedException } from '@nestjs/common';
 import { Socket, Server } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
-import { PrismaService } from './prisma/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
 })
-export class AppGateway
+export class SocketGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
@@ -46,7 +46,7 @@ export class AppGateway
    */
   async handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(
-      `socket new client ${client.id} connected token ${client.handshake.auth.token}<<<<<`,
+      `socket new client ${client.id} connected token ${client.handshake.auth.token} ${client.handshake.headers.authorization}<<<<<`,
     );
     try {
       // ! delete client.handshake.headers.authorization it's for test postman
@@ -71,7 +71,11 @@ export class AppGateway
       client.user = user.intra_id;
     } catch (error) {
       console.log('error', error);
-      console.log(`token =====> `, client.handshake.auth.token);
+      console.log(
+        `token =====> `,
+        client.handshake.auth.token,
+        client.handshake.headers.authorization,
+      );
 
       return this.disconnect(client);
     }
@@ -112,5 +116,9 @@ export class AppGateway
   private disconnect(socket: Socket) {
     socket.emit('error', new UnauthorizedException());
     socket.disconnect();
+  }
+
+  getSocketIdFromUserId(userId: number) {
+    return this.users.find((u) => u.intra_id === userId);
   }
 }

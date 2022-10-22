@@ -60,14 +60,6 @@ export class AuthService {
     try {
       const data = await this.prisma.users.findUnique({
         where: { intra_id: id },
-        include: {
-          notification_notification_useridTousers: {
-            include: {
-              users_notification_fromidTousers: true,
-            },
-            orderBy: { createdat: 'desc' },
-          },
-        },
       });
       const ret = pick(data, [
         'id',
@@ -77,9 +69,8 @@ export class AuthService {
         'first_name',
         'last_name',
         'img_url',
-        'notification_notification_useridTousers',
       ]);
-      console.log(this.jwtService.sign({ sub: 2 }));
+      // console.log(this.jwtService.sign({ sub: 2 }));
       return res.status(200).json(ret);
     } catch (error) {
       console.log(error);

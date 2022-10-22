@@ -164,3 +164,22 @@ export class GetGameQuery {
 }
 
 /*************** Game Interface ***********************/
+
+/******************** Notifcations ********************/
+// get notifications
+export class GetNotifcaions {
+  @IsNotEmpty()
+  @IsNumber()
+  userId: number
+}
+
+// socket read notifications
+export class ReadNotification{
+  @IsNotEmpty()
+  @IsNumber()
+  id: number
+}
+
+
+/******************** Notifcations ********************/
+

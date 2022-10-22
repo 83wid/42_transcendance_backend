@@ -16,20 +16,21 @@ import { FriendsModule } from './friends/friends.module';
 import { ProfileModule } from './profile/profile.module';
 import { GameModule } from './game/game.module';
 import { AchievementsModule } from './achievements/achievements.module';
-import { AppGateway } from './app.gateway';
 import { AuthService } from './auth/auth.service';
 import { NotificationsModule } from './notifications/notifications.module';
+import { NotificationsGateway } from './notifications/notifications.gateway';
+import { PrismaService } from './prisma/prisma.service';
+import { SocketGateway } from './socket/socket.gateway';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
+    PrismaModule,
     AuthModule,
     UsersModule,
-    PrismaModule,
     FriendsModule,
     JwtModule.register({
       secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60s' },
     }),
     ChatModule,
     ProfileModule,
@@ -40,11 +41,12 @@ import { NotificationsModule } from './notifications/notifications.module';
   controllers: [AppController],
   providers: [
     AuthService,
+    PrismaService,
     AppService,
     JwtStategy,
     FriendsService,
     ChatService,
-    AppGateway,
+    NotificationsGateway,
   ],
 })
 export class AppModule {}
