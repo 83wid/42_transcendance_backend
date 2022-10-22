@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { NotificationsGateway } from './notifications.gateway';
+import { SocketModule } from 'src/socket/socket.module';
+import { JwtModule } from '@nestjs/jwt';
 @Module({
+  imports: [SocketModule, JwtModule],
   controllers: [NotificationsController],
   providers: [NotificationsService, NotificationsGateway],
 })

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { SocketService } from './socket.service';
 import { SocketGateway } from './socket.gateway';
 import { PrismaModule } from 'src/prisma/prisma.module';
@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from 'src/auth/constants';
 
+@Global()
 @Module({
   imports: [
     PrismaModule,
@@ -26,5 +27,6 @@ import { jwtConstants } from 'src/auth/constants';
     SocketService,
     SocketGateway,
   ],
+  exports: [SocketGateway]
 })
 export class SocketModule {}

@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { pick } from 'lodash';
+import { jwtConstants } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -81,6 +82,6 @@ export class AuthService {
     }
   }
   verifyJwt(jwt: string): Promise<any> {
-    return this.jwtService.verifyAsync(jwt);
+    return this.jwtService.verifyAsync(jwt, {secret: jwtConstants.secret});
   }
 }

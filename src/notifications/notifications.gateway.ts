@@ -6,10 +6,11 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Server, Socket } from 'socket.io';
 import { ReadNotification } from 'src/interfaces/user.interface';
+import { SocketGateway } from 'src/socket/socket.gateway';
 
 @WebSocketGateway()
 export class NotificationsGateway {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: PrismaService, private socketGateway: SocketGateway) {}
   @WebSocketServer()
   private server: Server;
   @SubscribeMessage('readNotification')
