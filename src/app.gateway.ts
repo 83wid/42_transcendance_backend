@@ -46,11 +46,12 @@ export class AppGateway
    */
   async handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(
-      `socket new client ${client.id} connected token ${client.handshake.headers.authorization}`,
+      `socket new client ${client.id} connected token ${client.handshake.auth.token}<<<<<`,
     );
     try {
+      // ! delete client.handshake.headers.authorization it's for test postman
       const decoded = await this.authService.verifyJwt(
-        client.handshake.headers.authorization,
+        client.handshake.auth.token || client.handshake.headers.authorization,
       );
       const user = await this.prismaService.users.findUnique({
         where: { intra_id: decoded.sub },
@@ -70,7 +71,7 @@ export class AppGateway
       client.user = user.intra_id;
     } catch (error) {
       console.log('error', error);
-      console.log(`token =====> `, client.handshake.headers.authorization);
+      console.log(`token =====> `, client.handshake.auth.token);
 
       return this.disconnect(client);
     }

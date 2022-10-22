@@ -33,12 +33,9 @@ export class GameGateway implements OnGatewayDisconnect {
     this.logger.log('done');
     const gameIdTostring = payload.gameId.toString();
     await client.join(gameIdTostring);
-    // console.log(this.server.sockets.adapter.rooms.get(gameIdTostring).size);
-    this.server
-      .in(gameIdTostring)
-      .emit('countWatchers', {
-        total: this.server.sockets.adapter.rooms.get(gameIdTostring).size,
-      });
+    this.server.in(gameIdTostring).emit('countWatchers', {
+      total: this.server.sockets.adapter.rooms.get(gameIdTostring).size,
+    });
   }
 
   async leaveWatcher(client: Socket, payload: { gameId: number }) {
