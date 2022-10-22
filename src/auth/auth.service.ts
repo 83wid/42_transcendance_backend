@@ -71,7 +71,7 @@ export class AuthService {
         'last_name',
         'img_url',
       ]);
-      // console.log(this.jwtService.sign({ sub: 2 }));
+      console.log(this.jwtService.sign({ sub: 2 }));
       return res.status(200).json(ret);
     } catch (error) {
       console.log(error);

@@ -149,7 +149,6 @@ export class GameService {
         where: {
           userid: req.user.sub,
           game: { status: 'PLAYING' },
-          // NOT: { game: { OR:[{status: 'END'}, {status: 'WAITING'}] } },
         },
       });
       if (userInGame)
@@ -167,11 +166,12 @@ export class GameService {
         },
       });
       //! delet this update (^_^)
-      await this.prisma.users.updateMany({
-        where: { OR: [{ intra_id: req.user.sub }, { intra_id: dto.userId }] },
-        data: { status: 'PLAYING' },
-      });
+      // await this.prisma.users.updateMany({
+      //   where: { OR: [{ intra_id: req.user.sub }, { intra_id: dto.userId }] },
+      //   data: { status: 'PLAYING' },
+      // });
       //todo emit user to play game
+      this.gameGateway.userStartGame(req.user.sub, dto.userId)
       return res.status(200).json({ game: newGame });
     } catch (error) {
       console.log(error);
@@ -287,10 +287,10 @@ export class GameService {
       const notif = await this.prisma.notification.create({
         data: {
           userid: invite.fromid,
-          type: 'GAME_INVITE',
+          type: "GAME_ACCEPTE",
           fromid: req.user.sub,
           targetid: game.id,
-          content: 'invet you to play game',
+          content: 'accepte you game invetation',
           createdat: new Date(),
         },
         include: { users_notification_fromidTousers: true },
@@ -377,15 +377,12 @@ export class GameService {
    */
   async registerToQueue(req: Request, res: Response, dto: RegisterToQueueBody) {
     try {
-      this.gameGateway.userStartGame(5111);
       const userInGame = await this.prisma.players.findFirst({
         where: {
           userid: req.user.sub,
           game: { status: 'PLAYING' },
         },
       });
-      console.log(userInGame);
-
       if (userInGame)
         return res.status(400).json({
           message:

@@ -50,11 +50,12 @@ export class GameGateway implements OnGatewayDisconnect {
     return 'Hello world!';
   }
 
-  async userStartGame(userId: number) {
-    await this.prismaService.users.update({
-      where: { intra_id: userId },
+  async userStartGame(userId_1: number, userId_2: number) {
+    await this.prismaService.users.updateMany({
+      where: { OR: [{ intra_id: userId_1 }, { intra_id: userId_2 }] },
       data: { status: 'PLAYING' },
     });
-    this.server.to('online').emit('userStartGame', { gameId: 111, userId });
+    this.server.to('online').emit('userStartGame', { userId_1 });
+    this.server.to('online').emit('userStartGame', { userId_2 });
   }
 }

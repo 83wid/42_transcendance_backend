@@ -119,6 +119,6 @@ export class SocketGateway
   }
 
   getSocketIdFromUserId(userId: number) {
-    return this.users.find((u) => u.intra_id === userId).socketId;
+    return this.users.find((u) => u.intra_id === userId)?.socketId;
   }
 }
