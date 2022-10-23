@@ -7,6 +7,7 @@ import {
 import { Socket, Server } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SocketGateway } from 'src/socket/socket.gateway';
 
 @WebSocketGateway()
 export class GameGateway implements OnGatewayDisconnect {
@@ -15,7 +16,10 @@ export class GameGateway implements OnGatewayDisconnect {
   private watchers: { gameId: number; socketId: string[] }[];
   private logger: Logger = new Logger('init game gateway');
 
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    private prismaService: PrismaService,
+    private socketGateway: SocketGateway,
+  ) {}
   /**
    * handle socket desconnect
    * @param client
@@ -57,5 +61,35 @@ export class GameGateway implements OnGatewayDisconnect {
     });
     this.server.to('online').emit('userStartGame', { userId_1 });
     this.server.to('online').emit('userStartGame', { userId_2 });
+  }
+
+  @SubscribeMessage('playerReady')
+  async playerReady(client: Socket, payload: { gameId: number }) {
+    try {
+      await this.prismaService.players.updateMany({
+        where: { AND: [{ userid: client.user }, { gameid: payload.gameId }] },
+        data: { ready: true },
+      });
+      const game = await this.prismaService.game.findUnique({
+        where: { id: payload.gameId },
+        include: { players: { include: { users: true } } },
+      });
+      await client.join(game.id.toString());
+      console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<join game');
+      this.server.in(game.id.toString()).emit('updateGame', game);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @SubscribeMessage('leaveGame')
+  async playerLeaveGame(client: Socket, payload: { gameId: number }) {
+    console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<leave game');
+    await client.leave(payload.gameId.toString());
+    const game = await this.prismaService.game.findUnique({
+      where: { id: payload.gameId },
+      include: { players: { include: { users: true } } },
+    });
+    this.server.in(payload.gameId.toString()).emit('updateGame', game);
   }
 }

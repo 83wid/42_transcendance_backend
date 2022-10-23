@@ -41,7 +41,7 @@ export class GameService {
       let game: any;
       if (gameId)
         game = await this.prisma.game.findFirst({
-          where: { id: gameId, status: 'PLAYING' },
+          where: { id: gameId},
           include: { players: { include: { users: true } } },
         });
       else
@@ -171,7 +171,7 @@ export class GameService {
       //   data: { status: 'PLAYING' },
       // });
       //todo emit user to play game
-      this.gameGateway.userStartGame(req.user.sub, dto.userId)
+      this.gameGateway.userStartGame(req.user.sub, dto.userId);
       return res.status(200).json({ game: newGame });
     } catch (error) {
       console.log(error);
@@ -207,20 +207,19 @@ export class GameService {
         return res
           .status(400)
           .json({ message: 'you already invite this user to play game' });
-      const gameInvite = await this.prisma.game
-        .create({
-          data: {
-            status: 'WAITING',
-            createdat: new Date(),
-            players: {
-              create: [{ userid: dto.userId }, { userid: req.user.sub }],
-            },
-            gameinvites: {
-              create: { fromid: req.user.sub, userid: dto.userId },
-            },
+      const gameInvite = await this.prisma.game.create({
+        data: {
+          status: 'WAITING',
+          createdat: new Date(),
+          players: {
+            create: [{ userid: dto.userId }, { userid: req.user.sub }],
           },
-        })
-        .gameinvites();
+          gameinvites: {
+            create: { fromid: req.user.sub, userid: dto.userId },
+          },
+        },
+      });
+      // .gameinvites();
       console.log(gameInvite);
 
       const notif = await this.prisma.notification.create({
@@ -228,7 +227,7 @@ export class GameService {
           userid: user.intra_id,
           type: 'GAME_INVITE',
           fromid: req.user.sub,
-          targetid: gameInvite[0].id,
+          targetid: gameInvite.id,
           content: 'invet you to play game',
           createdat: new Date(),
         },
@@ -253,10 +252,18 @@ export class GameService {
     try {
       console.log(dto);
 
-      const invite = await this.prisma.gameinvites.findUnique({
-        where: { id: dto.inviteId },
+      const invite = await this.prisma.gameinvites.findFirst({
+        where: {
+          AND: [
+            { id: dto.inviteId },
+            { userid: req.user.sub },
+            { accepted: false },
+          ],
+        },
       });
-      if (!invite || invite.accepted || invite.userid !== req.user.sub)
+      console.log(invite);
+
+      if (!invite)
         return res.status(404).json({ message: 'invitation not found' });
       const users = await this.prisma.users.findMany({
         where: {
@@ -287,7 +294,7 @@ export class GameService {
       const notif = await this.prisma.notification.create({
         data: {
           userid: invite.fromid,
-          type: "GAME_ACCEPTE",
+          type: 'GAME_ACCEPTE',
           fromid: req.user.sub,
           targetid: game.id,
           content: 'accepte you game invetation',
@@ -334,14 +341,22 @@ export class GameService {
 
   /**
    *
+   * @param req
    * @param res
    * @param dto
    * @returns
    */
-  async leaveGame(res: Response, dto: LeaveGameBody) {
+  async leaveGame(req: Request, res: Response, dto: LeaveGameBody) {
     try {
       const game = await this.prisma.game.findFirst({
-        where: { id: dto.gameId, NOT: { status: 'END' } },
+        where: {
+          AND: [
+            { id: dto.gameId },
+            { players: { some: { userid: req.user.sub } } },
+          ],
+          NOT: { status: 'END' },
+        },
+        include: { players: { include: { users: true } } },
       });
       if (!game) return res.status(400).json({ message: 'game not found' });
       const update = await this.prisma.game
@@ -356,7 +371,11 @@ export class GameService {
       //! delet this update (^_^)
       await this.prisma.users.updateMany({
         where: {
-          OR: [{ intra_id: update[0].userid }, { intra_id: update[1].userid }],
+          OR: [
+            { AND: [{ intra_id: update[0].userid }, { status: 'PLAYING' }] },
+            { AND: [{ intra_id: update[1].userid }, { status: 'PLAYING' }] },
+            ,
+          ],
         },
         data: { status: 'ONLINE' },
       });

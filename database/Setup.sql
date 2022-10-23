@@ -319,7 +319,7 @@ SELECT
   'zaynoune' || id || '@ali.ali',
   'ali',
   'zaynoune',
-  (array ['ONLINE', 'OFFLINE']) [floor(random() * 2 + 1)] :: STATUS_T,
+  'OFFLINE',
   floor(random() * 8000) :: int,
   'https://joeschmoe.io/api/v1/random',
   'https://random.imagecdn.app/1800/800'
