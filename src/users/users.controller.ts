@@ -1,9 +1,7 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
-  Post,
   Put,
   Req,
   Res,
@@ -12,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { UsersService } from './users.service';
-import { Response, Request } from 'express';
+import { Response } from 'express';
 import { GetUserQuery } from 'src/interfaces/user.interface';
 
 @Controller('users')
@@ -21,7 +19,6 @@ export class UsersController {
   @Put('update')
   @UseGuards(JwtAuthGuard)
   async updateUser(@Req() req: any, @Res() res: Response) {
-    // console.log(req.body);
     const user = await this.usersService.updateUser({
       data: req.body,
       where: { intra_id: req.user.sub },
@@ -31,7 +28,6 @@ export class UsersController {
   @Get('all')
   @UseGuards(JwtAuthGuard)
   async getAllUsers(@Query() query: GetUserQuery, @Res() res: Response) {
-    console.log(query);
     return this.usersService.getAllUsers(query, res);
   }
   @Get(':username')

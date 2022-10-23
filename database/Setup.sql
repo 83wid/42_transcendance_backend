@@ -114,6 +114,7 @@ CREATE TABLE players (
   userId INT NOT NULL,
   gameId INT NOT NULL,
   score integer DEFAULT 0,
+  ready boolean DEFAULT false,
   FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
   FOREIGN KEY (gameId) REFERENCES game (id) ON DELETE CASCADE,
   PRIMARY KEY (id)
@@ -294,7 +295,7 @@ VALUES
     'alzaynou@student.1337.ma',
     'Ali',
     'Zaynoune',
-    'ONLINE',
+    'OFFLINE',
     floor(random() * 8800) :: int,
     'https://cdn.intra.42.fr/users/alzaynou.jpg',
     'https://random.imagecdn.app/1800/800'
