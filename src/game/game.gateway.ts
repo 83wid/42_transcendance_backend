@@ -37,13 +37,22 @@ export class GameGateway implements OnGatewayDisconnect {
     this.logger.log('done');
     const gameIdTostring = payload.gameId.toString();
     await client.join(gameIdTostring);
+    const countWatchers =
+      this.server.sockets.adapter.rooms.get(gameIdTostring).size;
     this.server.in(gameIdTostring).emit('countWatchers', {
-      total: this.server.sockets.adapter.rooms.get(gameIdTostring).size,
+      total: countWatchers > 2 ? countWatchers - 2 : 0,
     });
   }
 
+  @SubscribeMessage('leaveWatcher')
   async leaveWatcher(client: Socket, payload: { gameId: number }) {
-    await client.leave(payload.gameId.toString());
+    const gameIdTostring = payload.gameId.toString();
+    await client.leave(gameIdTostring);
+    const countWatchers =
+      this.server.sockets.adapter.rooms.get(gameIdTostring).size;
+    this.server.in(gameIdTostring).emit('countWatchers', {
+      total: countWatchers > 2 ? countWatchers - 2 : 0,
+    });
   }
 
   @SubscribeMessage('message')
@@ -70,13 +79,22 @@ export class GameGateway implements OnGatewayDisconnect {
         where: { AND: [{ userid: client.user }, { gameid: payload.gameId }] },
         data: { ready: true },
       });
-      const game = await this.prismaService.game.findUnique({
-        where: { id: payload.gameId },
+      let game = await this.prismaService.game.findFirst({
+        where: { AND: [{ id: payload.gameId }, { NOT: { status: 'END' } }] },
         include: { players: { include: { users: true } } },
       });
-      await client.join(game.id.toString());
-      console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<join game');
-      this.server.in(game.id.toString()).emit('updateGame', game);
+      if (game) {
+        if (game.players[0].ready && game.players[1].ready) {
+          await this.prismaService.game.update({
+            where: { id: payload.gameId },
+            data: { status: 'PLAYING' },
+          });
+          game.status = 'PLAYING';
+        }
+        await client.join(game.id.toString());
+        console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<join game');
+        this.server.in(game.id.toString()).emit('updateGame', game);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -84,12 +102,16 @@ export class GameGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('leaveGame')
   async playerLeaveGame(client: Socket, payload: { gameId: number }) {
-    console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<leave game');
-    await client.leave(payload.gameId.toString());
+    console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<leave game1');
     const game = await this.prismaService.game.findUnique({
       where: { id: payload.gameId },
       include: { players: { include: { users: true } } },
     });
-    this.server.in(payload.gameId.toString()).emit('updateGame', game);
+    console.log(game, 'leave game socket');
+    this.server.to(payload.gameId.toString()).emit('updateGame', game);
+    this.server
+      .in(payload.gameId.toString())
+      .socketsLeave(payload.gameId.toString());
+    console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<leave game2');
   }
 }

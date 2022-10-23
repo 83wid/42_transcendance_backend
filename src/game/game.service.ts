@@ -41,7 +41,7 @@ export class GameService {
       let game: any;
       if (gameId)
         game = await this.prisma.game.findFirst({
-          where: { id: gameId},
+          where: { id: gameId },
           include: { players: { include: { users: true } } },
         });
       else
@@ -158,7 +158,7 @@ export class GameService {
       const newGame = await this.prisma.game.create({
         data: {
           level: dto.gameLevel,
-          status: 'PLAYING',
+          status: 'WAITING',
           createdat: new Date(),
           players: {
             create: [{ userid: dto.userId }, { userid: req.user.sub }],
@@ -285,7 +285,7 @@ export class GameService {
         where: { id: invite.id },
         data: {
           accepted: true,
-          game: { update: { status: 'PLAYING' } },
+          // game: { update: { status: "WAITING" } },
           users_gameinvites_fromidTousers: { update: { status: 'PLAYING' } },
           users_gameinvites_useridTousers: { update: { status: 'PLAYING' } },
         },
@@ -297,7 +297,7 @@ export class GameService {
           type: 'GAME_ACCEPTE',
           fromid: req.user.sub,
           targetid: game.id,
-          content: 'accepte you game invetation',
+          content: 'accepte your game invetation',
           createdat: new Date(),
         },
         include: { users_notification_fromidTousers: true },
@@ -358,6 +358,8 @@ export class GameService {
         },
         include: { players: { include: { users: true } } },
       });
+      console.log(game, '<<<<<<<<<<game end');
+      
       if (!game) return res.status(400).json({ message: 'game not found' });
       const update = await this.prisma.game
         .update({
@@ -369,6 +371,8 @@ export class GameService {
         })
         .players();
       //! delet this update (^_^)
+      console.log(update, 'after update');
+      
       await this.prisma.users.updateMany({
         where: {
           OR: [
