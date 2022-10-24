@@ -100,6 +100,32 @@ export class GameGateway implements OnGatewayDisconnect {
     }
   }
 
+  @SubscribeMessage('startGame')
+  async startGame(client: Socket, payload: { gameId: number }) {
+    try {
+      let game = await this.prismaService.game.findFirst({
+        where: {
+          AND: [
+            { id: payload.gameId },
+            { players: { some: { userid: client.user } } },
+            { NOT: { status: 'END' } },
+            { started: false },
+          ],
+        },
+      });
+      if (game) {
+        game = await this.prismaService.game.update({
+          where: { id: game.id },
+          data: { started: true, createdat: new Date(), updatedat: new Date() },
+          include: { players: { include: { users: true } } },
+        });
+        this.server.in(payload.gameId.toString()).emit('updateGame', game);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   @SubscribeMessage('leaveGame')
   async playerLeaveGame(client: Socket, payload: { gameId: number }) {
     console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<leave game1');

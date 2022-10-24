@@ -103,6 +103,7 @@ CREATE TABLE game (
   id SERIAL NOT NULL,
   status game_status DEFAULT 'WAITING',
   level game_diff DEFAULT 'NORMAL',
+  started boolean DEFAULT false,
   createdAt timestamp NOT NULL,
   updatedAt timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)

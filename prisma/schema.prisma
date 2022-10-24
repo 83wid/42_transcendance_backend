@@ -108,6 +108,7 @@ model game {
   id          Int           @id @default(autoincrement())
   status      game_status?  @default(WAITING)
   level       game_diff?    @default(NORMAL)
+  started     Boolean?      @default(false)
   createdat   DateTime      @db.Timestamp(6)
   updatedat   DateTime      @default(now()) @db.Timestamp(6)
   gameinvites gameinvites[]
