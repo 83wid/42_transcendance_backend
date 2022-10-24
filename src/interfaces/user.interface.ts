@@ -23,7 +23,7 @@ declare global {
 // inject user in Socket interface
 declare module 'socket.io' {
   interface Socket {
-    user: number
+    user: number;
   }
 }
 
@@ -127,6 +127,9 @@ export class InvitePlayGame {
   @IsNotEmpty()
   @IsNumber()
   userId: number;
+  @IsNotEmpty()
+  @IsIn(['EASY', 'NORMAL', 'DIFFICULT'])
+  gameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
 }
 
 // accepte game invite
@@ -144,11 +147,7 @@ export class RejectPlayGame {
 }
 
 // create game dto
-export class CreateGameBody extends InvitePlayGame {
-  @IsNotEmpty()
-  @IsIn(['EASY', 'NORMAL', 'DIFFICULT'])
-  gameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
-}
+export class CreateGameBody extends InvitePlayGame {}
 
 // leave game dto
 export class LeaveGameBody {
@@ -170,16 +169,14 @@ export class GetGameQuery {
 export class GetNotifcaions {
   @IsNotEmpty()
   @IsNumber()
-  userId: number
+  userId: number;
 }
 
 // socket read notifications
-export class ReadNotification{
+export class ReadNotification {
   @IsNotEmpty()
   @IsNumber()
-  id: number
+  id: number;
 }
 
-
 /******************** Notifcations ********************/
-

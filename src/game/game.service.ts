@@ -210,6 +210,7 @@ export class GameService {
       const gameInvite = await this.prisma.game.create({
         data: {
           status: 'WAITING',
+          level: dto.gameLevel,
           createdat: new Date(),
           players: {
             create: [{ userid: dto.userId }, { userid: req.user.sub }],
