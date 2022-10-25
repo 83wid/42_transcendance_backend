@@ -221,15 +221,13 @@ export class GameService {
         },
       });
       // .gameinvites();
-      console.log(gameInvite);
-
       const notif = await this.prisma.notification.create({
         data: {
           userid: user.intra_id,
           type: 'GAME_INVITE',
           fromid: req.user.sub,
           targetid: gameInvite.id,
-          content: 'invet you to play game',
+          content: `invet you to play game level ${dto.gameLevel.toLocaleLowerCase()}`,
           createdat: new Date(),
         },
         include: { users_notification_fromidTousers: true },
@@ -286,7 +284,6 @@ export class GameService {
         where: { id: invite.id },
         data: {
           accepted: true,
-          // game: { update: { status: "WAITING" } },
           users_gameinvites_fromidTousers: { update: { status: 'PLAYING' } },
           users_gameinvites_useridTousers: { update: { status: 'PLAYING' } },
         },
@@ -371,9 +368,7 @@ export class GameService {
           },
         })
         .players();
-      //! delet this update (^_^)
-      console.log(update, 'after update');
-      
+      //! delet this update (^_^)      
       await this.prisma.users.updateMany({
         where: {
           OR: [
@@ -387,7 +382,6 @@ export class GameService {
 
       return res.status(201).json({ message: 'succes leave game' });
     } catch (error) {
-      console.log(error);
       return res.status(500).json({ message: 'server error' });
     }
   }
@@ -428,7 +422,6 @@ export class GameService {
         });
       }
       const userId = findQueue.users.shift();
-      console.log(this.queue);
       return await this.createGame(req, res, {
         gameLevel: dto.gameLevel,
         userId,
