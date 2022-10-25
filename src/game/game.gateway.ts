@@ -24,11 +24,37 @@ export class GameGateway implements OnGatewayDisconnect {
    * handle socket desconnect
    * @param client
    */
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     // await this.prismaService.users.update({
     //   where: { intra_id: client.user },
     //   data: { status: 'OFFLINE' },
     // });
+    console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<disconnect');
+    try {
+      const game = await this.prismaService.game.findFirst({
+        where: {
+          AND: [
+            { players: { some: { userid: client.user } } },
+            { status: 'PLAYING' },
+            { started: true },
+          ],
+        },
+      });
+      console.log(game);
+      if (game) {
+        if (
+          this.server.sockets.adapter.rooms.get(`player${game.id.toString()}`)
+            ?.size
+        )
+        this.server.to(`player${game.id.toString()}`).emit('ProblemConnection')
+        else await this.prismaService.game.update({
+          where: {id: game.id},
+          data: {status: 'END', started: false},
+        })
+      }
+    } catch (error) {
+      console.log(error);
+    }
     this.logger.log(`user disconnect ${client.id} user id ${client.user}`);
   }
 
@@ -91,9 +117,30 @@ export class GameGateway implements OnGatewayDisconnect {
           });
           game.status = 'PLAYING';
         }
-        await client.join(game.id.toString());
+        await client.join(`player${game.id.toString()}`);
         console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<join game');
         this.server.in(game.id.toString()).emit('updateGame', game);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @SubscribeMessage('reConnection')
+  async reConnection(client: Socket, payload: { gameId: number }) {
+    try {
+      const game = await this.prismaService.game.findFirst({
+        where: {
+          AND: [
+            { id: payload.gameId },
+            { players: { some: { userid: client.user } } },
+            { status: 'PLAYING' },
+          ],
+        },
+      });
+      if (game){
+        await client.join(`player${game.id.toString()}`);
+        client.to(`player${game.id.toString()}`).emit('ReConnection')
       }
     } catch (error) {
       console.log(error);
@@ -119,6 +166,7 @@ export class GameGateway implements OnGatewayDisconnect {
           data: { started: true, createdat: new Date(), updatedat: new Date() },
           include: { players: { include: { users: true } } },
         });
+        // emit to watcher and players
         this.server.in(payload.gameId.toString()).emit('updateGame', game);
       }
     } catch (error) {
@@ -128,16 +176,13 @@ export class GameGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('leaveGame')
   async playerLeaveGame(client: Socket, payload: { gameId: number }) {
-    console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<leave game1');
     const game = await this.prismaService.game.findUnique({
       where: { id: payload.gameId },
       include: { players: { include: { users: true } } },
     });
-    console.log(game, 'leave game socket');
     this.server.to(payload.gameId.toString()).emit('updateGame', game);
     this.server
       .in(payload.gameId.toString())
       .socketsLeave(payload.gameId.toString());
-    console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<leave game2');
   }
 }
