@@ -35,8 +35,6 @@ export class GameService {
    */
   async getGame(req: Request, res: Response, query: GetGameQuery) {
     const gameId = Number(query.gameId);
-    console.log(gameId);
-
     try {
       let game: any;
       if (gameId)
@@ -98,8 +96,6 @@ export class GameService {
       });
       return res.status(200).json(games[0]?.players || {});
     } catch (error) {
-      console.log(error);
-
       return res.status(500).json({ message: 'server error' });
     }
   }
@@ -174,7 +170,6 @@ export class GameService {
       this.gameGateway.userStartGame(req.user.sub, dto.userId);
       return res.status(200).json({ game: newGame });
     } catch (error) {
-      console.log(error);
       return res.status(500).json({ message: 'server error' });
     }
   }
@@ -193,7 +188,6 @@ export class GameService {
         where: { intra_id: dto.userId },
       });
       if (!user) return res.status(400).json({ message: 'user not found' });
-      console.log(req.user.sub);
       const oldInvite = await this.prisma.gameinvites.findFirst({
         where: {
           AND: [
@@ -236,8 +230,6 @@ export class GameService {
         this.notificationsGateway.notificationsToUser(user.intra_id, notif);
       return res.status(200).json({ message: 'invitation success send' });
     } catch (error) {
-      console.log(error);
-
       return res.status(500).json({ message: 'server error' });
     }
   }
@@ -249,8 +241,6 @@ export class GameService {
    */
   async accepteGame(req: Request, res: Response, dto: AcceptePlayGame) {
     try {
-      console.log(dto);
-
       const invite = await this.prisma.gameinvites.findFirst({
         where: {
           AND: [
@@ -260,8 +250,6 @@ export class GameService {
           ],
         },
       });
-      console.log(invite);
-
       if (!invite)
         return res.status(404).json({ message: 'invitation not found' });
       const users = await this.prisma.users.findMany({
@@ -303,7 +291,6 @@ export class GameService {
       this.notificationsGateway.notificationsToUser(invite.fromid, notif);
       return res.status(200).json(game);
     } catch (error) {
-      console.log(error);
       return res.status(500).json({ message: 'error server' });
     }
   }
@@ -316,8 +303,6 @@ export class GameService {
    */
   async rejectGame(req: Request, res: Response, dto: RejectPlayGame) {
     try {
-      console.log(dto);
-
       const invite = await this.prisma.gameinvites.findUnique({
         where: { id: dto.inviteId },
       });
@@ -356,8 +341,6 @@ export class GameService {
         },
         include: { players: { include: { users: true } } },
       });
-      console.log(game, '<<<<<<<<<<game end');
-      
       if (!game) return res.status(400).json({ message: 'game not found' });
       const update = await this.prisma.game
         .update({

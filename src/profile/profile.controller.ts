@@ -27,7 +27,6 @@ export class ProfileController {
   // @Put('update')
   // @UseGuards(JwtAuthGuard)
   // async updateUser(@Req() req: any, @Res() res: Response) {
-  //   // console.log(req.body);
   //   const user = await this.profileService.updateProfile({
   //     data: req.body,
   //     where: { intra_id: req.user.sub },

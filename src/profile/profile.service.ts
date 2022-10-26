@@ -18,8 +18,6 @@ export class ProfileService {
     res: Response,
     username: string,
   ): Promise<Response> {
-    console.log(username);
-
     try {
       const slector = username
         ? { username: username }

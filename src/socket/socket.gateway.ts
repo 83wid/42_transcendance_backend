@@ -70,13 +70,6 @@ export class SocketGateway
       });
       client.user = user.intra_id;
     } catch (error) {
-      console.log('error', error);
-      console.log(
-        `token =====> `,
-        client.handshake.auth.token,
-        client.handshake.headers.authorization,
-      );
-
       return this.disconnect(client);
     }
   }
@@ -86,7 +79,6 @@ export class SocketGateway
    * @param client
    */
   async handleDisconnect(client: Socket) {
-    console.log(this.server.sockets.adapter.rooms);
     const userIndex = this.users.findIndex((u) => u.socketId === client.id);
     if (userIndex > -1) {
       const { intra_id } = this.users[userIndex];
@@ -99,7 +91,6 @@ export class SocketGateway
         .to('online')
         .emit('userChangeStatus', { intra_id, status: 'OFFLINE' });
     }
-    console.log(this.server.sockets.adapter.rooms);
     this.logger.log(`socket client ${client.id} disconnect`);
   }
   // ! for test pleas remove it

@@ -243,16 +243,12 @@ export class FriendsService {
 
   //Get Friends by username
   async getFriendsByUsername(req: any, res: Response) {
-    console.log(req.params.username);
-
     try {
       const user = await this.prisma.users.findUnique({
         where: {
           username: req.params.username,
         },
       });
-      console.log(user);
-      
       const data = await this.prisma.friends.findMany({
         where: {
           OR: [
@@ -280,8 +276,6 @@ export class FriendsService {
         friends,
       });
     } catch (error) {
-      console.log(error);
-      
       return res.status(400).json({
         message: error,
       });

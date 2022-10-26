@@ -18,7 +18,6 @@ export class NotificationsGateway {
   private server: Server;
   @SubscribeMessage('readNotification')
   async handleMessage(client: Socket, payload: ReadNotification) {
-    console.log(client.user);
     try {
       await this.prismaService.notification.update({
         where: { id: payload.id },
@@ -26,7 +25,6 @@ export class NotificationsGateway {
       });
     } catch (error) {
       this.server.to(client.id).emit('error_notification', error);
-      console.log(error);
     }
   }
 

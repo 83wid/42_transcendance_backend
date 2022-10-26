@@ -17,7 +17,6 @@ export class AuthController {
   @UseGuards(FortyTwoAuthGuard)
   async Callback(@Req() req: Request, @Res() res: Response) {
     const token = await this.authService.authenticate(req);
-    // console.log(req.headers, '<<<<<<<<<<<<<<<<');
 
     return res.redirect(`http://localhost:3000?token=${token}`);
   }

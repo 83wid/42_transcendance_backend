@@ -25,11 +25,6 @@ export class GameGateway implements OnGatewayDisconnect {
    * @param client
    */
   async handleDisconnect(client: Socket) {
-    // await this.prismaService.users.update({
-    //   where: { intra_id: client.user },
-    //   data: { status: 'OFFLINE' },
-    // });
-    console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<disconnect');
     try {
       const game = await this.prismaService.game.findFirst({
         where: {
@@ -40,7 +35,6 @@ export class GameGateway implements OnGatewayDisconnect {
           ],
         },
       });
-      console.log(game);
       if (game) {
         if (
           this.server.sockets.adapter.rooms.get(`player${game.id.toString()}`)
@@ -65,7 +59,7 @@ export class GameGateway implements OnGatewayDisconnect {
     await client.join(gameIdTostring);
     const countWatchers =
       this.server.sockets.adapter.rooms.get(gameIdTostring).size;
-    this.server.in(gameIdTostring).emit('countWatchers', {
+    this.server.in([gameIdTostring, `player${gameIdTostring}`]).emit('countWatchers', {
       total: countWatchers > 2 ? countWatchers - 2 : 0,
     });
   }
@@ -76,7 +70,7 @@ export class GameGateway implements OnGatewayDisconnect {
     await client.leave(gameIdTostring);
     const countWatchers =
       this.server.sockets.adapter.rooms.get(gameIdTostring).size;
-    this.server.in(gameIdTostring).emit('countWatchers', {
+    this.server.in([gameIdTostring, `player${gameIdTostring}`]).emit('countWatchers', {
       total: countWatchers > 2 ? countWatchers - 2 : 0,
     });
   }
@@ -118,7 +112,6 @@ export class GameGateway implements OnGatewayDisconnect {
           game.status = 'PLAYING';
         }
         await client.join(`player${game.id.toString()}`);
-        console.log(this.server.sockets.adapter.rooms, '<<<<<<<<<<join game');
         this.server.in(game.id.toString()).emit('updateGame', game);
       }
     } catch (error) {
@@ -167,7 +160,7 @@ export class GameGateway implements OnGatewayDisconnect {
           include: { players: { include: { users: true } } },
         });
         // emit to watcher and players
-        this.server.in(payload.gameId.toString()).emit('updateGame', game);
+        this.server.in([payload.gameId.toString(), `player${payload.gameId.toString()}`]).emit('updateGame', game);
       }
     } catch (error) {
       console.log(error);
@@ -182,7 +175,7 @@ export class GameGateway implements OnGatewayDisconnect {
     });
     this.server.to(payload.gameId.toString()).emit('updateGame', game);
     this.server
-      .in(payload.gameId.toString())
+      .in([payload.gameId.toString(), `player${payload.gameId.toString()}`])
       .socketsLeave(payload.gameId.toString());
   }
 }

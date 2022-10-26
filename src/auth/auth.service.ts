@@ -44,7 +44,6 @@ export class AuthService {
           img_url: newUser.img_url,
           first_log: true,
         };
-        // console.log(newUser);
 
         return this.jwtService.sign(payload);
       } catch (error) {
@@ -71,11 +70,8 @@ export class AuthService {
         'last_name',
         'img_url',
       ]);
-      console.log(this.jwtService.sign({ sub: 10 }));
       return res.status(200).json(ret);
     } catch (error) {
-      console.log(error);
-
       return res.status(400).json({
         message: error,
       });
