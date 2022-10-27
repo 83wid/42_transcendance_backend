@@ -53,8 +53,8 @@ export class AuthService {
     const payload = {
       sub: user.intra_id,
     };
-    console.log(this.jwtService.sign({sub: 1}));
-    console.log(this.jwtService.sign({sub: 2}));
+    console.log(this.jwtService.sign({ sub: 1 }));
+    console.log(this.jwtService.sign({ sub: 2 }));
     return this.jwtService.sign(payload);
   }
   // get auth profile
@@ -72,6 +72,8 @@ export class AuthService {
         'last_name',
         'img_url',
       ]);
+      console.log(this.jwtService.sign({ sub: 1 }));
+      console.log(this.jwtService.sign({ sub: 2 }));
       return res.status(200).json(ret);
     } catch (error) {
       return res.status(400).json({
@@ -80,6 +82,6 @@ export class AuthService {
     }
   }
   verifyJwt(jwt: string): Promise<any> {
-    return this.jwtService.verifyAsync(jwt, {secret: jwtConstants.secret});
+    return this.jwtService.verifyAsync(jwt, { secret: jwtConstants.secret });
   }
 }
