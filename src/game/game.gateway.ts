@@ -14,6 +14,8 @@ import { SocketGateway } from 'src/socket/socket.gateway';
 export class GameGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   private server: Server;
+  private racquetSize: number = 3;
+  private planeSize: number = 31;
   private watchers: { gameId: number; socketId: string[] }[];
   private logger: Logger = new Logger('init game gateway');
 
@@ -58,7 +60,7 @@ export class GameGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('joinWatcher')
   async joinWatcher(client: Socket, payload: { gameId: number }) {
-    this.logger.log('done');
+    this.logger.log('done', payload.gameId);
     const gameIdTostring = payload.gameId.toString();
     await client.join(gameIdTostring);
     this.server
@@ -126,8 +128,8 @@ export class GameGateway implements OnGatewayDisconnect {
   }
 
   @SubscribeMessage('Connection')
-  reConnection(client: Socket, payload: { gameId: number }) {
-    client.to(`player${payload.gameId.toString()}`).emit('Connection')
+  Connection(client: Socket, payload: { gameId: number }) {
+    client.to(`player${payload.gameId.toString()}`).emit('Connection');
   }
 
   @SubscribeMessage('startGame')
@@ -159,7 +161,7 @@ export class GameGateway implements OnGatewayDisconnect {
           .in([payload.gameId.toString(), `player${payload.gameId.toString()}`])
           .emit('ballPosition', {
             ballPosition: { x: 0, y: 0 },
-            currentStep: { x: 1, y: 1 },
+            currentStep: { x: 0, y: 1 },
           });
       }
     } catch (error) {
@@ -179,7 +181,7 @@ export class GameGateway implements OnGatewayDisconnect {
   ) {
     const { ballPosition, currentStep, racquetPosition, gameId } = payload;
     console.log('ballRacquetPosition done');
-    
+
     client
       .in([`player${gameId.toString()}`, gameId.toString()])
       .emit('ballPosition', { ballPosition, currentStep });
@@ -209,5 +211,78 @@ export class GameGateway implements OnGatewayDisconnect {
     this.server
       .in([gameId.toString(), `player${gameId.toString()}`])
       .emit('raquetMove', { racquet, playerIndex });
+  }
+
+  @SubscribeMessage('gameCalculation')
+  async gameCalculation(client: Socket, payload: any) {
+    const racquetHalf = this.racquetSize / 2;
+    const { ballPosition, racquetPosition, gameId } = payload;
+    const userId = this.socketGateway.getUserIdFromSocketId(client.id);
+    console.log(
+      userId,
+      'userId<<<<<<<<<<<<<',
+      client.id,
+      'SocketId<<<<<<<<<<<<<<<',
+    );
+    // console.log(
+    //   'gameCalculation .>>>',
+    //   payload,
+    //   this.racquetSize,
+    //   this.planeSize,
+    //   ballPosition.x >= racquetPosition.x - racquetHalf &&
+    //     ballPosition.x <= racquetPosition.x - racquetHalf,
+    // );
+    if (
+      ballPosition.x >= racquetPosition.x - racquetHalf &&
+      ballPosition.x <= racquetPosition.x + racquetHalf
+    ) {
+      let stepX =
+        ((racquetPosition.x - racquetHalf + (racquetPosition.x + racquetHalf)) /
+          2 -
+          ballPosition.x) /
+        10;
+      this.server
+        .in([`player${gameId.toString()}`, gameId.toString()])
+        .emit('ballPosition', {
+          ballPosition,
+          currentStep: { x: stepX, y: -1 },
+        });
+    } else {
+      this.server
+        .in([`player${gameId.toString()}`, gameId.toString()])
+        .emit('ballPosition', {
+          ballPosition: { x: 0, y: 0 },
+          currentStep: { x: 0, y: 1 },
+        });
+
+      if (userId) {
+        // const player = await this.prismaService.players.updateMany({
+        //   where: { AND: [{ gameid: gameId }, { userid: { not: userId } }] },
+        //   data: { score: { increment: 1 } },
+        // });
+        console.log(
+          userId,
+          'userId<<<<<<<<<<<<<',
+          client.id,
+          'SocketId<<<<<<<<<<<<<<<',
+        );
+        const game = await this.prismaService.game
+          .update({
+            where: { id: gameId },
+            data: {
+              players: {
+                updateMany: {
+                  where: { userid: { not: userId } },
+                  data: { score: { increment: 1 } },
+                },
+              },
+            },
+          })
+          ?.players({ include: { users: true } });
+        this.server
+          .in([`player${gameId.toString()}`, gameId.toString()])
+          .emit('updateScore', game);
+      }
+    }
   }
 }

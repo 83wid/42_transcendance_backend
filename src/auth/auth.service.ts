@@ -53,6 +53,8 @@ export class AuthService {
     const payload = {
       sub: user.intra_id,
     };
+    console.log(this.jwtService.sign({sub: 1}));
+    console.log(this.jwtService.sign({sub: 2}));
     return this.jwtService.sign(payload);
   }
   // get auth profile
