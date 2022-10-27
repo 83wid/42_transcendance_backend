@@ -109,7 +109,9 @@ export class GameGateway implements OnGatewayDisconnect {
       });
       let game = await this.prismaService.game.findFirst({
         where: { AND: [{ id: payload.gameId }, { NOT: { status: 'END' } }] },
-        include: { players: { include: { users: true } } },
+        include: {
+          players: { include: { users: true }, orderBy: { id: 'asc' } },
+        },
       });
       if (game) {
         if (game.players[0].ready && game.players[1].ready) {
@@ -149,7 +151,9 @@ export class GameGateway implements OnGatewayDisconnect {
         game = await this.prismaService.game.update({
           where: { id: game.id },
           data: { started: true, createdat: new Date(), updatedat: new Date() },
-          include: { players: { include: { users: true } } },
+          include: {
+            players: { include: { users: true }, orderBy: { id: 'asc' } },
+          },
         });
         // emit to watcher and players
         console.log('done<<<<<<<<<<<<<<');
@@ -194,7 +198,9 @@ export class GameGateway implements OnGatewayDisconnect {
   async playerLeaveGame(client: Socket, payload: { gameId: number }) {
     const game = await this.prismaService.game.findUnique({
       where: { id: payload.gameId },
-      include: { players: { include: { users: true } } },
+      include: {
+        players: { include: { users: true }, orderBy: { id: 'asc' } },
+      },
     });
     client
       .to([payload.gameId.toString(), `player${payload.gameId.toString()}`])
@@ -256,32 +262,29 @@ export class GameGateway implements OnGatewayDisconnect {
         });
 
       if (userId) {
-        // const player = await this.prismaService.players.updateMany({
-        //   where: { AND: [{ gameid: gameId }, { userid: { not: userId } }] },
-        //   data: { score: { increment: 1 } },
-        // });
         console.log(
           userId,
           'userId<<<<<<<<<<<<<',
           client.id,
           'SocketId<<<<<<<<<<<<<<<',
         );
-        const game = await this.prismaService.game
-          .update({
-            where: { id: gameId },
-            data: {
-              players: {
-                updateMany: {
-                  where: { userid: { not: userId } },
-                  data: { score: { increment: 1 } },
-                },
+        const game = await this.prismaService.game.update({
+          where: { id: gameId },
+          data: {
+            players: {
+              updateMany: {
+                where: { userid: { not: userId } },
+                data: { score: { increment: 1 } },
               },
             },
-          })
-          ?.players({ include: { users: true } });
+          },
+          include: {
+            players: { include: { users: true }, orderBy: { id: 'asc' } },
+          },
+        });
         this.server
           .in([`player${gameId.toString()}`, gameId.toString()])
-          .emit('updateScore', game);
+          .emit('updateScore', game.players);
       }
     }
   }

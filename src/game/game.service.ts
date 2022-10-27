@@ -36,20 +36,12 @@ export class GameService {
   async getGame(req: Request, res: Response, query: GetGameQuery) {
     const gameId = Number(query.gameId);
     try {
-      // let game: any;
-      // if (gameId)
-        const game = await this.prisma.game.findFirst({
-          where: { id: gameId },
-          include: { players: { include: { users: true }, orderBy: {id: 'asc'} } },
-        });
-      // else
-      //   game = await this.prisma.players
-      //     .findFirst({
-      //       where: { userid: req.user.sub, game: { status: 'PLAYING' } },
-      //     })
-      //     .game({
-      //       include: { players: { include: { users: true } } },
-      //     });
+      const game = await this.prisma.game.findFirst({
+        where: { id: gameId },
+        include: {
+          players: { include: { users: true }, orderBy: { id: 'asc' } },
+        },
+      });
       if (!game) return res.status(404).json({ message: 'game not found' });
       return res.status(200).json(game);
     } catch (error) {
