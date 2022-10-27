@@ -36,20 +36,20 @@ export class GameService {
   async getGame(req: Request, res: Response, query: GetGameQuery) {
     const gameId = Number(query.gameId);
     try {
-      let game: any;
-      if (gameId)
-        game = await this.prisma.game.findFirst({
+      // let game: any;
+      // if (gameId)
+        const game = await this.prisma.game.findFirst({
           where: { id: gameId },
-          include: { players: { include: { users: true } } },
+          include: { players: { include: { users: true }, orderBy: {id: 'asc'} } },
         });
-      else
-        game = await this.prisma.players
-          .findFirst({
-            where: { userid: req.user.sub, game: { status: 'PLAYING' } },
-          })
-          .game({
-            include: { players: { include: { users: true } } },
-          });
+      // else
+      //   game = await this.prisma.players
+      //     .findFirst({
+      //       where: { userid: req.user.sub, game: { status: 'PLAYING' } },
+      //     })
+      //     .game({
+      //       include: { players: { include: { users: true } } },
+      //     });
       if (!game) return res.status(404).json({ message: 'game not found' });
       return res.status(200).json(game);
     } catch (error) {
@@ -65,42 +65,11 @@ export class GameService {
    */
   async getUserHistoryGame(req: Request, res: Response) {
     try {
-      // const games = await this.prisma.users.findMany({
-      //   where: { intra_id: req.user.sub },
-      //   // select: {
-      //   //   players: {
-      //   //     where: { game: { status: 'END' } },
-      //   //     select: {
-      //   //       game: {
-      //   //         include: {
-      //   //           players: {
-      //   //             include: {
-      //   //               users: {
-      //   //                 select: {
-      //   //                   intra_id: true,
-      //   //                   username: true,
-      //   //                   email: true,
-      //   //                   first_name: true,
-      //   //                   last_name: true,
-      //   //                   img_url: true,
-      //   //                   status: true,
-      //   //                 },
-      //   //               },
-      //   //             },
-      //   //           },
-      //   //         },
-      //   //       },
-      //   //     },
-      //   //   },
-      //   // },
-      // });
       const games = await this.prisma.game.findMany({
-        where: {players: {some: {userid: req.user.sub}}},
-        include: {players: {include: {users: true}}},
-        orderBy: {updatedat: 'desc'}
-      })
-      console.log(games, '<<<<<<<<<<<');
-      
+        where: { players: { some: { userid: req.user.sub } } },
+        include: { players: { include: { users: true } } },
+        orderBy: { updatedat: 'desc' },
+      });
       return res.status(200).json(games);
     } catch (error) {
       return res.status(500).json({ message: 'server error' });

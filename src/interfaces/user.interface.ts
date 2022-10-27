@@ -157,7 +157,7 @@ export class LeaveGameBody {
 }
 
 export class GetGameQuery {
-  @IsOptional()
+  @IsNotEmpty()
   @Matches('^[0-9]*$')
   gameId: string;
 }
