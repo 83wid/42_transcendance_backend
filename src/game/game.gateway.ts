@@ -39,18 +39,16 @@ export class GameGateway implements OnGatewayDisconnect {
         },
       });
       if (game) {
-        if (
-          this.server.sockets.adapter.rooms.get(`player${game.id.toString()}`)
-            ?.size
-        )
-          this.server
-            .to([`player${game.id.toString()}`, game.id.toString()])
-            .emit('ProblemConnection');
-        else
-          await this.prismaService.game.update({
-            where: { id: game.id },
-            data: { status: 'END', started: false },
-          });
+        const endGame = await this.prismaService.game.update({
+          where: { id: game.id },
+          data: { status: 'END', started: false },
+          include: {
+            players: { include: { users: true }, orderBy: { id: 'asc' } },
+          },
+        });
+        this.server
+          .to([endGame.id.toString(), `player${endGame.id.toString()}`])
+          .emit('updateGame', endGame);
       }
     } catch (error) {
       console.log(error);
@@ -81,14 +79,6 @@ export class GameGateway implements OnGatewayDisconnect {
       .emit('countWatchers', {
         total: this.server.sockets.adapter.rooms.get(gameIdTostring).size,
       });
-  }
-
-  @SubscribeMessage('message')
-  handleMessage(client: Socket, payload: any): string {
-    this.logger.log(`event message ${client.user} ${payload}`);
-    this.server.to('online').emit('userStartGame', { gameId: 22 });
-
-    return 'Hello world!';
   }
 
   async userStartGame(userId_1: number, userId_2: number) {
@@ -129,9 +119,9 @@ export class GameGateway implements OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('Connection')
-  Connection(client: Socket, payload: { gameId: number }) {
-    client.to(`player${payload.gameId.toString()}`).emit('Connection');
+  @SubscribeMessage('playeGame')
+  playeGame(client: Socket, payload: { gameId: number }) {
+    client.to(`player${payload.gameId.toString()}`).emit('playeGame');
   }
 
   @SubscribeMessage('startGame')
@@ -223,21 +213,12 @@ export class GameGateway implements OnGatewayDisconnect {
   async gameCalculation(client: Socket, payload: any) {
     const racquetHalf = this.racquetSize / 2;
     const { ballPosition, racquetPosition, gameId } = payload;
-    const userId = this.socketGateway.getUserIdFromSocketId(client.id);
     console.log(
-      userId,
+      client.user,
       'userId<<<<<<<<<<<<<',
       client.id,
       'SocketId<<<<<<<<<<<<<<<',
     );
-    // console.log(
-    //   'gameCalculation .>>>',
-    //   payload,
-    //   this.racquetSize,
-    //   this.planeSize,
-    //   ballPosition.x >= racquetPosition.x - racquetHalf &&
-    //     ballPosition.x <= racquetPosition.x - racquetHalf,
-    // );
     if (
       ballPosition.x >= racquetPosition.x - racquetHalf &&
       ballPosition.x <= racquetPosition.x + racquetHalf
@@ -260,32 +241,23 @@ export class GameGateway implements OnGatewayDisconnect {
           ballPosition: { x: 0, y: 0 },
           currentStep: { x: 0, y: 1 },
         });
-
-      if (userId) {
-        console.log(
-          userId,
-          'userId<<<<<<<<<<<<<',
-          client.id,
-          'SocketId<<<<<<<<<<<<<<<',
-        );
-        const game = await this.prismaService.game.update({
-          where: { id: gameId },
-          data: {
-            players: {
-              updateMany: {
-                where: { userid: { not: userId } },
-                data: { score: { increment: 1 } },
-              },
+      const game = await this.prismaService.game.update({
+        where: { id: gameId },
+        data: {
+          players: {
+            updateMany: {
+              where: { userid: { not: client.user } },
+              data: { score: { increment: 1 } },
             },
           },
-          include: {
-            players: { include: { users: true }, orderBy: { id: 'asc' } },
-          },
-        });
-        this.server
-          .in([`player${gameId.toString()}`, gameId.toString()])
-          .emit('updateScore', game.players);
-      }
+        },
+        include: {
+          players: { include: { users: true }, orderBy: { id: 'asc' } },
+        },
+      });
+      this.server
+        .in([`player${gameId.toString()}`, gameId.toString()])
+        .emit('updateScore', game.players);
     }
   }
 }
