@@ -56,23 +56,26 @@ export class GameGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('joinWatcher')
   async joinWatcher(client: Socket, payload: { gameId: number }) {
+    console.log(client.id, client.user, 'joinWatcher');
     const gameIdTostring = payload.gameId.toString();
     await client.join(gameIdTostring);
     this.server
       .in([gameIdTostring, `player${gameIdTostring}`])
       .emit('countWatchers', {
-        total: this.server.sockets.adapter.rooms.get(gameIdTostring).size,
+        total: this.server.sockets.adapter.rooms.get(gameIdTostring)?.size || 0,
       });
   }
 
   @SubscribeMessage('leaveWatcher')
   async leaveWatcher(client: Socket, payload: { gameId: number }) {
     const gameIdTostring = payload.gameId.toString();
+    console.log(client.id, client.user, payload.gameId, 'leaveWatcher');
+    console.log(this.server.sockets.adapter.rooms.get(gameIdTostring));
     await client.leave(gameIdTostring);
     this.server
       .in([gameIdTostring, `player${gameIdTostring}`])
       .emit('countWatchers', {
-        total: this.server.sockets.adapter.rooms.get(gameIdTostring).size,
+        total: this.server.sockets.adapter.rooms.get(gameIdTostring)?.size || 0,
       });
   }
 
@@ -118,7 +121,7 @@ export class GameGateway implements OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('playeGame')
+  @SubscribeMessage('streamGame')
   playeGame(client: Socket, payload: { gameId: number }) {
     client.to(`player${payload.gameId.toString()}`).emit('playeGame');
   }
@@ -210,7 +213,7 @@ export class GameGateway implements OnGatewayDisconnect {
     const racquetHalf = this.racquetSize / 2;
     const { ballPosition, racquetPosition, gameId } = payload;
     console.log(client.user, client.id);
-    
+
     if (
       ballPosition.x >= racquetPosition.x - racquetHalf &&
       ballPosition.x <= racquetPosition.x + racquetHalf

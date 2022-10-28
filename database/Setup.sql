@@ -284,8 +284,6 @@ INSERT INTO
     email,
     first_name,
     last_name,
-    status,
-    xp,
     img_url,
     cover
   )
@@ -296,8 +294,6 @@ VALUES
     'alzaynou@student.1337.ma',
     'Ali',
     'Zaynoune',
-    'OFFLINE',
-    floor(random() * 8800) :: int,
     'https://cdn.intra.42.fr/users/7930a8e34ad5d6c7629b269e9db89ded/alzaynou.jpg',
     'https://random.imagecdn.app/1800/800'
   );
