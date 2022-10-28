@@ -15,8 +15,6 @@ export class GameGateway implements OnGatewayDisconnect {
   @WebSocketServer()
   private server: Server;
   private racquetSize: number = 3;
-  private planeSize: number = 31;
-  private watchers: { gameId: number; socketId: string[] }[];
   private logger: Logger = new Logger('init game gateway');
 
   constructor(
@@ -58,7 +56,6 @@ export class GameGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('joinWatcher')
   async joinWatcher(client: Socket, payload: { gameId: number }) {
-    this.logger.log('done', payload.gameId);
     const gameIdTostring = payload.gameId.toString();
     await client.join(gameIdTostring);
     this.server
@@ -72,8 +69,6 @@ export class GameGateway implements OnGatewayDisconnect {
   async leaveWatcher(client: Socket, payload: { gameId: number }) {
     const gameIdTostring = payload.gameId.toString();
     await client.leave(gameIdTostring);
-    const countWatchers =
-      this.server.sockets.adapter.rooms.get(gameIdTostring).size;
     this.server
       .in([gameIdTostring, `player${gameIdTostring}`])
       .emit('countWatchers', {
@@ -105,12 +100,16 @@ export class GameGateway implements OnGatewayDisconnect {
       });
       if (game) {
         if (game.players[0].ready && game.players[1].ready) {
-          await this.prismaService.game.update({
+          game = await this.prismaService.game.update({
             where: { id: payload.gameId },
             data: { status: 'PLAYING' },
+            include: {
+              players: { include: { users: true }, orderBy: { id: 'asc' } },
+            },
           });
-          game.status = 'PLAYING';
         }
+        console.log(game);
+
         await client.join(`player${game.id.toString()}`);
         this.server.in(`player${game.id.toString()}`).emit('updateGame', game);
       }
@@ -145,9 +144,6 @@ export class GameGateway implements OnGatewayDisconnect {
             players: { include: { users: true }, orderBy: { id: 'asc' } },
           },
         });
-        // emit to watcher and players
-        console.log('done<<<<<<<<<<<<<<');
-
         this.server
           .in([payload.gameId.toString(), `player${payload.gameId.toString()}`])
           .emit('updateGame', game);
@@ -213,12 +209,8 @@ export class GameGateway implements OnGatewayDisconnect {
   async gameCalculation(client: Socket, payload: any) {
     const racquetHalf = this.racquetSize / 2;
     const { ballPosition, racquetPosition, gameId } = payload;
-    console.log(
-      client.user,
-      'userId<<<<<<<<<<<<<',
-      client.id,
-      'SocketId<<<<<<<<<<<<<<<',
-    );
+    console.log(client.user, client.id);
+    
     if (
       ballPosition.x >= racquetPosition.x - racquetHalf &&
       ballPosition.x <= racquetPosition.x + racquetHalf
