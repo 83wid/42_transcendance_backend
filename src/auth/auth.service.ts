@@ -63,7 +63,9 @@ export class AuthService {
       const data = await this.prisma.users.findUnique({
         where: { intra_id: id },
       });
-      if (!data) return res.status(404).json({message: 'user not found'})
+      if (!data) return res.status(404).json({ message: 'user not found' });
+      console.log(data);
+
       const ret = pick(data, [
         'id',
         'intra_id',
@@ -72,6 +74,8 @@ export class AuthService {
         'first_name',
         'last_name',
         'img_url',
+        'created_at',
+        'updated_at',
       ]);
       console.log(this.jwtService.sign({ sub: 1 }));
       console.log(this.jwtService.sign({ sub: 2 }));
