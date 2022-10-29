@@ -24,6 +24,6 @@ export class AuthController {
   @Post('/me')
   @UseGuards(JwtAuthGuard)
   async Login(@Req() req: Request, @Res() res: Response) {
-    return await this.authService.authprofile(req.user.sub, res);
+    return await this.authService.authMe(req.user.sub, res);
   }
 }

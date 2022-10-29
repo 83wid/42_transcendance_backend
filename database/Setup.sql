@@ -277,26 +277,26 @@ VALUES
     'change your cover'
   );
 
-INSERT INTO
-  users (
-    intra_id,
-    username,
-    email,
-    first_name,
-    last_name,
-    img_url,
-    cover
-  )
-VALUES
-  (
-    51111,
-    'alizaynou',
-    'alzaynou@student.1337.ma',
-    'Ali',
-    'Zaynoune',
-    'https://cdn.intra.42.fr/users/7930a8e34ad5d6c7629b269e9db89ded/alzaynou.jpg',
-    'https://random.imagecdn.app/1800/800'
-  );
+-- INSERT INTO
+--   users (
+--     intra_id,
+--     username,
+--     email,
+--     first_name,
+--     last_name,
+--     img_url,
+--     cover
+--   )
+-- VALUES
+--   (
+--     51111,
+--     'alizaynou',
+--     'alzaynou@student.1337.ma',
+--     'Ali',
+--     'Zaynoune',
+--     'https://cdn.intra.42.fr/users/7930a8e34ad5d6c7629b269e9db89ded/alzaynou.jpg',
+--     'https://random.imagecdn.app/1800/800'
+--   );
 
 INSERT INTO
   users (

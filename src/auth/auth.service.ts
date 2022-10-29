@@ -58,11 +58,12 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
   // get auth profile
-  async authprofile(id: number, res: Response) {
+  async authMe(id: number, res: Response) {
     try {
       const data = await this.prisma.users.findUnique({
         where: { intra_id: id },
       });
+      if (!data) return res.status(404).json({message: 'user not found'})
       const ret = pick(data, [
         'id',
         'intra_id',
