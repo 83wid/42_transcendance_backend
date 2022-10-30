@@ -60,7 +60,7 @@ export class GameService {
       const games = await this.prisma.game.findMany({
         where: { players: { some: { userid: req.user.sub } } },
         include: { players: { include: { users: true } } },
-        orderBy: { updatedat: 'desc' },
+        orderBy: { updated_at: 'desc' },
       });
       return res.status(200).json(games);
     } catch (error) {
@@ -123,7 +123,7 @@ export class GameService {
         data: {
           level: dto.gameLevel,
           status: 'WAITING',
-          createdat: new Date(),
+          created_at: new Date(),
           players: {
             create: [{ userid: dto.userId }, { userid: req.user.sub }],
           },
@@ -173,7 +173,7 @@ export class GameService {
         data: {
           status: 'WAITING',
           level: dto.gameLevel,
-          createdat: new Date(),
+          created_at: new Date(),
           players: {
             create: [{ userid: dto.userId }, { userid: req.user.sub }],
           },
@@ -190,7 +190,7 @@ export class GameService {
           fromid: req.user.sub,
           targetid: gameInvite.id,
           content: `invet you to play game level ${dto.gameLevel.toLocaleLowerCase()}`,
-          createdat: new Date(),
+          created_at: new Date(),
         },
         include: { users_notification_fromidTousers: true },
       });
@@ -252,7 +252,7 @@ export class GameService {
           fromid: req.user.sub,
           targetid: game.id,
           content: 'accepte your game invetation',
-          createdat: new Date(),
+          created_at: new Date(),
         },
         include: { users_notification_fromidTousers: true },
       });
@@ -315,7 +315,7 @@ export class GameService {
           where: { id: dto.gameId },
           data: {
             status: 'END',
-            updatedat: new Date(),
+            updated_at: new Date(),
           },
         })
         .players();

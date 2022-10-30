@@ -142,7 +142,7 @@ export class GameGateway implements OnGatewayDisconnect {
       if (game) {
         game = await this.prismaService.game.update({
           where: { id: game.id },
-          data: { started: true, createdat: new Date(), updatedat: new Date() },
+          data: { started: true, created_at: new Date(), updated_at: new Date() },
           include: {
             players: { include: { users: true }, orderBy: { id: 'asc' } },
           },

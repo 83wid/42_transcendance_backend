@@ -5,6 +5,7 @@ import { Response } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { pick } from 'lodash';
 import { jwtConstants } from './constants';
+import { decode } from 'querystring';
 
 @Injectable()
 export class AuthService {
@@ -26,6 +27,8 @@ export class AuthService {
     const user = await this.UserService.user({
       intra_id,
     });
+    console.log(user);
+    
     if (!user) {
       try {
         const newUser = await this.UserService.createUser({
@@ -36,6 +39,8 @@ export class AuthService {
           last_name,
           img_url,
         });
+        console.log(newUser);
+        
         const payload = {
           username: newUser.username,
           sub: newUser.intra_id,
@@ -47,6 +52,8 @@ export class AuthService {
 
         return this.jwtService.sign(payload);
       } catch (error) {
+        console.log(error);
+        
         return '';
       }
     }

@@ -7,32 +7,45 @@ import {
   Res,
   Query,
   UseGuards,
-} from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UsersService } from './users.service';
-import { Response } from 'express';
-import { GetUserQuery } from 'src/interfaces/user.interface';
+  UseInterceptors,
+  UploadedFile,
+  Post,
+} from "@nestjs/common";
+import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
+import { UsersService } from "./users.service";
+import { Request, Response } from "express";
+import { GetUserQuery } from "src/interfaces/user.interface";
+import { FileInterceptor } from "@nestjs/platform-express/multer";
 
-@Controller('users')
+@Controller("users")
 export class UsersController {
   constructor(private usersService: UsersService) {}
-  @Put('update')
+  @Put("update")
   @UseGuards(JwtAuthGuard)
-  async updateUser(@Req() req: any, @Res() res: Response) {
+  async updateUser(@Req() req: Request, @Res() res: Response) {
     const user = await this.usersService.updateUser({
       data: req.body,
       where: { intra_id: req.user.sub },
     });
     return res.status(201).json(user);
   }
-  @Get('all')
+
+  @Post("updateAvatar")
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor("file"))
+  updateAvatar(@UploadedFile() file: Express.Multer.File, @Req() req: Request, @Res() res: Response) {
+    console.log(file, req.body);
+    return res.status(200).json({ message: "done" });
+  }
+
+  @Get("all")
   @UseGuards(JwtAuthGuard)
   async getAllUsers(@Query() query: GetUserQuery, @Res() res: Response) {
     return this.usersService.getAllUsers(query, res);
   }
-  @Get(':username')
+  @Get(":username")
   @UseGuards(JwtAuthGuard)
-  async findUser(@Param('username') username: string) {
+  async findUser(@Param("username") username: string) {
     return this.usersService.user({ username: username });
   }
 }

@@ -1,17 +1,20 @@
 -- CREATE DATABASE TRANSCENDANCE;
 -- USE TRANSCENDANCE;
 CREATE TYPE level_type AS ENUM ('BRONZE', 'SILVER', 'GOLD', 'PLATINUM');
-
 CREATE TYPE game_diff AS ENUM ('EASY', 'NORMAL', 'DIFFICULT');
-
 CREATE TYPE game_status AS ENUM('WAITING', 'PLAYING', 'END');
-
 CREATE TYPE conversation_type AS ENUM ('DIRECT', 'GROUP');
-
-CREATE TYPE NOTIFICATION_T AS ENUM ('FRIEND_REQUEST', 'GAME_INVITE', 'GAME_ACCEPTE' , 'OTHER');
-
+CREATE TYPE NOTIFICATION_T AS ENUM (
+  'FRIEND_REQUEST',
+  'GAME_INVITE',
+  'GAME_ACCEPTE',
+  'OTHER'
+);
 CREATE TYPE STATUS_T AS ENUM ('ONLINE', 'OFFLINE', 'PLAYING');
-
+CREATE OR REPLACE FUNCTION update_changetimestamp() RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = now();
+RETURN NEW;
+END;
+$$ language 'plpgsql';
 -- create table for users
 CREATE TABLE users (
   id SERIAL NOT NULL unique,
@@ -25,10 +28,11 @@ CREATE TABLE users (
   img_url varchar(255),
   cover varchar(255),
   created_at timestamp DEFAULT now(),
-  updated_at timestamp DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now(),
   PRIMARY KEY (id)
 );
-
+CREATE TRIGGER update_users_changetimestamp BEFORE
+UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_changetimestamp();
 -- create table for all conversation
 CREATE TABLE conversation (
   id SERIAL NOT NULL unique,
@@ -36,7 +40,6 @@ CREATE TABLE conversation (
   type conversation_type DEFAULT 'DIRECT',
   PRIMARY KEY (id)
 );
-
 -- create table for for group members 
 CREATE TABLE group_member (
   id SERIAL NOT NULL unique,
@@ -48,7 +51,6 @@ CREATE TABLE group_member (
   FOREIGN KEY (conversation_id) REFERENCES conversation (id),
   PRIMARY KEY (id)
 );
-
 -- create table for messages
 CREATE TABLE message (
   id SERIAL NOT NULL unique,
@@ -63,7 +65,6 @@ CREATE TABLE message (
   FOREIGN KEY (sender_id) REFERENCES users (intra_id),
   FOREIGN KEY (conversation_id) REFERENCES conversation (id)
 );
-
 -- create table for Friends
 CREATE TABLE friends (
   id SERIAL NOT NULL,
@@ -74,7 +75,6 @@ CREATE TABLE friends (
   FOREIGN KEY (friendId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
-
 -- create table for Friends requests
 CREATE TABLE invites (
   id SERIAL NOT NULL,
@@ -86,7 +86,6 @@ CREATE TABLE invites (
   FOREIGN KEY (receiverId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
-
 -- create table for Blocked users
 CREATE TABLE blocked (
   id SERIAL NOT NULL,
@@ -97,18 +96,16 @@ CREATE TABLE blocked (
   FOREIGN KEY (blockedId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
-
 -- create table for test
 CREATE TABLE game (
   id SERIAL NOT NULL,
   status game_status DEFAULT 'WAITING',
   level game_diff DEFAULT 'NORMAL',
   started boolean DEFAULT false,
-  createdAt timestamp NOT NULL,
-  updatedAt timestamp NOT NULL DEFAULT now(),
+  created_at timestamp NOT NULL,
+  updated_at timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
 );
-
 -- create table for players
 CREATE TABLE players (
   id SERIAL NOT NULL,
@@ -120,7 +117,6 @@ CREATE TABLE players (
   FOREIGN KEY (gameId) REFERENCES game (id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
-
 -- create table for gameInvites
 CREATE TABLE gameInvites(
   id SERIAL NOT NULL,
@@ -133,7 +129,6 @@ CREATE TABLE gameInvites(
   FOREIGN KEY (gameId) REFERENCES game (id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
-
 -- create table for notification
 CREATE TABLE notification (
   id SERIAL,
@@ -143,13 +138,12 @@ CREATE TABLE notification (
   targetId INT NOT NULL,
   content TEXT,
   read BOOLEAN DEFAULT false,
-  createdAt timestamp NOT NULL,
-  updatedAt timestamp NOT NULL DEFAULT now(),
+  created_at timestamp NOT NULL,
+  updated_at timestamp NOT NULL DEFAULT now(),
   FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
   FOREIGN KEY (fromId) REFERENCES users (intra_id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
-
 -- create table for messages
 CREATE TABLE achievements (
   id SERIAL NOT NULL,
@@ -159,7 +153,6 @@ CREATE TABLE achievements (
   description text,
   PRIMARY KEY (id)
 );
-
 -- create table for users_achievements
 CREATE TABLE users_achievements (
   id SERIAL NOT NULL,
@@ -167,14 +160,11 @@ CREATE TABLE users_achievements (
   achievementId INT NOT NULL,
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (achievementId) REFERENCES achievements (id),
-  createdAt timestamp NOT NULL DEFAULT now(),
+  created_at timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
 );
-
-INSERT INTO
-  achievements(name, level, xp, description)
-VALUES
-  ('friendly', 'SILVER', 10, 'add 10 friends'),
+INSERT INTO achievements(name, level, xp, description)
+VALUES ('friendly', 'SILVER', 10, 'add 10 friends'),
   ('friendly', 'BRONZE', 20, 'add 20 friends'),
   ('friendly', 'GOLD', 50, 'add 50 friends'),
   ('friendly', 'PLATINUM', 100, 'add 100 friends'),
@@ -276,30 +266,7 @@ VALUES
     100,
     'change your cover'
   );
-
--- INSERT INTO
---   users (
---     intra_id,
---     username,
---     email,
---     first_name,
---     last_name,
---     img_url,
---     cover
---   )
--- VALUES
---   (
---     51111,
---     'alizaynou',
---     'alzaynou@student.1337.ma',
---     'Ali',
---     'Zaynoune',
---     'https://cdn.intra.42.fr/users/7930a8e34ad5d6c7629b269e9db89ded/alzaynou.jpg',
---     'https://random.imagecdn.app/1800/800'
---   );
-
-INSERT INTO
-  users (
+INSERT INTO users (
     intra_id,
     username,
     email,
@@ -310,31 +277,21 @@ INSERT INTO
     img_url,
     cover
   )
-SELECT
-  id,
+SELECT id,
   'alizaynoune' || id,
   'zaynoune' || id || '@ali.ali',
   'ali',
   'zaynoune',
   'OFFLINE',
-  floor(random() * 8000) :: int,
+  floor(random() * 8000)::int,
   'https://joeschmoe.io/api/v1/random',
   'https://random.imagecdn.app/1800/800'
-FROM
-  generate_series(1, 200) AS id;
-
-INSERT INTO
-  users_achievements (userId, achievementId)
-SELECT
-  51111,
+FROM generate_series(1, 200) AS id;
+INSERT INTO users_achievements (userId, achievementId)
+SELECT 51111,
   id * 2
-FROM
-  generate_series(1, 10) AS id;
-
-INSERT INTO
-  users_achievements (userId, achievementId)
-SELECT
-  id,
+FROM generate_series(1, 10) AS id;
+INSERT INTO users_achievements (userId, achievementId)
+SELECT id,
   id
-FROM
-  generate_series(1, 20) AS id;
+FROM generate_series(1, 20) AS id;
