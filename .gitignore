@@ -3,6 +3,9 @@
 /node_modules
 /database/data
 
+#upload
+/upload
+
 # Logs
 logs
 *.log

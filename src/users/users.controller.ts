@@ -1,4 +1,15 @@
-import { Controller, Get, Param, Put, Req, Res, Query, UseGuards, UseInterceptors, UploadedFiles } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Param,
+  Put,
+  Req,
+  Res,
+  Query,
+  UseGuards,
+  UseInterceptors,
+  UploadedFiles,
+} from "@nestjs/common";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { UsersService } from "./users.service";
 import { Request, Response } from "express";
@@ -48,10 +59,10 @@ export class UsersController {
     const { avatar, cover } = files;
     // http://localhost:3000/upload/avatar_51111.jpeg
     console.log(avatar);
-    
+
     let data = req.body;
-    if (avatar) data.img_url = `users/image/${avatar[0].filename}`;
-    if (cover) data.cover = `users/image/${cover[0].filename}`;
+    if (avatar) data.img_url = `${process.env.PUBLIC_URL}/users/image/${avatar[0].filename}`;
+    if (cover) data.cover = `${process.env.PUBLIC_URL}/users/image/${cover[0].filename}`;
     console.log(data);
 
     const user = await this.usersService.updateUser({
