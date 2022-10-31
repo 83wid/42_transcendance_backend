@@ -245,11 +245,18 @@ export class GameGateway implements OnGatewayDisconnect {
               data: { score: { increment: 1 } },
             },
           },
+          
         },
         include: {
           players: { include: { users: true }, orderBy: { id: 'asc' } },
         },
       });
+      const userId = game.players.find(p => p.userid !== client.user).userid
+      const user = await this.prismaService.users.update({
+        where: {intra_id : userId},
+        data: {xp: {increment: 5}}
+      })
+      console.log(user);      
       this.server
         .in([`player${gameId.toString()}`, gameId.toString()])
         .emit('updateScore', game.players);

@@ -273,9 +273,7 @@ INSERT INTO users (
     first_name,
     last_name,
     status,
-    xp,
-    img_url,
-    cover
+    img_url
   )
 SELECT id,
   'alizaynoune' || id,
@@ -283,9 +281,7 @@ SELECT id,
   'ali',
   'zaynoune',
   'OFFLINE',
-  floor(random() * 8000)::int,
-  'https://joeschmoe.io/api/v1/random',
-  'https://random.imagecdn.app/1800/800'
+  'https://joeschmoe.io/api/v1/random'
 FROM generate_series(1, 200) AS id;
 INSERT INTO users_achievements (userId, achievementId)
 SELECT 51111,

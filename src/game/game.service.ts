@@ -17,9 +17,9 @@ import { NotificationsGateway } from 'src/notifications/notifications.gateway';
 @Injectable()
 export class GameService {
   private queue: QueueInterface[] = [
-    { GameLevel: 'EASY', users: [1, 4, 9] },
-    { GameLevel: 'NORMAL', users: [2, 5, 8] },
-    { GameLevel: 'DIFFICULT', users: [3, 6, 9] },
+    { GameLevel: 'EASY', users: [] },
+    { GameLevel: 'NORMAL', users: [] },
+    { GameLevel: 'DIFFICULT', users: [] },
   ];
   constructor(
     private prisma: PrismaService,
@@ -129,12 +129,6 @@ export class GameService {
           },
         },
       });
-      //! delet this update (^_^)
-      // await this.prisma.users.updateMany({
-      //   where: { OR: [{ intra_id: req.user.sub }, { intra_id: dto.userId }] },
-      //   data: { status: 'PLAYING' },
-      // });
-      //todo emit user to play game
       this.gameGateway.userStartGame(req.user.sub, dto.userId);
       return res.status(200).json({ game: newGame });
     } catch (error) {
