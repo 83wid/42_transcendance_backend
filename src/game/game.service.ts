@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Request, Response } from 'express';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Request, Response } from "express";
+import { PrismaService } from "src/prisma/prisma.service";
 import {
   QueueInterface,
   RegisterToQueueBody,
@@ -10,22 +10,18 @@ import {
   AcceptePlayGame,
   RejectPlayGame,
   GetGameQuery,
-} from 'src/interfaces/user.interface';
-import { GameGateway } from './game.gateway';
-import { NotificationsGateway } from 'src/notifications/notifications.gateway';
+} from "src/interfaces/user.interface";
+import { GameGateway } from "./game.gateway";
+import { NotificationsGateway } from "src/notifications/notifications.gateway";
 
 @Injectable()
 export class GameService {
   private queue: QueueInterface[] = [
-    { GameLevel: 'EASY', users: [] },
-    { GameLevel: 'NORMAL', users: [] },
-    { GameLevel: 'DIFFICULT', users: [] },
+    { GameLevel: "EASY", users: [] },
+    { GameLevel: "NORMAL", users: [] },
+    { GameLevel: "DIFFICULT", users: [] },
   ];
-  constructor(
-    private prisma: PrismaService,
-    private gameGateway: GameGateway,
-    private notificationsGateway: NotificationsGateway,
-  ) {}
+  constructor(private prisma: PrismaService, private gameGateway: GameGateway, private notificationsGateway: NotificationsGateway) {}
 
   /**
    *
@@ -39,13 +35,13 @@ export class GameService {
       const game = await this.prisma.game.findFirst({
         where: { id: gameId },
         include: {
-          players: { include: { users: true }, orderBy: { id: 'asc' } },
+          players: { include: { users: true }, orderBy: { id: "asc" } },
         },
       });
-      if (!game) return res.status(404).json({ message: 'game not found' });
+      if (!game) return res.status(404).json({ message: "game not found" });
       return res.status(200).json(game);
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ message: "server error" });
     }
   }
 
@@ -58,13 +54,13 @@ export class GameService {
   async getUserHistoryGame(req: Request, res: Response) {
     try {
       const games = await this.prisma.game.findMany({
-        where: { players: { some: { userid: req.user.sub } } },
+        where: { AND: [{ players: { some: { userid: req.user.sub } } }, { status: "END" }] },
         include: { players: { include: { users: true } } },
-        orderBy: { updated_at: 'desc' },
+        orderBy: { updated_at: "desc" },
       });
       return res.status(200).json(games);
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ message: "server error" });
     }
   }
 
@@ -74,7 +70,7 @@ export class GameService {
       const games = await this.prisma.game.findMany({
         take: pageSize,
         cursor: { id: cursor },
-        where: { AND: [{ status: 'PLAYING' }, { started: true }] },
+        where: { AND: [{ status: "PLAYING" }, { started: true }] },
         include: {
           players: {
             include: { users: true },
@@ -84,7 +80,7 @@ export class GameService {
 
       return res.status(200).json(games);
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ message: "server error" });
     }
   }
 
@@ -95,34 +91,30 @@ export class GameService {
    * @param dto {gameLeve, userId}
    */
   async createGame(req: Request, res: Response, dto: CreateGameBody) {
-    if (dto.userId === req.user.sub)
-      return res.status(400).json({ message: "you can't play with yourself" });
+    if (dto.userId === req.user.sub) return res.status(400).json({ message: "you can't play with yourself" });
     try {
       const user = await this.prisma.users.findUnique({
         where: { id: dto.userId },
       });
       const error = !user
-        ? 'user not found'
-        : user.status === 'PLAYING'
+        ? "user not found"
+        : user.status === "PLAYING"
         ? `${user.username} is playing now`
-        : user.status === 'OFFLINE'
+        : user.status === "OFFLINE"
         ? `${user.username} is offline now`
         : null;
       if (error) return res.status(400).json({ message: error });
       const userInGame = await this.prisma.players.findFirst({
         where: {
           userid: req.user.sub,
-          game: { status: 'PLAYING' },
+          game: { status: "PLAYING" },
         },
       });
-      if (userInGame)
-        return res
-          .status(400)
-          .json({ message: "you can't play multi games at same time" });
+      if (userInGame) return res.status(400).json({ message: "you can't play multi games at same time" });
       const newGame = await this.prisma.game.create({
         data: {
           level: dto.gameLevel,
-          status: 'WAITING',
+          status: "WAITING",
           created_at: new Date(),
           players: {
             create: [{ userid: dto.userId }, { userid: req.user.sub }],
@@ -132,7 +124,7 @@ export class GameService {
       this.gameGateway.userStartGame(req.user.sub, dto.userId);
       return res.status(200).json({ game: newGame });
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ message: "server error" });
     }
   }
   /**
@@ -144,28 +136,20 @@ export class GameService {
    */
   async inviteUserToGame(req: Request, res: Response, dto: InvitePlayGame) {
     try {
-      if (dto.userId === req.user.sub)
-        return res.status(400).json({ message: "you can't invite yourself" });
+      if (dto.userId === req.user.sub) return res.status(400).json({ message: "you can't invite yourself" });
       const user = await this.prisma.users.findUnique({
         where: { intra_id: dto.userId },
       });
-      if (!user) return res.status(400).json({ message: 'user not found' });
+      if (!user) return res.status(400).json({ message: "user not found" });
       const oldInvite = await this.prisma.gameinvites.findFirst({
         where: {
-          AND: [
-            { fromid: req.user.sub },
-            { userid: dto.userId },
-            { accepted: false },
-          ],
+          AND: [{ fromid: req.user.sub }, { userid: dto.userId }, { accepted: false }],
         },
       });
-      if (oldInvite)
-        return res
-          .status(400)
-          .json({ message: 'you already invite this user to play game' });
+      if (oldInvite) return res.status(400).json({ message: "you already invite this user to play game" });
       const gameInvite = await this.prisma.game.create({
         data: {
-          status: 'WAITING',
+          status: "WAITING",
           level: dto.gameLevel,
           created_at: new Date(),
           players: {
@@ -180,7 +164,7 @@ export class GameService {
       const notif = await this.prisma.notification.create({
         data: {
           userid: user.intra_id,
-          type: 'GAME_INVITE',
+          type: "GAME_INVITE",
           fromid: req.user.sub,
           targetid: gameInvite.id,
           content: `invet you to play game level ${dto.gameLevel.toLocaleLowerCase()}`,
@@ -188,11 +172,10 @@ export class GameService {
         },
         include: { users_notification_fromidTousers: true },
       });
-      if (user.status !== 'OFFLINE')
-        this.notificationsGateway.notificationsToUser(user.intra_id, notif);
-      return res.status(200).json({ message: 'invitation success send' });
+      if (user.status !== "OFFLINE") this.notificationsGateway.notificationsToUser(user.intra_id, notif);
+      return res.status(200).json({ message: "invitation success send" });
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ message: "server error" });
     }
   }
 
@@ -205,15 +188,10 @@ export class GameService {
     try {
       const invite = await this.prisma.gameinvites.findFirst({
         where: {
-          AND: [
-            { id: dto.inviteId },
-            { userid: req.user.sub },
-            { accepted: false },
-          ],
+          AND: [{ id: dto.inviteId }, { userid: req.user.sub }, { accepted: false }],
         },
       });
-      if (!invite)
-        return res.status(404).json({ message: 'invitation not found' });
+      if (!invite) return res.status(404).json({ message: "invitation not found" });
       const users = await this.prisma.users.findMany({
         where: {
           OR: [{ intra_id: invite.userid }, { intra_id: invite.fromid }],
@@ -222,11 +200,11 @@ export class GameService {
       const currentUser = users.find((u) => u.intra_id === req.user.sub);
       const senderUser = users.find((u) => u.intra_id === invite.fromid);
       const error =
-        senderUser.status === 'OFFLINE'
+        senderUser.status === "OFFLINE"
           ? `${senderUser.username} is offline now`
-          : senderUser.status === 'PLAYING'
+          : senderUser.status === "PLAYING"
           ? `${senderUser.username} is playing game now`
-          : currentUser.status === 'PLAYING'
+          : currentUser.status === "PLAYING"
           ? "you can't play multi games at same time"
           : null;
       if (error) return res.status(400).json({ message: error });
@@ -234,18 +212,18 @@ export class GameService {
         where: { id: invite.id },
         data: {
           accepted: true,
-          users_gameinvites_fromidTousers: { update: { status: 'PLAYING' } },
-          users_gameinvites_useridTousers: { update: { status: 'PLAYING' } },
+          users_gameinvites_fromidTousers: { update: { status: "PLAYING" } },
+          users_gameinvites_useridTousers: { update: { status: "PLAYING" } },
         },
       });
       //todo emit invite.fromId to play game
       const notif = await this.prisma.notification.create({
         data: {
           userid: invite.fromid,
-          type: 'GAME_ACCEPTE',
+          type: "GAME_ACCEPTE",
           fromid: req.user.sub,
           targetid: game.id,
-          content: 'accepte your game invetation',
+          content: "accepte your game invetation",
           created_at: new Date(),
         },
         include: { users_notification_fromidTousers: true },
@@ -253,7 +231,7 @@ export class GameService {
       this.notificationsGateway.notificationsToUser(invite.fromid, notif);
       return res.status(200).json(game);
     } catch (error) {
-      return res.status(500).json({ message: 'error server' });
+      return res.status(500).json({ message: "error server" });
     }
   }
   /**
@@ -268,12 +246,11 @@ export class GameService {
       const invite = await this.prisma.gameinvites.findUnique({
         where: { id: dto.inviteId },
       });
-      if (!invite || invite.accepted || invite.userid !== req.user.sub)
-        return res.status(404).json({ message: 'invitation not found' });
+      if (!invite || invite.accepted || invite.userid !== req.user.sub) return res.status(404).json({ message: "invitation not found" });
       await this.prisma.game.delete({ where: { id: invite.gameid } });
-      return res.status(200).json({ message: 'success reject' });
+      return res.status(200).json({ message: "success reject" });
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ message: "server error" });
     }
   }
 
@@ -295,39 +272,35 @@ export class GameService {
     try {
       const game = await this.prisma.game.findFirst({
         where: {
-          AND: [
-            { id: dto.gameId },
-            { players: { some: { userid: req.user.sub } } },
-          ],
-          NOT: { status: 'END' },
+          AND: [{ id: dto.gameId }, { players: { some: { userid: req.user.sub } } }],
+          NOT: { status: "END" },
         },
-        include: { players: { include: { users: true } } },
       });
-      if (!game) return res.status(400).json({ message: 'game not found' });
-      const update = await this.prisma.game
-        .update({
-          where: { id: dto.gameId },
-          data: {
-            status: 'END',
-            updated_at: new Date(),
-          },
-        })
-        .players();
-      //! delet this update (^_^)
+      if (!game) return res.status(400).json({ message: "game not found" });
+      const update = await this.prisma.game.update({
+        where: { id: dto.gameId },
+        data: {
+          status: "END",
+          started: false,
+          updated_at: new Date(),
+        },
+        include: { players: { include: { users: true }, orderBy: { id: "asc" } } },
+      });
       await this.prisma.users.updateMany({
         where: {
           OR: [
-            { AND: [{ intra_id: update[0].userid }, { status: 'PLAYING' }] },
-            { AND: [{ intra_id: update[1].userid }, { status: 'PLAYING' }] },
-            ,
+            { AND: [{ intra_id: update.players[0].userid }, { status: "PLAYING" }] },
+            { AND: [{ intra_id: update.players[1].userid }, { status: "PLAYING" }] },
           ],
         },
-        data: { status: 'ONLINE' },
+        data: { status: "ONLINE" },
       });
-
-      return res.status(201).json({ message: 'succes leave game' });
+      this.gameGateway.EmitGameEnd(update);
+      return res.status(201).json({ message: "succes leave game" });
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      console.log(error);
+
+      return res.status(500).json({ message: "server error" });
     }
   }
 
@@ -343,27 +316,20 @@ export class GameService {
       const userInGame = await this.prisma.players.findFirst({
         where: {
           userid: req.user.sub,
-          game: { status: 'PLAYING' },
+          game: { status: "PLAYING" },
         },
       });
       if (userInGame)
         return res.status(400).json({
-          message:
-            'you are already in a game please leave it befor register in other',
+          message: "you are already in a game please leave it befor register in other",
         });
-      const findUserInQueue = this.queue.find((q) =>
-        q.users.find((u) => u === req.user.sub),
-      );
-      if (findUserInQueue)
-        return res
-          .status(400)
-          .json({ message: 'your already register in a queue' });
+      const findUserInQueue = this.queue.find((q) => q.users.find((u) => u === req.user.sub));
+      if (findUserInQueue) return res.status(400).json({ message: "your already register in a queue" });
       const findQueue = this.queue.find((q) => q.GameLevel === dto.gameLevel);
       if (findQueue.users.length === 0) {
         findQueue.users.push(req.user.sub);
         return res.status(201).json({
-          message:
-            'success register in queue pealse waiting to find other player',
+          message: "success register in queue pealse waiting to find other player",
         });
       }
       const userId = findQueue.users.shift();
@@ -372,7 +338,7 @@ export class GameService {
         userId,
       });
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ message: "server error" });
     }
   }
 
@@ -384,20 +350,15 @@ export class GameService {
    */
   async leaveQueue(req: Request, res: Response) {
     try {
-      const findUserInQueue = this.queue.find((q) =>
-        q.users.find((u) => u === req.user.sub),
-      );
-      if (!findUserInQueue)
-        return res
-          .status(400)
-          .json({ message: 'your not registered in queue' });
+      const findUserInQueue = this.queue.find((q) => q.users.find((u) => u === req.user.sub));
+      if (!findUserInQueue) return res.status(400).json({ message: "your not registered in queue" });
       this.queue = this.queue.map((q) => {
         q.users = q.users.filter((u) => u !== req.user.sub);
         return q;
       });
-      return res.status(201).json({ message: 'success leave queue' });
+      return res.status(201).json({ message: "success leave queue" });
     } catch (error) {
-      return res.status(500).json({ message: 'server error' });
+      return res.status(500).json({ message: "server error" });
     }
   }
 }
