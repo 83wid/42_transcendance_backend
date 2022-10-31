@@ -1,15 +1,4 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Put,
-  Req,
-  Res,
-  Query,
-  UseGuards,
-  UseInterceptors,
-  UploadedFiles,
-} from "@nestjs/common";
+import { Controller, Get, Param, Put, Req, Res, Query, UseGuards, UseInterceptors, UploadedFiles } from "@nestjs/common";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { UsersService } from "./users.service";
 import { Request, Response } from "express";
@@ -65,11 +54,8 @@ export class UsersController {
     if (cover) data.cover = `${process.env.PUBLIC_URL}/users/image/${cover[0].filename}`;
     console.log(data);
 
-    const user = await this.usersService.updateUser({
-      data,
-      where: { intra_id: req.user.sub },
-    });
-    return res.status(201).json(user);
+    return this.usersService.updateUser(req, res, { data });
+    // return res.status(201).json(user);
   }
   @Get("/image/:fileName")
   serveAvatar(@Param("fileName") fileName: string, @Res() res: Response) {

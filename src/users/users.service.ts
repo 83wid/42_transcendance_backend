@@ -1,16 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { users, Prisma } from '@prisma/client';
-import { Request, Response } from 'express';
-import { GetUserQuery } from 'src/interfaces/user.interface';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { users, Prisma } from "@prisma/client";
+import { Request, Response } from "express";
+import { GetUserQuery } from "src/interfaces/user.interface";
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
-  async user(
-    usersWhereUniqueInput: Prisma.usersWhereUniqueInput,
-  ): Promise<users | null> {
+  async user(usersWhereUniqueInput: Prisma.usersWhereUniqueInput): Promise<users | null> {
     try {
       return await this.prisma.users.findUnique({
         where: usersWhereUniqueInput,
@@ -51,18 +49,47 @@ export class UsersService {
     }
   }
 
-  async updateUser(params: {
-    where: Prisma.usersWhereUniqueInput;
-    data: Prisma.usersUpdateInput;
-  }): Promise<users> {
-    const { where, data } = params;
+  async updateUser(
+    req: Request,
+    res: Response,
+    params: {
+      data: Prisma.usersUpdateInput;
+    }
+  ) {
+    const { data } = params;
+    let xp = 0;
     try {
-      return await this.prisma.users.update({
-        data,
-        where,
+      if (data.img_url || data.cover) {
+        const photogenic = await this.prisma.achievements.findMany({
+          where: { name: "photogenic" },
+          include: { users_achievements: { where: { userid: req.user.sub } } },
+        });
+        if (data.img_url) {
+          const Glod = photogenic.find((a) => a.level === "GOLD");
+          if (!Glod?.users_achievements.length) {
+            await this.prisma.users_achievements.create({
+              data: {userid: req.user.sub, achievementid: Glod.id}
+            })
+            xp += Glod.xp
+          }
+        }
+        if (data.cover){
+          const PLATINUM = photogenic.find(a => a.level === 'PLATINUM')
+          if (!PLATINUM?.users_achievements.length){
+            await this.prisma.users_achievements.create({
+              data: {userid: req.user.sub, achievementid: PLATINUM.id}
+            })
+            xp += PLATINUM.xp
+          }
+        }
+      }
+      const user = await this.prisma.users.update({
+        where: { intra_id: req.user.sub },
+        data: { ...data, xp: { increment: xp } },
       });
+      return res.status(201).json(user);
     } catch (error) {
-      return error;
+      return res.status(500).json({ message: "error server" });
     }
   }
 
@@ -92,9 +119,8 @@ export class UsersService {
             {
               blocked_blocked_blockedidTousers: { none: {} },
             },
-            {OR: [{username: {contains: dto.findBy}}, {email: {contains: dto.findBy}}]}
+            { OR: [{ username: { contains: dto.findBy } }, { email: { contains: dto.findBy } }] },
           ],
-          
         },
       });
       return res.status(200).json(data);
