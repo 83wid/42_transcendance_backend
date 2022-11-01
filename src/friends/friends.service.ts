@@ -1,14 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { Response } from 'express';
-import {
-  acceptRequestBody,
-  blockRequestBody,
-  friendRequestBody,
-  unfriendRequestBody,
-} from '../interfaces/user.interface';
-import { PrismaService } from '../prisma/prisma.service';
-import { getFriends, getInvites } from './helper';
-import { isEmpty } from 'rxjs';
+import { Injectable } from "@nestjs/common";
+import { Response } from "express";
+import { acceptRequestBody, blockRequestBody, friendRequestBody, unfriendRequestBody } from "../interfaces/user.interface";
+import { PrismaService } from "../prisma/prisma.service";
+import { getFriends, getInvites } from "./helper";
+import { isEmpty } from "rxjs";
 
 @Injectable()
 export class FriendsService {
@@ -47,13 +42,13 @@ export class FriendsService {
       // check if the user not sending the request to himself
       if (Number(dto.id) === userId) {
         return res.status(400).json({
-          message: 'You cannot send a request to yourself',
+          message: "You cannot send a request to yourself",
         });
       }
       // cehck if user in blocked list
       if (blocked.length > 0) {
         return res.status(400).json({
-          message: 'You are blocked by this user or you have blocked this user',
+          message: "You are blocked by this user or you have blocked this user",
         });
       }
 
@@ -66,17 +61,16 @@ export class FriendsService {
           },
         });
         return res.status(200).json({
-          message: 'Friend Request Sent',
+          message: "Friend Request Sent",
         });
       } else {
         return res.status(400).json({
-          message: 'Friend Request Already Sent',
+          message: "Friend Request Already Sent",
         });
       }
     } catch (error) {
       return res.status(400).json({
-        message:
-          'Friend Request Failed, Please Try Again or shoose another user',
+        message: "Friend Request Failed, Please Try Again or shoose another user",
         error: error,
       });
     }
@@ -107,12 +101,13 @@ export class FriendsService {
   //Accept Friend Request
   async acceptRequest(dto: acceptRequestBody, userId: number, res: Response) {
     try {
-      const data = await this.prisma.invites.findUnique({
+      const data = await this.prisma.invites.findFirst({
         where: {
-          id: Number(dto.id),
+          // id: Number(dto.id),
+          AND: [{ senderid: Number(dto.id) }, { receiverid: userId }],
         },
       });
-      if (data.receiverid === userId) {
+      if (data) {
         await this.prisma.friends.create({
           data: {
             userid: data.senderid,
@@ -121,19 +116,19 @@ export class FriendsService {
         });
         await this.prisma.invites.delete({
           where: {
-            id: Number(dto.id),
+            id: data.id,
           },
         });
         return res.status(200).json({
-          message: 'Friend Request Accepted',
+          message: "Friend Request Accepted",
         });
       }
       return res.status(400).json({
-        message: 'You are not the receiver of this request',
+        message: "You are not the receiver of this request",
       });
     } catch (error) {
       return res.status(400).json({
-        message: 'Something went wrong',
+        message: "Something went wrong",
         error: error,
       });
     }
@@ -142,27 +137,28 @@ export class FriendsService {
   //Reject Friend Request
   async rejectRequest(dto: acceptRequestBody, userId: number, res: Response) {
     try {
-      const data = await this.prisma.invites.findUnique({
+      const data = await this.prisma.invites.findFirst({
         where: {
-          id: Number(dto.id),
+          // id: Number(dto.id),
+          AND: [{ senderid: Number(dto.id) }, { receiverid: userId }],
         },
       });
-      if (data.receiverid === userId) {
+      if (data) {
         await this.prisma.invites.delete({
           where: {
-            id: Number(dto.id),
+            id: data.id,
           },
         });
         return res.status(200).json({
-          message: 'Reject Friend Request Success',
+          message: "Reject Friend Request Success",
         });
       }
       return res.status(400).json({
-        message: 'You are not the receiver of this request',
+        message: "You are not the receiver of this request",
       });
     } catch (error) {
       return res.status(400).json({
-        message: 'Something went wrong',
+        message: "Something went wrong",
         error: error,
       });
     }
@@ -191,15 +187,15 @@ export class FriendsService {
           },
         });
         return res.status(200).json({
-          message: 'Unfriend Success',
+          message: "Unfriend Success",
         });
       }
       return res.status(400).json({
-        message: 'You are not friends with this user',
+        message: "You are not friends with this user",
       });
     } catch (error) {
       return res.status(400).json({
-        message: 'Something went wrong',
+        message: "Something went wrong",
         error: error,
       });
     }
@@ -228,7 +224,7 @@ export class FriendsService {
       const friends = await getFriends(data, req.user.sub);
       if (friends.length < 1) {
         return res.status(200).json({
-          message: 'You have no friends',
+          message: "You have no friends",
         });
       }
       return res.status(200).json({
@@ -269,7 +265,7 @@ export class FriendsService {
       const friends = await getFriends(data, user.intra_id);
       if (friends.length < 1) {
         return res.status(200).json({
-          message: 'There is no friends',
+          message: "There is no friends",
         });
       }
       return res.status(200).json({
@@ -287,7 +283,7 @@ export class FriendsService {
     try {
       if (Number(dto.id) === req.user.sub) {
         return res.status(400).json({
-          message: 'You cannot block yourself',
+          message: "You cannot block yourself",
         });
       }
       // Delete invite if exists
@@ -340,11 +336,11 @@ export class FriendsService {
           },
         });
         return res.status(200).json({
-          message: 'Friend Blocked',
+          message: "Friend Blocked",
         });
       } else {
         return res.status(400).json({
-          message: 'Friend Already Blocked',
+          message: "Friend Already Blocked",
         });
       }
     } catch (error) {
@@ -369,11 +365,11 @@ export class FriendsService {
       if (data.length > 0) return res.status(200).json(data);
       else
         return res.status(200).json({
-          message: 'You have no blocked users',
+          message: "You have no blocked users",
         });
     } catch (error) {
       return res.status(400).json({
-        message: 'Something went wrong',
+        message: "Something went wrong",
         error: error,
       });
     }
@@ -395,15 +391,15 @@ export class FriendsService {
           },
         });
         return res.status(200).json({
-          message: 'User Unblocked',
+          message: "User Unblocked",
         });
       }
       return res.status(400).json({
-        message: 'User is not blocked',
+        message: "User is not blocked",
       });
     } catch (error) {
       return res.status(400).json({
-        message: 'Something went wrong',
+        message: "Something went wrong",
         error: error,
       });
     }
