@@ -31,6 +31,17 @@ export class GameGateway implements OnGatewayDisconnect {
             players: { include: { users: true }, orderBy: { id: "asc" } },
           },
         });
+        // change players status
+        await this.prismaService.users.updateMany({
+          where: {
+            AND: [
+              { status: "PLAYING" },
+              { OR: [{ intra_id: endGame.players[0].userid }, { intra_id: endGame.players[1].userid }] },
+            ],
+          },
+          data: { status: "ONLINE" },
+        });
+        //todo emit players status update
         this.server.to([endGame.id.toString(), `player${endGame.id.toString()}`]).emit("updateGame", endGame);
       }
     } catch (error) {
@@ -61,12 +72,16 @@ export class GameGateway implements OnGatewayDisconnect {
   }
 
   async userStartGame(userId_1: number, userId_2: number) {
-    await this.prismaService.users.updateMany({
-      where: { OR: [{ intra_id: userId_1 }, { intra_id: userId_2 }] },
-      data: { status: "PLAYING" },
-    });
-    this.server.to("online").emit("userStartGame", { userId_1 });
-    this.server.to("online").emit("userStartGame", { userId_2 });
+    try {
+      await this.prismaService.users.updateMany({
+        where: { OR: [{ intra_id: userId_1 }, { intra_id: userId_2 }] },
+        data: { status: "PLAYING" },
+      });
+      this.server.to("online").emit("userStartGame", { userId_1 });
+      this.server.to("online").emit("userStartGame", { userId_2 });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @SubscribeMessage("playerReady")
@@ -110,14 +125,19 @@ export class GameGateway implements OnGatewayDisconnect {
   @SubscribeMessage("startGame")
   async startGame(client: Socket, payload: { gameId: number }) {
     try {
-      let game = await this.prismaService.game.findFirst({
+      const existGame = await this.prismaService.game.findFirst({
         where: {
-          AND: [{ id: payload.gameId }, { players: { some: { userid: client.user } } }, { NOT: { status: "END" } }, { started: false }],
+          AND: [
+            { id: payload.gameId },
+            { players: { some: { userid: client.user } } },
+            { NOT: { status: "END" } },
+            { started: false },
+          ],
         },
       });
-      if (game) {
-        game = await this.prismaService.game.update({
-          where: { id: game.id },
+      if (existGame) {
+        const game = await this.prismaService.game.update({
+          where: { id: existGame.id },
           data: { started: true, created_at: new Date(), updated_at: new Date() },
           include: {
             players: { include: { users: true }, orderBy: { id: "asc" } },
@@ -176,30 +196,63 @@ export class GameGateway implements OnGatewayDisconnect {
         currentStep: { x: stepX, y: -1 },
       });
     } else {
-      this.server.in([`player${gameId.toString()}`, gameId.toString()]).emit("ballPosition", {
-        ballPosition: { x: 0, y: 0 },
-        currentStep: { x: 0, y: 1 },
-      });
-      const game = await this.prismaService.game.update({
-        where: { id: gameId },
-        data: {
-          players: {
-            updateMany: {
-              where: { userid: { not: client.user } },
-              data: { score: { increment: 1 } },
+      try {
+        // incremet fighter score
+        const game = await this.prismaService.game.update({
+          where: { id: gameId },
+          data: {
+            players: {
+              updateMany: {
+                where: { userid: { not: client.user } },
+                data: { score: { increment: 1 } },
+              },
             },
           },
-        },
-        include: {
-          players: { include: { users: true }, orderBy: { id: "asc" } },
-        },
-      });
-      const userId = game.players.find((p) => p.userid !== client.user).userid;
-      await this.prismaService.users.update({
-        where: { intra_id: userId },
-        data: { xp: { increment: 5 } },
-      });
-      this.server.in([`player${gameId.toString()}`, gameId.toString()]).emit("updateScore", game.players);
+          include: {
+            players: { include: { users: true }, orderBy: { id: "asc" } },
+          },
+        });
+        // find fighter id
+        const userId = game.players.find((p) => p.userid !== client.user).userid;
+        // count increment xp
+        const IncrementXp = game.level === "EASY" ? 3 : game.level === "NORMAL" ? 8 : 20;
+
+        await this.prismaService.users.update({
+          where: { intra_id: userId },
+          data: { xp: { increment: IncrementXp } },
+        });
+        // end game
+        if (game.players[0].score === 10 || game.players[1].score === 10) {
+         const endGame = await this.prismaService.game.update({
+            where: { id: game.id },
+            data: { started: false, status: "END" },
+            include: {
+              players: { include: { users: true }, orderBy: { id: "asc" } },
+            },
+          });
+          const wineMaxScore = !game.players[0].score
+            ? game.players[1].userid
+            : !game.players[1].score
+            ? game.players[0].userid
+            : 0;
+          // set achvievment
+          //todo set achievment and increment xp and change players status to !PLAYING
+          // if (wineMaxScore) {
+          // }
+          // emit end game
+          this.server.in([gameId, `player${gameId}`]).emit("updateGame", endGame);
+        } else {
+          //emit rest ball position
+          this.server.in([`player${gameId.toString()}`, gameId.toString()]).emit("ballPosition", {
+            ballPosition: { x: 0, y: 0 },
+            currentStep: { x: 0, y: 1 },
+          });
+        }
+        //emit now score
+        this.server.in([`player${gameId.toString()}`, gameId.toString()]).emit("updateScore", game.players);
+      } catch (error) {
+        console.log(error);
+      }
     }
   }
 }
