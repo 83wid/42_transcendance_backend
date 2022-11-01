@@ -3,11 +3,11 @@ import { Response } from "express";
 import { acceptRequestBody, blockRequestBody, friendRequestBody, unfriendRequestBody } from "../interfaces/user.interface";
 import { PrismaService } from "../prisma/prisma.service";
 import { getFriends, getInvites } from "./helper";
-import { isEmpty } from "rxjs";
+import { NotificationsGateway } from "src/notifications/notifications.gateway";
 
 @Injectable()
 export class FriendsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private notificationsGateway: NotificationsGateway) {}
   //Send new Friend Request
   async sendRequest(dto: friendRequestBody, userId: number, res: Response) {
     try {
@@ -60,6 +60,18 @@ export class FriendsService {
             accepted: false,
           },
         });
+        const notif = await this.prisma.notification.create({
+          data: {
+            userid: Number(dto.id),
+            type: "FRIEND_REQUEST",
+            fromid: userId,
+            targetid: 2,
+            content: "send you a freind request",
+            created_at: new Date(),
+          },
+          include: { users_notification_fromidTousers: true },
+        });
+        this.notificationsGateway.notificationsToUser(Number(dto.id), notif);
         return res.status(200).json({
           message: "Friend Request Sent",
         });
@@ -119,6 +131,18 @@ export class FriendsService {
             id: data.id,
           },
         });
+        const notif = await this.prisma.notification.create({
+          data: {
+            userid: Number(dto.id),
+            type: "OTHER",
+            fromid: userId,
+            targetid: 0,
+            content: "accept your friend request",
+            created_at: new Date(),
+          },
+          include: { users_notification_fromidTousers: true },
+        });
+        this.notificationsGateway.notificationsToUser(Number(dto.id), notif);
         return res.status(200).json({
           message: "Friend Request Accepted",
         });
@@ -316,6 +340,34 @@ export class FriendsService {
           ],
         },
       });
+      // Delete GameInvitations
+      await this.prisma.gameinvites.deleteMany({
+        where: {
+          OR: [
+            {
+              AND: [{ userid: Number(dto.id) }, { fromid: req.user.sub }],
+            },
+            { AND: [{ userid: req.user.sub }, { fromid: Number(dto.id) }] },
+          ],
+          accepted: false,
+        },
+      });
+      // Delete Notifications
+      await this.prisma.notification.deleteMany({
+        where: {
+          OR: [
+            { AND: [{ userid: Number(dto.id) }, { fromid: req.user.sub }] },
+            { AND: [{ userid: req.user.sub }, { fromid: Number(dto.id) }] },
+          ],
+          read: false,
+        },
+      });
+      // END All Games
+      await this.prisma.game.updateMany({
+        where: { AND: [{ players: { some: { userid: Number(dto.id) } } }, { players: { some: { userid: req.user.sub } } }] },
+        data: { status: "END" },
+      });
+
       // Block Friend
       const blocked = await this.prisma.blocked.findMany({
         where: {

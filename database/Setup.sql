@@ -135,7 +135,7 @@ CREATE TABLE notification (
   type NOTIFICATION_T NOT NULL DEFAULT 'OTHER',
   userId INT NOT NULL,
   fromId INT NOT NULL,
-  targetId INT NOT NULL,
+  targetId INT DEFAULT 0,
   content TEXT,
   read BOOLEAN DEFAULT false,
   created_at timestamp NOT NULL,

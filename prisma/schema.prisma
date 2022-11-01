@@ -102,7 +102,7 @@ model notification {
   type                             notification_t @default(OTHER)
   userid                           Int
   fromid                           Int
-  targetid                         Int
+  targetid                         Int?           @default(0)
   content                          String?
   read                             Boolean?       @default(false)
   created_at                       DateTime       @db.Timestamp(6)

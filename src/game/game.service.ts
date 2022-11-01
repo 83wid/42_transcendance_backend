@@ -172,7 +172,7 @@ export class GameService {
         },
         include: { users_notification_fromidTousers: true },
       });
-      if (user.status !== "OFFLINE") this.notificationsGateway.notificationsToUser(user.intra_id, notif);
+      this.notificationsGateway.notificationsToUser(user.intra_id, notif);
       return res.status(200).json({ message: "invitation success send" });
     } catch (error) {
       return res.status(500).json({ message: "server error" });
