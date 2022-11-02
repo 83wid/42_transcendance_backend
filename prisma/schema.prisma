@@ -7,6 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model achievements {
+  id                 Int                  @unique @default(autoincrement())
+  name               achiev_name
+  level              level_type           @default(BRONZE)
+  xp                 Int
+  description        String?
+  users_achievements users_achievements[]
+
+  @@id([name, level])
+}
+
 model blocked {
   id                             Int      @id @default(autoincrement())
   userid                         Int
@@ -141,19 +152,9 @@ model users {
   users_achievements                      users_achievements[]
 }
 
-model achievements {
-  name               String               @db.VarChar(25)
-  level              level_type           @default(BRONZE)
-  xp                 Int
-  description        String?
-  users_achievements users_achievements[]
-
-  @@id([name, level])
-}
-
 model users_achievements {
   userid           Int
-  achievementname  String       @db.VarChar(25)
+  achievementname  achiev_name
   achievementlevel level_type
   created_at       DateTime     @default(now()) @db.Timestamp(6)
   achievements     achievements @relation(fields: [achievementname, achievementlevel], references: [name, level], onDelete: NoAction, onUpdate: NoAction)
@@ -191,6 +192,15 @@ enum notification_t {
   GAME_INVITE
   GAME_ACCEPTE
   OTHER
+}
+
+enum achiev_name {
+  friendly
+  legendary
+  sharpshooter
+  wildfire
+  winner
+  photogenic
 }
 
 enum status_t {

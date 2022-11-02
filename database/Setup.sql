@@ -10,11 +10,42 @@ CREATE TYPE NOTIFICATION_T AS ENUM (
   'GAME_ACCEPTE',
   'OTHER'
 );
+CREATE TYPE ACHIEV_NAME AS ENUM(
+  'friendly',
+  'legendary',
+  'sharpshooter',
+  'wildfire',
+  'winner',
+  'photogenic'
+);
 CREATE TYPE STATUS_T AS ENUM ('ONLINE', 'OFFLINE', 'PLAYING');
-CREATE OR REPLACE FUNCTION update_changetimestamp() RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = now();
+-- create function auto update updated_at
+CREATE OR REPLACE FUNCTION update_timestamp() RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = now();
 RETURN NEW;
 END;
 $$ language 'plpgsql';
+-- create function auto increment user.xp by achivements
+Create function update_user_xp(
+  userId int,
+  achievementName ACHIEV_NAME,
+  achievementLevel level_type
+) returns int language plpgsql as $$
+Declare xp integer;
+Begin
+select xp into xp
+from achievements
+where name = achievementName
+  and level = achievementLevel;
+INSERT INTO users(xp)
+VALUES(2);
+return 2;
+End;
+$$;
+-- CREATE OR REPLACE FUNCTION increment_xp(user_xp, achievementName, achievementLevel) RETURN INT language 'plpgsql' AS $$ BEGIN
+-- select xp
+-- from achievements
+-- where name = achievementName level = achievementLevel return xp + user_xp
+-- END $$;
 -- create table for users
 CREATE TABLE users (
   id SERIAL NOT NULL unique,
@@ -32,7 +63,7 @@ CREATE TABLE users (
   PRIMARY KEY (id)
 );
 CREATE TRIGGER update_users_changetimestamp BEFORE
-UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_changetimestamp();
+UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
 -- create table for all conversation
 CREATE TABLE conversation (
   id SERIAL NOT NULL unique,
@@ -146,7 +177,8 @@ CREATE TABLE notification (
 );
 -- create table for messages
 CREATE TABLE achievements (
-  name VARCHAR(25) NOT NULL,
+  id SERIAL UNIQUE,
+  name ACHIEV_NAME NOT NULL,
   level level_type DEFAULT 'BRONZE',
   xp int NOT NULL,
   description text,
@@ -155,7 +187,7 @@ CREATE TABLE achievements (
 -- create table for users_achievements
 CREATE TABLE users_achievements (
   userId INT NOT NULL,
-  achievementName VARCHAR(25) NOT NULL,
+  achievementName ACHIEV_NAME NOT NULL,
   achievementLevel level_type,
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (achievementName, achievementLevel) REFERENCES achievements (name, level),
@@ -189,7 +221,7 @@ VALUES ('friendly', 'SILVER', 10, 'add 10 friends'),
     'legendary',
     'PLATINUM',
     500,
-    'winn 4 matches with max a score'
+    'win 4 matches with max a score'
   ),
   (
     'sharpshooter',

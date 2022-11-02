@@ -5,11 +5,17 @@ import {AchievementsService} from './achievements.service'
 
 @Controller('achievements')
 export class AchievementsController {
-  constructor(private appService:  AchievementsService){}
+  constructor(private achievements:  AchievementsService){}
 
   @Get('')
   @UseGuards(JwtAuthGuard)
   getAchievements(@Req() req: Request, @Res() res: Response){
-    return this.appService.getAllAchievements(req, res)
+    return this.achievements.getAllAchievements(req, res)
+  }
+  @Get('test')
+  @UseGuards(JwtAuthGuard)
+  async test(@Req() req: Request, @Res() res: Response){
+    const matches = await this.achievements.sharpshooter(req.user.sub)
+    return res.status(200).json(matches)
   }
 }

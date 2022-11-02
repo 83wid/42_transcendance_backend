@@ -19,29 +19,127 @@ export class AchievementsService {
   }
 
   async friendly(userId: number) {
-    const friends = await this.prismaService.friends.count({
-      where: { OR: [{ userid: userId }, { friendid: userId }] },
-    });
-    const achievLevel =
-      friends >= 10 && friends < 20
-        ? "SILVER"
-        : friends >= 20 && friends < 50
-        ? "BRONZE"
-        : friends >= 50 && friends < 100
-        ? "GOLD"
-        : "PLATINUM";
-
-    await this.prismaService.users_achievements.upsert({
-      where: {
-        userid_achievementname_achievementlevel: { userid: userId, achievementname: "friendly", achievementlevel: achievLevel },
-      },
-      create: { userid: userId, achievementname: "friendly", achievementlevel: achievLevel },
-      update: {},
-    });
+    try {
+      const friends = await this.prismaService.friends.count({
+        where: { OR: [{ userid: userId }, { friendid: userId }] },
+      });
+      const achievLevel =
+        friends === 10 ? "SILVER" : friends === 20 ? "BRONZE" : friends === 50 ? "GOLD" : friends === 100 ? "PLATINUM" : null;
+      if (achievLevel) {
+        await this.prismaService.users_achievements.upsert({
+          where: {
+            userid_achievementname_achievementlevel: {
+              userid: userId,
+              achievementname: "friendly",
+              achievementlevel: achievLevel,
+            },
+          },
+          create: { userid: userId, achievementname: "friendly", achievementlevel: achievLevel },
+          update: {},
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   }
-  async legendary(req: Request, Res: Response) {}
-  async sharpshooter(req: Request, Res: Response) {}
-  async wildfire(req: Request, Res: Response) {}
+  async legendary(userId: number) {
+    try {
+      const matches = await this.prismaService.game.count({
+        where: {
+          AND: [
+            {
+              players: { some: { userid: userId, score: 10 } },
+            },
+            { players: { some: { userid: { not: userId }, score: 0 } } },
+          ],
+        },
+      });
+      const achievLevel =
+        matches === 1 ? "SILVER" : matches === 2 ? "BRONZE" : matches === 3 ? "GOLD" : matches === 4 ? "PLATINUM" : null;
+      if (achievLevel) {
+        await this.prismaService.users_achievements.upsert({
+          where: {
+            userid_achievementname_achievementlevel: {
+              userid: userId,
+              achievementname: "legendary",
+              achievementlevel: achievLevel,
+            },
+          },
+          create: { userid: userId, achievementname: "legendary", achievementlevel: achievLevel },
+          update: {},
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async sharpshooter(userId: number) {
+    try {
+      const date = new Date();
+      date.setDate(date.getDate() - 1);
+      const matches = await this.prismaService.game.count({
+        where: {
+          AND: [
+            { updated_at: { gte: date } },
+            {
+              players: { some: { userid: userId, score: 10 } },
+            },
+            { players: { some: { userid: { not: userId }, score: 0 } } },
+          ],
+        },
+      });
+      const achievLevel =
+        matches === 2 ? "SILVER" : matches === 3 ? "BRONZE" : matches === 4 ? "GOLD" : matches === 5 ? "PLATINUM" : null;
+      if (achievLevel) {
+        await this.prismaService.users_achievements.upsert({
+          where: {
+            userid_achievementname_achievementlevel: {
+              userid: userId,
+              achievementname: "sharpshooter",
+              achievementlevel: achievLevel,
+            },
+          },
+          create: { userid: userId, achievementname: "sharpshooter", achievementlevel: achievLevel },
+          update: {},
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  async wildfire(userId: number) {
+    try {
+      const date = new Date();
+      date.setDate(date.getDate() - 1);
+      const matches = await this.prismaService.game.count({
+        where: {
+          AND: [
+            { updated_at: { gte: date } },
+            {
+              players: { some: { userid: userId } },
+            },
+          ],
+        },
+      });
+      const achievLevel =
+        matches === 5 ? "SILVER" : matches === 10 ? "BRONZE" : matches === 15 ? "GOLD" : matches === 20 ? "PLATINUM" : null;
+      if (achievLevel) {
+        await this.prismaService.users_achievements.upsert({
+          where: {
+            userid_achievementname_achievementlevel: {
+              userid: userId,
+              achievementname: "wildfire",
+              achievementlevel: achievLevel,
+            },
+          },
+          create: { userid: userId, achievementname: "wildfire", achievementlevel: achievLevel },
+          update: {},
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
   async winner(req: Request, Res: Response) {}
   async photogenic(userId: number, level: "GOLD" | "PLATINUM") {
     try {
