@@ -24,28 +24,6 @@ CREATE OR REPLACE FUNCTION update_timestamp() RETURNS TRIGGER AS $$ BEGIN NEW.up
 RETURN NEW;
 END;
 $$ language 'plpgsql';
--- create function auto increment user.xp by achivements
-Create function update_user_xp(
-  userId int,
-  achievementName ACHIEV_NAME,
-  achievementLevel level_type
-) returns int language plpgsql as $$
-Declare xp integer;
-Begin
-select xp into xp
-from achievements
-where name = achievementName
-  and level = achievementLevel;
-INSERT INTO users(xp)
-VALUES(2);
-return 2;
-End;
-$$;
--- CREATE OR REPLACE FUNCTION increment_xp(user_xp, achievementName, achievementLevel) RETURN INT language 'plpgsql' AS $$ BEGIN
--- select xp
--- from achievements
--- where name = achievementName level = achievementLevel return xp + user_xp
--- END $$;
 -- create table for users
 CREATE TABLE users (
   id SERIAL NOT NULL unique,
@@ -62,7 +40,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT now(),
   PRIMARY KEY (id)
 );
-CREATE TRIGGER update_users_changetimestamp BEFORE
+CREATE TRIGGER trigger_update_timestamp BEFORE
 UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
 -- create table for all conversation
 CREATE TABLE conversation (
@@ -179,7 +157,7 @@ CREATE TABLE notification (
 CREATE TABLE achievements (
   id SERIAL UNIQUE,
   name ACHIEV_NAME NOT NULL,
-  level level_type DEFAULT 'BRONZE',
+  level level_type NOT NULL,
   xp int NOT NULL,
   description text,
   PRIMARY KEY(name, level)
@@ -189,9 +167,10 @@ CREATE TABLE users_achievements (
   userId INT NOT NULL,
   achievementName ACHIEV_NAME NOT NULL,
   achievementLevel level_type,
-  FOREIGN KEY (userId) REFERENCES users (intra_id),
-  FOREIGN KEY (achievementName, achievementLevel) REFERENCES achievements (name, level),
-  created_at timestamp NOT NULL DEFAULT now(),
+  FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
+  FOREIGN KEY (achievementName, achievementLevel) REFERENCES achievements (name, level) ON DELETE CASCADE,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now(),
   PRIMARY KEY (userId, achievementName, achievementLevel)
 );
 INSERT INTO achievements(name, level, xp, description)
