@@ -3,10 +3,11 @@ import { PrismaService } from "../prisma/prisma.service";
 import { users, Prisma } from "@prisma/client";
 import { Request, Response } from "express";
 import { GetUserQuery } from "src/interfaces/user.interface";
+import { AchievementsService } from "src/achievements/achievements.service";
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private achievements: AchievementsService) {}
 
   async user(usersWhereUniqueInput: Prisma.usersWhereUniqueInput): Promise<users | null> {
     try {
@@ -57,35 +58,12 @@ export class UsersService {
     }
   ) {
     const { data } = params;
-    let xp = 0;
     try {
-      if (data.img_url || data.cover) {
-        const photogenic = await this.prisma.achievements.findMany({
-          where: { name: "photogenic" },
-          include: { users_achievements: { where: { userid: req.user.sub } } },
-        });
-        if (data.img_url) {
-          const Glod = photogenic.find((a) => a.level === "GOLD");
-          if (!Glod?.users_achievements.length) {
-            await this.prisma.users_achievements.create({
-              data: {userid: req.user.sub, achievementid: Glod.id}
-            })
-            xp += Glod.xp
-          }
-        }
-        if (data.cover){
-          const PLATINUM = photogenic.find(a => a.level === 'PLATINUM')
-          if (!PLATINUM?.users_achievements.length){
-            await this.prisma.users_achievements.create({
-              data: {userid: req.user.sub, achievementid: PLATINUM.id}
-            })
-            xp += PLATINUM.xp
-          }
-        }
-      }
+      if (data.img_url) await this.achievements.photogenic(req.user.sub, "GOLD");
+      if (data.cover) await this.achievements.photogenic(req.user.sub, "PLATINUM");
       const user = await this.prisma.users.update({
         where: { intra_id: req.user.sub },
-        data: { ...data, xp: { increment: xp } },
+        data,
       });
       return res.status(201).json(user);
     } catch (error) {

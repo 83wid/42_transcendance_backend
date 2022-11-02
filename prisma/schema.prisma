@@ -7,15 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model achievements {
-  id                 Int                  @id @default(autoincrement())
-  name               String               @db.VarChar(25)
-  level              level_type?          @default(BRONZE)
-  xp                 Int
-  description        String?
-  users_achievements users_achievements[]
-}
-
 model blocked {
   id                             Int      @id @default(autoincrement())
   userid                         Int
@@ -150,13 +141,25 @@ model users {
   users_achievements                      users_achievements[]
 }
 
+model achievements {
+  name               String               @db.VarChar(25)
+  level              level_type           @default(BRONZE)
+  xp                 Int
+  description        String?
+  users_achievements users_achievements[]
+
+  @@id([name, level])
+}
+
 model users_achievements {
-  id            Int          @id @default(autoincrement())
-  userid        Int
-  achievementid Int
-  created_at    DateTime     @default(now()) @db.Timestamp(6)
-  achievements  achievements @relation(fields: [achievementid], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users         users        @relation(fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+  userid           Int
+  achievementname  String       @db.VarChar(25)
+  achievementlevel level_type
+  created_at       DateTime     @default(now()) @db.Timestamp(6)
+  achievements     achievements @relation(fields: [achievementname, achievementlevel], references: [name, level], onDelete: NoAction, onUpdate: NoAction)
+  users            users        @relation(fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([userid, achievementname, achievementlevel])
 }
 
 enum conversation_type {

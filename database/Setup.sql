@@ -146,22 +146,21 @@ CREATE TABLE notification (
 );
 -- create table for messages
 CREATE TABLE achievements (
-  id SERIAL NOT NULL,
   name VARCHAR(25) NOT NULL,
   level level_type DEFAULT 'BRONZE',
   xp int NOT NULL,
   description text,
-  PRIMARY KEY (id)
+  PRIMARY KEY(name, level)
 );
 -- create table for users_achievements
 CREATE TABLE users_achievements (
-  id SERIAL NOT NULL,
   userId INT NOT NULL,
-  achievementId INT NOT NULL,
+  achievementName VARCHAR(25) NOT NULL,
+  achievementLevel level_type,
   FOREIGN KEY (userId) REFERENCES users (intra_id),
-  FOREIGN KEY (achievementId) REFERENCES achievements (id),
+  FOREIGN KEY (achievementName, achievementLevel) REFERENCES achievements (name, level),
   created_at timestamp NOT NULL DEFAULT now(),
-  PRIMARY KEY (id)
+  PRIMARY KEY (userId, achievementName, achievementLevel)
 );
 INSERT INTO achievements(name, level, xp, description)
 VALUES ('friendly', 'SILVER', 10, 'add 10 friends'),
@@ -283,11 +282,3 @@ SELECT id,
   'OFFLINE',
   'https://joeschmoe.io/api/v1/random'
 FROM generate_series(1, 200) AS id;
-INSERT INTO users_achievements (userId, achievementId)
-SELECT 51111,
-  id * 2
-FROM generate_series(1, 10) AS id;
-INSERT INTO users_achievements (userId, achievementId)
-SELECT id,
-  id
-FROM generate_series(1, 20) AS id;

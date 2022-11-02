@@ -18,27 +18,42 @@ export class AchievementsService {
     }
   }
 
-  async friendly(req: Request, Res: Response) {}
+  async friendly(userId: number) {
+    const friends = await this.prismaService.friends.count({
+      where: { OR: [{ userid: userId }, { friendid: userId }] },
+    });
+    const achievLevel =
+      friends >= 10 && friends < 20
+        ? "SILVER"
+        : friends >= 20 && friends < 50
+        ? "BRONZE"
+        : friends >= 50 && friends < 100
+        ? "GOLD"
+        : "PLATINUM";
+
+    await this.prismaService.users_achievements.upsert({
+      where: {
+        userid_achievementname_achievementlevel: { userid: userId, achievementname: "friendly", achievementlevel: achievLevel },
+      },
+      create: { userid: userId, achievementname: "friendly", achievementlevel: achievLevel },
+      update: {},
+    });
+  }
   async legendary(req: Request, Res: Response) {}
   async sharpshooter(req: Request, Res: Response) {}
   async wildfire(req: Request, Res: Response) {}
   async winner(req: Request, Res: Response) {}
   async photogenic(userId: number, level: "GOLD" | "PLATINUM") {
-    const achiev = await this.prismaService.achievements.findFirst({
-      where: {AND:[{name: 'photogenic'}, {level}]}
-    })
-    // await this.prismaService.users_achievements.upsert({
-    //   create: {userid: userId, achievementid: achiev.id},
-    //   update: {},
-    //   where: {}
-    // })
-    await this.prismaService.users.update({
-      where: {intra_id: userId},
-      data: {users_achievements: {upsert: {
-        create: {achievementid: achiev.id},
+    try {
+      await this.prismaService.users_achievements.upsert({
+        where: {
+          userid_achievementname_achievementlevel: { userid: userId, achievementname: "photogenic", achievementlevel: level },
+        },
+        create: { userid: userId, achievementname: "photogenic", achievementlevel: level },
         update: {},
-        where: {id: 1}
-    }}}
-    })
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
