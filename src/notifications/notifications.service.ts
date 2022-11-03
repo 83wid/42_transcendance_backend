@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Response, Request } from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { NotificationsGateway } from './notifications.gateway';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private prismaService: PrismaService, private notificationsGateway: NotificationsGateway) {}
 
   async getNotifications(req: Request, res: Response) {
     try {

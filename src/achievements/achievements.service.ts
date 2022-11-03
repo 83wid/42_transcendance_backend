@@ -1,10 +1,19 @@
-import { Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Request, Response } from "express";
 import { PrismaService } from "src/prisma/prisma.service";
+import { NotificationsService } from "src/notifications/notifications.service";
+import { NotificationsGateway } from "src/notifications/notifications.gateway";
+import { SocketGateway } from "src/socket/socket.gateway";
 
 @Injectable()
 export class AchievementsService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(
+    // @Inject(forwardRef(() => NotificationsGateway))
+    // private notifcations: NotificationsGateway,
+    // @Inject(forwardRef(() => SocketGateway))
+    // private soket: SocketGateway,
+    private prismaService: PrismaService
+    ) {}
 
   async getAllAchievements(req: Request, res: Response) {
     try {
@@ -140,6 +149,13 @@ export class AchievementsService {
       console.log(error);
     }
   }
+
+  async gameAchievemets(userId: number) {
+    await this.legendary(userId);
+    await this.sharpshooter(userId);
+    await this.wildfire(userId);
+  }
+
   async photogenic(userId: number, level: "GOLD" | "PLATINUM") {
     try {
       await this.prismaService.users_achievements.upsert({

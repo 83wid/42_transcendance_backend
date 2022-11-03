@@ -4,10 +4,15 @@ import { acceptRequestBody, blockRequestBody, friendRequestBody, unfriendRequest
 import { PrismaService } from "../prisma/prisma.service";
 import { getFriends, getInvites } from "./helper";
 import { NotificationsGateway } from "src/notifications/notifications.gateway";
+import { AchievementsService } from "src/achievements/achievements.service";
 
 @Injectable()
 export class FriendsService {
-  constructor(private prisma: PrismaService, private notificationsGateway: NotificationsGateway) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationsGateway: NotificationsGateway,
+    private achievements: AchievementsService
+  ) {}
   //Send new Friend Request
   async sendRequest(dto: friendRequestBody, userId: number, res: Response) {
     try {
@@ -136,13 +141,14 @@ export class FriendsService {
             userid: Number(dto.id),
             type: "OTHER",
             fromid: userId,
-            targetid: 0,
             content: "accept your friend request",
             created_at: new Date(),
           },
           include: { users_notification_fromidTousers: true },
         });
         this.notificationsGateway.notificationsToUser(Number(dto.id), notif);
+        await this.achievements.friendly(data.senderid);
+        await this.achievements.friendly(data.receiverid);
         return res.status(200).json({
           message: "Friend Request Accepted",
         });

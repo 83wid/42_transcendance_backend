@@ -13,6 +13,7 @@ import {
 } from "src/interfaces/user.interface";
 import { GameGateway } from "./game.gateway";
 import { NotificationsGateway } from "src/notifications/notifications.gateway";
+import { AchievementsService } from "src/achievements/achievements.service";
 
 @Injectable()
 export class GameService {
@@ -21,7 +22,12 @@ export class GameService {
     { GameLevel: "NORMAL", users: [] },
     { GameLevel: "DIFFICULT", users: [] },
   ];
-  constructor(private prisma: PrismaService, private gameGateway: GameGateway, private notificationsGateway: NotificationsGateway) {}
+  constructor(
+    private prisma: PrismaService,
+    private gameGateway: GameGateway,
+    private notificationsGateway: NotificationsGateway,
+    private achievements: AchievementsService
+  ) {}
 
   /**
    *
@@ -160,7 +166,6 @@ export class GameService {
           },
         },
       });
-      // .gameinvites();
       const notif = await this.prisma.notification.create({
         data: {
           userid: user.intra_id,
@@ -246,20 +251,14 @@ export class GameService {
       const invite = await this.prisma.gameinvites.findUnique({
         where: { id: dto.inviteId },
       });
-      if (!invite || invite.accepted || invite.userid !== req.user.sub) return res.status(404).json({ message: "invitation not found" });
+      if (!invite || invite.accepted || invite.userid !== req.user.sub)
+        return res.status(404).json({ message: "invitation not found" });
       await this.prisma.game.delete({ where: { id: invite.gameid } });
       return res.status(200).json({ message: "success reject" });
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }
   }
-
-  /**
-   *
-   * @param req
-   * @param res
-   */
-  async endGame(req: Request, res: Response) {}
 
   /**
    *
@@ -296,6 +295,8 @@ export class GameService {
         data: { status: "ONLINE" },
       });
       this.gameGateway.EmitGameEnd(update);
+      await this.achievements.gameAchievemets(update.players[0].userid);
+      await this.achievements.gameAchievemets(update.players[1].gameid);
       return res.status(201).json({ message: "succes leave game" });
     } catch (error) {
       console.log(error);

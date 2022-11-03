@@ -3,6 +3,7 @@ import { Socket, Server } from "socket.io";
 import { Logger } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { SocketGateway } from "src/socket/socket.gateway";
+import { AchievementsService } from "src/achievements/achievements.service";
 
 @WebSocketGateway()
 export class GameGateway implements OnGatewayDisconnect {
@@ -11,7 +12,11 @@ export class GameGateway implements OnGatewayDisconnect {
   private racquetSize: number = 3;
   private logger: Logger = new Logger("init game gateway");
 
-  constructor(private prismaService: PrismaService, private socketGateway: SocketGateway) {}
+  constructor(
+    private prismaService: PrismaService,
+    private socketGateway: SocketGateway,
+    private achievements: AchievementsService
+  ) {}
   /**
    * handle socket desconnect
    * @param client
@@ -31,6 +36,8 @@ export class GameGateway implements OnGatewayDisconnect {
             players: { include: { users: true }, orderBy: { id: "asc" } },
           },
         });
+        await this.achievements.gameAchievemets(endGame.players[0].userid);
+        await this.achievements.gameAchievemets(endGame.players[1].userid);
         // change players status
         await this.prismaService.users.updateMany({
           where: {
@@ -223,22 +230,15 @@ export class GameGateway implements OnGatewayDisconnect {
         });
         // end game
         if (game.players[0].score === 10 || game.players[1].score === 10) {
-         const endGame = await this.prismaService.game.update({
+          const endGame = await this.prismaService.game.update({
             where: { id: game.id },
             data: { started: false, status: "END" },
             include: {
               players: { include: { users: true }, orderBy: { id: "asc" } },
             },
           });
-          const wineMaxScore = !game.players[0].score
-            ? game.players[1].userid
-            : !game.players[1].score
-            ? game.players[0].userid
-            : 0;
-          // set achvievment
-          //todo set achievment and increment xp and change players status to !PLAYING
-          // if (wineMaxScore) {
-          // }
+          await this.achievements.gameAchievemets(endGame.players[0].userid);
+          await this.achievements.gameAchievemets(endGame.players[1].userid);
           // emit end game
           this.server.in([gameId, `player${gameId}`]).emit("updateGame", endGame);
         } else {

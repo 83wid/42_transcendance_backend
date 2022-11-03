@@ -20,6 +20,8 @@ import { AuthService } from './auth/auth.service';
 import { NotificationsModule } from './notifications/notifications.module';
 import { NotificationsGateway } from './notifications/notifications.gateway';
 import { PrismaService } from './prisma/prisma.service';
+import { SocketModule } from './socket/socket.module';
+import { AchievementsService } from './achievements/achievements.service';
 import { SocketGateway } from './socket/socket.gateway';
 
 @Module({
@@ -35,8 +37,8 @@ import { SocketGateway } from './socket/socket.gateway';
     ChatModule,
     ProfileModule,
     GameModule,
-    AchievementsModule,
     NotificationsModule,
+    AchievementsModule,
   ],
   controllers: [AppController],
   providers: [
@@ -46,6 +48,7 @@ import { SocketGateway } from './socket/socket.gateway';
     JwtStategy,
     FriendsService,
     ChatService,
+    AchievementsService,
     NotificationsGateway,
   ],
 })

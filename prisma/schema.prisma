@@ -107,7 +107,7 @@ model notification {
   targetid                         Int?           @default(0)
   content                          String?
   read                             Boolean?       @default(false)
-  created_at                       DateTime       @db.Timestamp(6)
+  created_at                       DateTime       @default(now()) @db.Timestamp(6)
   updated_at                       DateTime       @default(now()) @db.Timestamp(6)
   users_notification_fromidTousers users          @relation("notification_fromidTousers", fields: [fromid], references: [intra_id], onDelete: Cascade, onUpdate: NoAction)
   users_notification_useridTousers users          @relation("notification_useridTousers", fields: [userid], references: [intra_id], onDelete: Cascade, onUpdate: NoAction)

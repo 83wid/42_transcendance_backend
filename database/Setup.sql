@@ -165,7 +165,7 @@ CREATE TABLE notification (
   targetId INT DEFAULT 0,
   content TEXT,
   read BOOLEAN DEFAULT false,
-  created_at timestamp NOT NULL,
+  created_at timestamp NOT NULL DEFAULT now(),
   updated_at timestamp NOT NULL DEFAULT now(),
   FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
   FOREIGN KEY (fromId) REFERENCES users (intra_id) ON DELETE CASCADE,
@@ -197,10 +197,10 @@ AFTER
 INSERT ON users_achievements FOR EACH ROW EXECUTE FUNCTION update_user_xp();
 -- ?insert int achievements
 INSERT INTO achievements(name, level, xp, description)
-VALUES ('friendly', 'SILVER', 10, 'add 10 friends'),
-  ('friendly', 'BRONZE', 20, 'add 20 friends'),
-  ('friendly', 'GOLD', 50, 'add 50 friends'),
-  ('friendly', 'PLATINUM', 100, 'add 100 friends'),
+VALUES ('friendly', 'SILVER', 100, 'add 10 friends'),
+  ('friendly', 'BRONZE', 200, 'add 20 friends'),
+  ('friendly', 'GOLD', 500, 'add 50 friends'),
+  ('friendly', 'PLATINUM', 1000, 'add 100 friends'),
   (
     'legendary',
     'SILVER',
@@ -281,7 +281,7 @@ VALUES ('friendly', 'SILVER', 10, 'add 10 friends'),
     'change your cover'
   );
 -- ?for test insert into users
---todo delete this insert
+--TODO delete this insert (^_^)
 INSERT INTO users (
     intra_id,
     username,
@@ -299,3 +299,32 @@ SELECT id,
   'OFFLINE',
   'https://joeschmoe.io/api/v1/random'
 FROM generate_series(1, 200) AS id;
+INSERT INTO users (
+    intra_id,
+    username,
+    email,
+    first_name,
+    last_name,
+    img_url
+  )
+VALUES (
+    51111,
+    'alizaynou',
+    'alzaynou@student.1337.ma',
+    'Ali',
+    'Zaynoune',
+    'https://cdn.intra.42.fr/users/alzaynou.jpg'
+  );
+-- ?insert friend request
+--TODO delete this insert (^_^)
+INSERT INTO invites (senderId, receiverId)
+SELECT id,
+  51111
+FROM generate_series(1, 120) AS id;
+-- ?insert notifications
+--TODO delete this insert (^_^)
+INSERT INTO notification (userId, fromId, content)
+SELECT 51111,
+  id,
+  'send you friend request'
+FROM generate_series(1, 120) AS id;
