@@ -140,29 +140,15 @@ export class AchievementsService {
       console.log(error);
     }
   }
-  async winner(req: Request, Res: Response) {}
   async photogenic(userId: number, level: "GOLD" | "PLATINUM") {
     try {
-      const data = await this.prismaService.users_achievements.upsert({
+      await this.prismaService.users_achievements.upsert({
         where: {
           userid_achievementname_achievementlevel: { userid: userId, achievementname: "photogenic", achievementlevel: level },
         },
         create: { userid: userId, achievementname: "photogenic", achievementlevel: level },
-        update: { updated_at: new Date() },
+        update: {},
       });
-      // console.log(data.created_at.getTime() === data.updated_at.getTime(), data.created_at.getTime(), data.updated_at.getTime());
-      // if (data.created_at.getTime() === data.updated_at.getTime()) {
-      //   await this.prismaService.users.update({
-      //     where: { intra_id: userId },
-      //     data: {
-      //       xp: {
-      //         increment: (
-      //           await this.prismaService.achievements.findUnique({ where: { name_level: { name: "photogenic", level } } })
-      //         ).xp,
-      //       },
-      //     },
-      //   });
-      // }
     } catch (error) {
       console.log(error);
     }

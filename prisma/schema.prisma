@@ -200,7 +200,6 @@ enum achiev_name {
   legendary
   sharpshooter
   wildfire
-  winner
   photogenic
 }
 

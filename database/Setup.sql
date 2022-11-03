@@ -21,7 +21,6 @@ CREATE TYPE ACHIEV_NAME AS ENUM(
   'legendary',
   'sharpshooter',
   'wildfire',
-  'winner',
   'photogenic'
 );
 -- ?users status
@@ -273,25 +272,6 @@ VALUES ('friendly', 'SILVER', 10, 'add 10 friends'),
     'PLATINUM',
     5000,
     'play 20 matches in one day'
-  ),
-  (
-    'winner',
-    'SILVER',
-    500,
-    'Be ranked #1 for 1 day'
-  ),
-  (
-    'winner',
-    'BRONZE',
-    1000,
-    'Be ranked #1 for 2 day'
-  ),
-  ('winner', 'GOLD', 3000, 'Be ranked #1 for 3 day'),
-  (
-    'winner',
-    'PLATINUM',
-    7000,
-    'Be ranked #1 for 4 day'
   ),
   ('photogenic', 'GOLD', 100, 'change your avatar'),
   (
