@@ -150,19 +150,19 @@ export class AchievementsService {
         create: { userid: userId, achievementname: "photogenic", achievementlevel: level },
         update: { updated_at: new Date() },
       });
-      console.log(data.created_at.getTime() === data.updated_at.getTime(), data.created_at.getTime(), data.updated_at.getTime());
-      if (data.created_at.getTime() === data.updated_at.getTime()) {
-        await this.prismaService.users.update({
-          where: { intra_id: userId },
-          data: {
-            xp: {
-              increment: (
-                await this.prismaService.achievements.findUnique({ where: { name_level: { name: "photogenic", level } } })
-              ).xp,
-            },
-          },
-        });
-      }
+      // console.log(data.created_at.getTime() === data.updated_at.getTime(), data.created_at.getTime(), data.updated_at.getTime());
+      // if (data.created_at.getTime() === data.updated_at.getTime()) {
+      //   await this.prismaService.users.update({
+      //     where: { intra_id: userId },
+      //     data: {
+      //       xp: {
+      //         increment: (
+      //           await this.prismaService.achievements.findUnique({ where: { name_level: { name: "photogenic", level } } })
+      //         ).xp,
+      //       },
+      //     },
+      //   });
+      // }
     } catch (error) {
       console.log(error);
     }

@@ -1,15 +1,21 @@
 -- CREATE DATABASE TRANSCENDANCE;
 -- USE TRANSCENDANCE;
+-- ?achievemts types
 CREATE TYPE level_type AS ENUM ('BRONZE', 'SILVER', 'GOLD', 'PLATINUM');
+-- ?game levels
 CREATE TYPE game_diff AS ENUM ('EASY', 'NORMAL', 'DIFFICULT');
+-- ?game status
 CREATE TYPE game_status AS ENUM('WAITING', 'PLAYING', 'END');
+-- ?converstaions types
 CREATE TYPE conversation_type AS ENUM ('DIRECT', 'GROUP');
+-- ?notifications types
 CREATE TYPE NOTIFICATION_T AS ENUM (
   'FRIEND_REQUEST',
   'GAME_INVITE',
   'GAME_ACCEPTE',
   'OTHER'
 );
+-- ?achievements names
 CREATE TYPE ACHIEV_NAME AS ENUM(
   'friendly',
   'legendary',
@@ -18,13 +24,25 @@ CREATE TYPE ACHIEV_NAME AS ENUM(
   'winner',
   'photogenic'
 );
+-- ?users status
 CREATE TYPE STATUS_T AS ENUM ('ONLINE', 'OFFLINE', 'PLAYING');
--- create function auto update updated_at
+-- ?create function auto update updated_at
 CREATE OR REPLACE FUNCTION update_timestamp() RETURNS TRIGGER AS $$ BEGIN NEW.updated_at = now();
 RETURN NEW;
 END;
 $$ language 'plpgsql';
--- create table for users
+-- ?create function auto update user xp from new achievement
+CREATE OR REPLACE FUNCTION update_user_xp() RETURNS TRIGGER AS $$ BEGIN --
+UPDATE users
+SET xp = users.xp + achievements.xp
+FROM achievements
+WHERE users.intra_id = NEW.userId
+  AND achievements.name = NEW.achievementName
+  AND achievements.level = NEW.achievementLevel;
+RETURN NULL;
+END;
+$$ LANGUAGE 'plpgsql';
+-- ?create table for users
 CREATE TABLE users (
   id SERIAL NOT NULL unique,
   intra_id INT NOT NULL unique,
@@ -40,16 +58,17 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT now(),
   PRIMARY KEY (id)
 );
+-- ?create trigger auto update updated_at
 CREATE TRIGGER trigger_update_timestamp BEFORE
 UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
--- create table for all conversation
+-- ?create table for all conversation
 CREATE TABLE conversation (
   id SERIAL NOT NULL unique,
   name varchar(255),
   type conversation_type DEFAULT 'DIRECT',
   PRIMARY KEY (id)
 );
--- create table for for group members 
+-- ?create table for for group members 
 CREATE TABLE group_member (
   id SERIAL NOT NULL unique,
   user_id INT NOT NULL,
@@ -60,7 +79,7 @@ CREATE TABLE group_member (
   FOREIGN KEY (conversation_id) REFERENCES conversation (id),
   PRIMARY KEY (id)
 );
--- create table for messages
+-- ?create table for messages
 CREATE TABLE message (
   id SERIAL NOT NULL unique,
   sender_id INT NOT NULL,
@@ -74,7 +93,7 @@ CREATE TABLE message (
   FOREIGN KEY (sender_id) REFERENCES users (intra_id),
   FOREIGN KEY (conversation_id) REFERENCES conversation (id)
 );
--- create table for Friends
+-- ?create table for Friends
 CREATE TABLE friends (
   id SERIAL NOT NULL,
   userId INT NOT NULL,
@@ -84,7 +103,7 @@ CREATE TABLE friends (
   FOREIGN KEY (friendId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
--- create table for Friends requests
+-- ?create table for Friends requests
 CREATE TABLE invites (
   id SERIAL NOT NULL,
   senderId INT NOT NULL,
@@ -95,7 +114,7 @@ CREATE TABLE invites (
   FOREIGN KEY (receiverId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
--- create table for Blocked users
+-- ?create table for Blocked users
 CREATE TABLE blocked (
   id SERIAL NOT NULL,
   userId INT NOT NULL,
@@ -105,7 +124,7 @@ CREATE TABLE blocked (
   FOREIGN KEY (blockedId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
--- create table for test
+-- ?create table for test
 CREATE TABLE game (
   id SERIAL NOT NULL,
   status game_status DEFAULT 'WAITING',
@@ -115,7 +134,7 @@ CREATE TABLE game (
   updated_at timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
 );
--- create table for players
+-- ?create table for players
 CREATE TABLE players (
   id SERIAL NOT NULL,
   userId INT NOT NULL,
@@ -126,7 +145,7 @@ CREATE TABLE players (
   FOREIGN KEY (gameId) REFERENCES game (id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
--- create table for gameInvites
+-- ?create table for gameInvites
 CREATE TABLE gameInvites(
   id SERIAL NOT NULL,
   userId INT NOT NULL,
@@ -138,7 +157,7 @@ CREATE TABLE gameInvites(
   FOREIGN KEY (gameId) REFERENCES game (id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
--- create table for notification
+-- ?create table for notification
 CREATE TABLE notification (
   id SERIAL,
   type NOTIFICATION_T NOT NULL DEFAULT 'OTHER',
@@ -153,7 +172,7 @@ CREATE TABLE notification (
   FOREIGN KEY (fromId) REFERENCES users (intra_id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
--- create table for messages
+-- ?create table for messages
 CREATE TABLE achievements (
   id SERIAL UNIQUE,
   name ACHIEV_NAME NOT NULL,
@@ -162,7 +181,7 @@ CREATE TABLE achievements (
   description text,
   PRIMARY KEY(name, level)
 );
--- create table for users_achievements
+-- ?create table for users_achievements
 CREATE TABLE users_achievements (
   userId INT NOT NULL,
   achievementName ACHIEV_NAME NOT NULL,
@@ -173,6 +192,11 @@ CREATE TABLE users_achievements (
   updated_at timestamp DEFAULT now(),
   PRIMARY KEY (userId, achievementName, achievementLevel)
 );
+-- ?create trigger auto increment user.xp by achievement.xp on insert
+CREATE TRIGGER users_achievements
+AFTER
+INSERT ON users_achievements FOR EACH ROW EXECUTE FUNCTION update_user_xp();
+-- ?insert int achievements
 INSERT INTO achievements(name, level, xp, description)
 VALUES ('friendly', 'SILVER', 10, 'add 10 friends'),
   ('friendly', 'BRONZE', 20, 'add 20 friends'),
@@ -276,6 +300,8 @@ VALUES ('friendly', 'SILVER', 10, 'add 10 friends'),
     100,
     'change your cover'
   );
+-- ?for test insert into users
+--todo delete this insert
 INSERT INTO users (
     intra_id,
     username,
