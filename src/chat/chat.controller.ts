@@ -19,7 +19,7 @@ export class ChatController {
   @Get("/")
   @UseGuards(JwtAuthGuard)
   getAllConversation(@Req() req: Request, @Res() res: Response, @Query() query: PaginationDTO) {
-    return this.chatService.getAllConversation(res, req.user.sub, query)
+    return this.chatService.getAllConversation(res, req.user.sub, query);
   }
 
   @Post("create")
@@ -31,13 +31,13 @@ export class ChatController {
   @Post("message")
   @UseGuards(JwtAuthGuard)
   newMessage(@Req() req: Request, @Res() res: Response, @Body() dto: MessageDTO) {
-    return this.chatService.sendMessage(res, req.user.sub, dto)
+    return this.chatService.sendMessage(res, req.user.sub, dto);
   }
 
   @Put("togglemute")
   @UseGuards(JwtAuthGuard)
   toggleMuteUser(@Req() req: Request, @Res() res: Response, @Body() dto: ToggleMuteUser) {
-    return res.status(200).json(dto);
+    return this.chatService.toggleMuteUser(res, req.user.sub, dto);
   }
 
   @Put("leave")

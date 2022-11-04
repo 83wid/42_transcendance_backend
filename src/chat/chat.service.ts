@@ -66,7 +66,7 @@ export class ChatService {
         ...Pagination,
         where: { members: { some: { userid: userId } } },
         orderBy: { updated_at: "desc" },
-        include: {message: {orderBy: {created_at: "desc"}, take: 1}}
+        include: { message: { orderBy: { created_at: "desc" }, take: 1 } },
       });
       return res.status(200).json(conversations);
     } catch (error) {
@@ -125,12 +125,13 @@ export class ChatService {
     try {
       if (dto.conversationId) {
         const conversation = await this.prismaService.conversation.findFirst({
-          where: { AND: [{ id: dto.conversationId }, { members: { some: { userid: userId } } }] },
+          where: { AND: [{ id: dto.conversationId }, { members: { some: { userid: userId, mute: false } } }] },
         });
         if (!conversation) return res.status(400).json({ message: "Bad Request" });
         const newMessage = await this.prismaService.members.update({
           where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
           data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
+          select: {message: {include: {members: {select: {users: true}}}, orderBy: {created_at: 'desc'}, take: 1}}
         });
         return res.status(200).json(newMessage);
       }
@@ -146,6 +147,33 @@ export class ChatService {
 
   async toggleMuteUser(res: Response, userId: number, dto: ToggleMuteUser) {
     try {
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: {
+          AND: [
+            { type: "GROUP" },
+            { id: dto.conversationId },
+            { adminid: userId },
+            { members: { some: { userid: dto.memberId, mute: { not: dto.mute } } } },
+          ],
+        },
+        include: { members: { where: { userid: dto.memberId } } },
+      });
+      if (!conversation) return res.status(400).json({ message: "Bad Request" });
+      const update = await this.prismaService.conversation.update({
+        where: { id: conversation.id },
+        data: {
+          members: {
+            update: {
+              where: { conversationid_userid: { conversationid: conversation.id, userid: dto.memberId } },
+              data: { mute: dto.mute },
+            },
+          },
+        },
+        include: {
+          members: { include: { users: { select: { username: true, intra_id: true, img_url: true, email: true } } } },
+        },
+      });
+      return res.status(200).json(update);
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }

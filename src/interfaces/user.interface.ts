@@ -3,6 +3,7 @@ import {
   ArrayMaxSize,
   ArrayNotEmpty,
   IsArray,
+  IsBoolean,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -262,6 +263,9 @@ export class ToggleMuteUser {
   @IsNumber()
   @Min(1)
   conversationId: number;
+  @IsNotEmpty()
+  @IsBoolean()
+  mute: boolean;
 }
 
 /******************* CHAT ****************************/
