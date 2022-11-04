@@ -25,7 +25,7 @@ export class ChatController {
   @Post("create")
   @UseGuards(JwtAuthGuard)
   createConversation(@Req() req: Request, @Res() res: Response, @Body() dto: CreateConversation) {
-    return this.chatService.createConversation(res, req.user.sub, dto)
+    return this.chatService.createConversation(res, req.user.sub, dto);
   }
 
   @Post("message")
@@ -52,9 +52,21 @@ export class ChatController {
     return res.status(200).json(dto);
   }
 
+  @Get("/:id/messages")
+  @UseGuards(JwtAuthGuard)
+  getConversationMessages(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() dto: GetConversation,
+    @Query() query: PaginationDTO
+  ) {
+    return this.chatService.getConversationMessages(res, req.user.sub, dto.id, query);
+  }
+
   @Get("/:id")
   @UseGuards(JwtAuthGuard)
-  getConversation(@Req() req: Request, @Res() res: Response, @Param() dto: GetConversation, @Query() query: PaginationDTO) {
-    return res.status(200).json({ message: dto });
+  getConversation(@Req() req: Request, @Res() res: Response, @Param() dto: GetConversation) {
+    // return res.status(200).json({ message: dto });
+    return this.chatService.getConversation(res, req.user.sub, dto.id);
   }
 }

@@ -14,20 +14,35 @@ import { PrismaService } from "src/prisma/prisma.service";
 export class ChatService {
   constructor(private prismaService: PrismaService) {}
 
-  async getConversation(res: Response, userId: number, conversationId: number, query: PaginationDTO) {
-    const pageSize = Number(query.pageSize) || 20;
-    const cursor = Number(query.cursor) || 1;
+  async getConversation(res: Response, userId: number, conversationId: number) {
     try {
       const conversation = await this.prismaService.conversation.findFirst({
         where: { AND: [{ id: conversationId }, { members: { some: { userid: userId } } }] },
         include: {
           members: {
-            include: { users: true, message: { cursor: { id: cursor }, take: pageSize, orderBy: { created_at: "desc" } } },
+            include: {
+              users: {
+                select: { username: true, intra_id: true, img_url: true, email: true },
+              },
+            },
           },
         },
       });
       if (!conversation) return res.status(404).json({ message: "conversation not found" });
       return res.status(200).json(conversation);
+    } catch (error) {
+      return res.status(500).json({ message: "server error" });
+    }
+  }
+
+  async getConversationMessages(res: Response, userId: number, conversationId: number, query: PaginationDTO) {
+    try {
+      const messages = await this.prismaService.conversation.findFirst({
+        where: {AND:[{id: conversationId}, {members: {some: {userid: userId}}}]},
+        include: {message: {include: {members: {select: {users: true}}}}}
+      })
+      if (!messages) return res.status(404).json({messages: 'conversation not found'})
+      return res.status(200).json(messages)
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }

@@ -45,9 +45,7 @@ $$ LANGUAGE 'plpgsql';
 CREATE OR REPLACE FUNCTION update_conversation() RETURNS TRIGGER AS $$ BEGIN
 UPDATE conversation
 SET updated_at = now()
-FROM members
-WHERE members.id = NEW.senderId
-  AND conversation.id = members.conversationId;
+WHERE conversation.id = NEW.conversationId;
 RETURN NULL;
 END;
 $$ LANGUAGE 'plpgsql';
@@ -99,9 +97,11 @@ CREATE TABLE message (
   id SERIAL,
   message TEXT,
   senderId INT NOT NULL,
+  conversationId INT NOT NULL,
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
   FOREIGN KEY (senderId) REFERENCES members (id),
+  FOREIGN KEY (conversationId) REFERENCES conversation (id),
   PRIMARY KEY (id)
 );
 -- ?create trigger auto increment user.xp by achievement.xp on insert

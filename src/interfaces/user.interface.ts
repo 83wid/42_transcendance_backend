@@ -197,8 +197,9 @@ export class ReadNotification {
 /******************* CHAT ****************************/
 export class GetConversation {
   @IsNotEmpty()
-  @Matches(/^\d+$/)
-  id: string;
+  @IsNumber()
+  @Type(() => Number)
+  id: number;
 }
 
 export class CreateConversation {
