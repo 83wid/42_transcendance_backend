@@ -125,7 +125,13 @@ export class ChatService {
     try {
       if (dto.conversationId) {
         const conversation = await this.prismaService.conversation.findFirst({
-          where: { AND: [{ id: dto.conversationId }, { members: { some: { userid: userId, mute: false, active: true } } }] },
+          where: {
+            AND: [
+              { id: dto.conversationId },
+              { active: true },
+              { members: { some: { userid: userId, mute: false, active: true } } },
+            ],
+          },
         });
         if (!conversation) return res.status(400).json({ message: "Bad Request" });
         const newMessage = await this.prismaService.members.update({
@@ -146,8 +152,9 @@ export class ChatService {
       const conversation = await this.prismaService.conversation.findFirst({
         where: {
           AND: [
-            { type: "GROUP" },
             { id: dto.conversationId },
+            { type: "GROUP" },
+            { active: true },
             { adminid: userId },
             { members: { some: { userid: dto.memberId, mute: { not: dto.mute } } } },
           ],
@@ -186,13 +193,20 @@ export class ChatService {
     //   },
     // },
     console.log(userId);
-    
+
     try {
       // todo change to updateMany
       const conversation = await this.prismaService.conversation.findFirst({
         where: { AND: [{ type: "GROUP" }, { id: dto.conversationId }, { members: { some: { userid: userId, active: true } } }] },
+        // include: {members: {where: {userid: userId}}}
+      });
+      // return res.status(201).json(conversation);
+      await this.prismaService.members.update({
+        where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
+        data: { active: false },
       });
       if (!conversation) return res.status(400).json({ message: "Bad Request" });
+      // await this.prismaService.
       if (conversation.adminid === userId) {
         const findNewAdmin = await this.prismaService.members.findFirst({
           where: { AND: [{ id: conversation.id }, { active: true }] },
@@ -211,12 +225,18 @@ export class ChatService {
               },
             },
           });
-          return res.status(201).json(updateAdmin);
+          // TODO emit update
+          // return res.status(201).json({ message: "success leave conversation" });
+        } else {
+          await this.prismaService.conversation.update({
+            where: { id: conversation.id },
+            data: { active: false },
+          });
         }
         //TODO if !findNewAdmin set conversation.active false
-        return res.status(201).json(findNewAdmin);
+        // return res.status(201).json(findNewAdmin);
       }
-      return res.status(201).json(conversation);
+      return res.status(200).json({ message: "success leave conversation" });
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }

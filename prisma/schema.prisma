@@ -32,6 +32,7 @@ model conversation {
   title      String?            @db.VarChar(40)
   type       conversation_type? @default(DIRECT)
   adminid    Int
+  active     Boolean?           @default(true)
   created_at DateTime?          @default(now()) @db.Timestamp(6)
   updated_at DateTime?          @default(now()) @db.Timestamp(6)
   users      users              @relation(fields: [adminid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)

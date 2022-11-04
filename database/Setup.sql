@@ -74,6 +74,7 @@ CREATE TABLE conversation (
   title varchar(40),
   type conversation_type DEFAULT 'DIRECT',
   adminId INT NOT NULL,
+  active BOOLEAN DEFAULT true,
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
   FOREIGN KEY (adminId) REFERENCES users (intra_id),
