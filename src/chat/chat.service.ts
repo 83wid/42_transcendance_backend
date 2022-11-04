@@ -17,7 +17,7 @@ export class ChatService {
   async getConversation(res: Response, userId: number, conversationId: number) {
     try {
       const conversation = await this.prismaService.conversation.findFirst({
-        where: { AND: [{ id: conversationId }, { members: { some: { userid: userId } } }] },
+        where: { AND: [{ id: conversationId }, { members: { some: { userid: userId, active: true } } }] },
         include: {
           members: {
             include: {
@@ -125,21 +125,17 @@ export class ChatService {
     try {
       if (dto.conversationId) {
         const conversation = await this.prismaService.conversation.findFirst({
-          where: { AND: [{ id: dto.conversationId }, { members: { some: { userid: userId, mute: false } } }] },
+          where: { AND: [{ id: dto.conversationId }, { members: { some: { userid: userId, mute: false, active: true } } }] },
         });
         if (!conversation) return res.status(400).json({ message: "Bad Request" });
         const newMessage = await this.prismaService.members.update({
           where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
           data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
-          select: {message: {include: {members: {select: {users: true}}}, orderBy: {created_at: 'desc'}, take: 1}}
+          select: { message: { include: { members: { select: { users: true } } }, orderBy: { created_at: "desc" }, take: 1 } },
         });
         return res.status(200).json(newMessage);
       }
       return res.status(400).json({ message: "Bad Request" });
-      // const newMessage = await this.prismaService.message.create({
-
-      // })
-      // return res.status(200).json(newMessage);
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }
@@ -180,7 +176,47 @@ export class ChatService {
   }
 
   async leaveConversation(res: Response, userId: number, dto: LeaveConvesation) {
+    // include: {
+    //   members: {
+    //     include: {
+    //       users: {
+    //         select: { username: true, intra_id: true, img_url: true, email: true },
+    //       },
+    //     },
+    //   },
+    // },
+    console.log(userId);
+    
     try {
+      // todo change to updateMany
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: { AND: [{ type: "GROUP" }, { id: dto.conversationId }, { members: { some: { userid: userId, active: true } } }] },
+      });
+      if (!conversation) return res.status(400).json({ message: "Bad Request" });
+      if (conversation.adminid === userId) {
+        const findNewAdmin = await this.prismaService.members.findFirst({
+          where: { AND: [{ id: conversation.id }, { active: true }] },
+        });
+        if (findNewAdmin) {
+          const updateAdmin = await this.prismaService.conversation.update({
+            where: { id: conversation.id },
+            data: { adminid: findNewAdmin.userid },
+            include: {
+              members: {
+                include: {
+                  users: {
+                    select: { username: true, intra_id: true, img_url: true, email: true },
+                  },
+                },
+              },
+            },
+          });
+          return res.status(201).json(updateAdmin);
+        }
+        //TODO if !findNewAdmin set conversation.active false
+        return res.status(201).json(findNewAdmin);
+      }
+      return res.status(201).json(conversation);
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }

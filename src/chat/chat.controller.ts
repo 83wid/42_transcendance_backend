@@ -43,7 +43,7 @@ export class ChatController {
   @Put("leave")
   @UseGuards(JwtAuthGuard)
   leaveConversation(@Req() req: Request, @Res() res: Response, @Body() dto: LeaveConvesation) {
-    return res.status(200).json(dto);
+    return this.chatService.leaveConversation(res, req.user.sub, dto);
   }
 
   @Delete("delete")
