@@ -10,6 +10,7 @@ import {
   IsString,
   Matches,
   MaxLength,
+  Min,
   ValidateNested,
 } from "class-validator";
 // import { Response as Res, Request as Req } from 'express';
@@ -139,6 +140,7 @@ export class RegisterToQueueBody {
 export class InvitePlayGame {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   userId: number;
   @IsNotEmpty()
   @IsIn(["EASY", "NORMAL", "DIFFICULT"])
@@ -149,6 +151,7 @@ export class InvitePlayGame {
 export class AcceptePlayGame {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   inviteId: number;
 }
 
@@ -156,6 +159,7 @@ export class AcceptePlayGame {
 export class RejectPlayGame {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   inviteId: number;
 }
 
@@ -166,6 +170,7 @@ export class CreateGameBody extends InvitePlayGame {}
 export class LeaveGameBody {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   gameId: number;
 }
 
@@ -182,6 +187,7 @@ export class GetGameQuery {
 export class GetNotifcaions {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   userId: number;
 }
 
@@ -189,6 +195,7 @@ export class GetNotifcaions {
 export class ReadNotification {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   id: number;
 }
 
@@ -198,6 +205,7 @@ export class ReadNotification {
 export class GetConversation {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   @Type(() => Number)
   id: number;
 }
@@ -206,6 +214,7 @@ export class CreateConversation {
   @IsArray()
   @ArrayNotEmpty()
   @IsNumber({}, { each: true })
+  @Min(1, {each: true})
   @ArrayMaxSize(20)
   @Type(() => Number)
   members: number[];
@@ -214,6 +223,7 @@ export class CreateConversation {
 export class MessageDTO {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   conversationId: number;
   @IsNotEmpty()
   @IsString()
@@ -224,21 +234,25 @@ export class MessageDTO {
 export class LeaveConvesation {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   conversationId: number;
 }
 
 export class DeleteConversation {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   conversationId: number;
 }
 
 export class ToggleMuteUser {
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   memberId: number;
   @IsNotEmpty()
   @IsNumber()
+  @Min(1)
   conversationId: number;
 }
 
