@@ -58,15 +58,15 @@ export class ChatService {
     }
   }
 
-  async getAllConversation(res: Response, userId: number, conversationId: number, query: PaginationDTO) {
-    const pageSize = Number(query.pageSize) || 20;
-    const cursor = Number(query.cursor) || 1;
+  async getAllConversation(res: Response, userId: number, query: PaginationDTO) {
+    const Pagination = { take: query.pageSize || 20 };
+    query.cursor && Object.assign(Pagination, { cursor: { id: query.cursor } });
     try {
       const conversations = await this.prismaService.conversation.findMany({
-        take: pageSize,
-        cursor: { id: cursor },
+        ...Pagination,
         where: { members: { some: { userid: userId } } },
         orderBy: { updated_at: "desc" },
+        include: {message: {orderBy: {created_at: "desc"}, take: 1}}
       });
       return res.status(200).json(conversations);
     } catch (error) {
@@ -95,7 +95,9 @@ export class ChatService {
           where: {
             AND: [{ type: "DIRECT" }, { members: { every: { userid: { in: [ids[0].userid, ids[1].userid] } } } }],
           },
-          include: { members: true },
+          include: {
+            members: { include: { users: { select: { username: true, intra_id: true, img_url: true, email: true } } } },
+          },
         });
         if (conversationIsExist) return res.status(200).json(conversationIsExist);
       }
@@ -111,7 +113,7 @@ export class ChatService {
             },
           },
         },
-        include: { members: true },
+        include: { members: { include: { users: { select: { username: true, intra_id: true, img_url: true, email: true } } } } },
       });
       return res.status(200).json(conversation);
     } catch (error) {

@@ -19,7 +19,7 @@ export class ChatController {
   @Get("/")
   @UseGuards(JwtAuthGuard)
   getAllConversation(@Req() req: Request, @Res() res: Response, @Query() query: PaginationDTO) {
-    return res.status(201).json({ message: "all conversation" });
+    return this.chatService.getAllConversation(res, req.user.sub, query)
   }
 
   @Post("create")
