@@ -81,8 +81,8 @@ export class UsersService {
     }
   }
 
-  async getAllUsers(dto: GetUserQuery, res: Response) {
-    const pageSize = 20;
+  async getAllUsers(userId: number, dto: GetUserQuery, res: Response) {
+    const pageSize = Number(dto.pageSize) || 22;
     const cursor = Number(dto.cursor) || 1;
     try {
       const data = await this.prisma.users.findMany({
@@ -90,13 +90,13 @@ export class UsersService {
         cursor: { id: cursor },
         where: {
           AND: [
-            { status: dto.status },
             {
-              blocked_blocked_useridTousers: { none: {} },
+              blocked_blocked_useridTousers: { none: { userid: userId } },
             },
             {
-              blocked_blocked_blockedidTousers: { none: {} },
+              blocked_blocked_blockedidTousers: { none: { userid: userId } },
             },
+            { intra_id: { not: userId } },
             { OR: [{ username: { contains: dto.findBy } }, { email: { contains: dto.findBy } }] },
           ],
         },

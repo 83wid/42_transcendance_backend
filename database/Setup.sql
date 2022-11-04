@@ -31,13 +31,23 @@ RETURN NEW;
 END;
 $$ language 'plpgsql';
 -- ?create function auto update user xp from new achievement
-CREATE OR REPLACE FUNCTION update_user_xp() RETURNS TRIGGER AS $$ BEGIN --
+CREATE OR REPLACE FUNCTION update_user_xp() RETURNS TRIGGER AS $$ BEGIN
 UPDATE users
 SET xp = users.xp + achievements.xp
 FROM achievements
 WHERE users.intra_id = NEW.userId
   AND achievements.name = NEW.achievementName
   AND achievements.level = NEW.achievementLevel;
+RETURN NULL;
+END;
+$$ LANGUAGE 'plpgsql';
+-- ?create auto update conversation updated_at whene insert a new message
+CREATE OR REPLACE FUNCTION update_conversation() RETURNS TRIGGER AS $$ BEGIN
+UPDATE conversation
+SET updated_at = now()
+FROM members
+WHERE members.id = NEW.senderId
+  AND conversation.id = members.conversationId;
 RETURN NULL;
 END;
 $$ LANGUAGE 'plpgsql';
@@ -60,38 +70,44 @@ CREATE TABLE users (
 -- ?create trigger auto update updated_at
 CREATE TRIGGER trigger_update_timestamp BEFORE
 UPDATE ON users FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
--- ?create table for all conversation
+-- ?create table for conversations
 CREATE TABLE conversation (
-  id SERIAL NOT NULL unique,
-  name varchar(255),
+  id SERIAL,
+  title varchar(40),
   type conversation_type DEFAULT 'DIRECT',
+  adminId INT NOT NULL,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now(),
+  FOREIGN KEY (adminId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
--- ?create table for for group members 
-CREATE TABLE group_member (
-  id SERIAL NOT NULL unique,
-  user_id INT NOT NULL,
-  conversation_id INT NOT NULL,
-  joint_date timestamp DEFAULT now(),
-  left_date timestamp,
-  FOREIGN KEY (user_id) REFERENCES users (intra_id),
-  FOREIGN KEY (conversation_id) REFERENCES conversation (id),
+-- ?create table for conversation members
+CREATE TABLE members (
+  id SERIAL,
+  conversationId INT NOT NULL,
+  userId INT NOT NULL,
+  mute BOOLEAN DEFAULT false,
+  active BOOLEAN DEFAULT true,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now(),
+  FOREIGN KEY (userId) REFERENCES users (intra_id),
+  FOREIGN KEY (conversationId) REFERENCES conversation (id),
   PRIMARY KEY (id)
 );
 -- ?create table for messages
 CREATE TABLE message (
-  id SERIAL NOT NULL unique,
-  sender_id INT NOT NULL,
-  content text NOT NULL,
-  conversation_id INT NOT NULL,
-  created_at timestamp NOT NULL DEFAULT now(),
-  updated_at timestamp NOT NULL DEFAULT now(),
-  read_by integer [],
-  delivered_to integer [],
-  PRIMARY KEY (id),
-  FOREIGN KEY (sender_id) REFERENCES users (intra_id),
-  FOREIGN KEY (conversation_id) REFERENCES conversation (id)
+  id SERIAL,
+  message TEXT,
+  senderId INT NOT NULL,
+  created_at timestamp DEFAULT now(),
+  updated_at timestamp DEFAULT now(),
+  FOREIGN KEY (senderId) REFERENCES members (id),
+  PRIMARY KEY (id)
 );
+-- ?create trigger auto increment user.xp by achievement.xp on insert
+CREATE TRIGGER update_conversation
+AFTER
+INSERT ON message FOR EACH ROW EXECUTE FUNCTION update_conversation();
 -- ?create table for Friends
 CREATE TABLE friends (
   id SERIAL NOT NULL,
@@ -123,7 +139,7 @@ CREATE TABLE blocked (
   FOREIGN KEY (blockedId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
--- ?create table for test
+-- ?create table for games
 CREATE TABLE game (
   id SERIAL NOT NULL,
   status game_status DEFAULT 'WAITING',

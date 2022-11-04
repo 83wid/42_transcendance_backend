@@ -58,8 +58,8 @@ export class UsersController {
   }
   @Get("all")
   @UseGuards(JwtAuthGuard)
-  async getAllUsers(@Query() query: GetUserQuery, @Res() res: Response) {
-    return this.usersService.getAllUsers(query, res);
+  async getAllUsers(@Req() req: Request, @Query() query: GetUserQuery, @Res() res: Response) {
+    return this.usersService.getAllUsers(req.user.sub,query, res);
   }
   @Get(":username")
   @UseGuards(JwtAuthGuard)

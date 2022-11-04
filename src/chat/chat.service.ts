@@ -1,108 +1,114 @@
-import { Injectable } from '@nestjs/common';
-import { conversation, group_member, message, Prisma } from '@prisma/client';
-import { async } from 'rxjs';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Request, Response } from "express";
+import {
+  CreateConversation,
+  DeleteConversation,
+  GetConversation,
+  LeaveConvesation,
+  MessageDTO,
+  ToggleMuteUser,
+  PaginationDTO,
+} from "src/interfaces/user.interface";
+import { PrismaService } from "src/prisma/prisma.service";
 @Injectable()
 export class ChatService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prismaService: PrismaService) {}
 
-  async createConversation(
-    data: Prisma.conversationCreateInput,
-  ): Promise<conversation> {
+  async getConversation(res: Response, userId: number, conversationId: number, query: PaginationDTO) {
+    const pageSize = Number(query.pageSize) || 20;
+    const cursor = Number(query.cursor) || 1;
     try {
-      return this.prisma.conversation.create({
-        data,
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: { AND: [{ id: conversationId }, { members: { some: { userid: userId } } }] },
+        include: {
+          members: {
+            include: { users: true, message: { cursor: { id: cursor }, take: pageSize, orderBy: { created_at: "desc" } } },
+          },
+        },
       });
+      if (!conversation) return res.status(404).json({ message: "conversation not found" });
+      return res.status(200).json(conversation);
     } catch (error) {
-      return error;
+      return res.status(500).json({ message: "server error" });
     }
   }
 
-  async conversation(params: {
-    where?: Prisma.conversationWhereUniqueInput;
-  }): Promise<conversation | null> {
-    const { where } = params;
+  async getAllConversation(res: Response, userId: number, conversationId: number, query: PaginationDTO) {
+    const pageSize = Number(query.pageSize) || 20;
+    const cursor = Number(query.cursor) || 1;
     try {
-      return this.prisma.conversation.findUnique({
-        where,
+      const conversations = await this.prismaService.conversation.findMany({
+        take: pageSize,
+        cursor: { id: cursor },
+        where: { members: { some: { userid: userId } } },
+        orderBy: { updated_at: "desc" },
       });
+      return res.status(200).json(conversations);
     } catch (error) {
-      return error;
+      return res.status(500).json({ message: "server error" });
     }
   }
 
-  async messages(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.conversationWhereUniqueInput;
-    where?: Prisma.conversationWhereInput;
-    include?: Prisma.conversationInclude;
-    orderBy?: Prisma.conversationOrderByWithRelationInput;
-  }): Promise<conversation> {
-    const { skip, take, cursor, where, orderBy } = params;
+  async createConversation(res: Response, userId: number, dto: CreateConversation) {
+    const members = [userId, ...dto.members];
     try {
-      return this.prisma.conversation.findFirst({
-        skip,
-        take,
-        cursor,
-        where,
-        orderBy,
+      const blockeds = await this.prismaService.users.findMany({
+        where: {
+          intra_id: { in: members },
+        },
+        select: {
+          blocked_blocked_useridTousers: { where: { blockedid: { in: members } }, select: { userid: true, blockedid: true } },
+        },
       });
+      const test =[] 
+      blockeds.forEach(b => {
+        b.blocked_blocked_useridTousers.forEach(t => {
+          test.push(t.blockedid)
+          test.push(t.userid)
+        })
+      })
+      // if (blockeds.length) return res.status(400).json({ message: "can't create conversation" });
+      // const users = await this.prismaService.users.findMany({
+      //   where: {
+      //     AND: [
+      //       { intra_id: { in: members } },
+      //       { blocked_blocked_useridTousers: { none: { userid: {in: members} }} },
+      //       { blocked_blocked_blockedidTousers:  {none: {userid: {in: members}}}},
+      //     ],
+      //   },
+      //   select: { intra_id: true },
+      // });
+      return res.status(200).json(test);
     } catch (error) {
-      return error;
+      return res.status(500).json({ message: "server error" });
     }
   }
 
-  async getUserChats(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.conversationWhereUniqueInput;
-    where?: Prisma.conversationWhereInput;
-    include?: Prisma.conversationInclude;
-    orderBy?: Prisma.conversationOrderByWithRelationInput;
-  }): Promise<conversation[]> {
-    const { skip, take, cursor, where, include, orderBy } = params;
+  async sendMessage(res: Response, userId: number, dto: MessageDTO) {
     try {
-      return this.prisma.conversation.findMany({
-        skip,
-        take,
-        cursor,
-        where,
-        include,
-        orderBy,
-      });
     } catch (error) {
-      return error;
+      return res.status(500).json({ message: "server error" });
     }
   }
 
-  async getChatMessages(params: {
-    skip?: number;
-    take?: number;
-    cursor?: Prisma.messageWhereUniqueInput;
-    where?: Prisma.messageWhereInput;
-    orderBy?: Prisma.messageOrderByWithRelationInput;
-  }): Promise<message[]> {
-    const { skip, take, cursor, where, orderBy } = params;
+  async toggleMuteUser(res: Response, userId: number, dto: ToggleMuteUser) {
     try {
-      return this.prisma.message.findMany({
-        skip,
-        take,
-        cursor,
-        where,
-        orderBy,
-      });
     } catch (error) {
-      return error;
+      return res.status(500).json({ message: "server error" });
     }
   }
-  async createMessage(data): Promise<message> {
+
+  async leaveConversation(res: Response, userId: number, dto: LeaveConvesation) {
     try {
-      return this.prisma.message.create({
-        data,
-      });
     } catch (error) {
-      return error;
+      return res.status(500).json({ message: "server error" });
+    }
+  }
+
+  async deleteConversation(res: Response, userId: number, dto: DeleteConversation) {
+    try {
+    } catch (error) {
+      return res.status(500).json({ message: "server error" });
     }
   }
 }

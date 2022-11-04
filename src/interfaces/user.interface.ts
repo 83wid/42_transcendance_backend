@@ -1,11 +1,17 @@
+import { Type } from "class-transformer";
 import {
+  ArrayMaxSize,
+  ArrayNotEmpty,
+  IsArray,
   IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Matches,
-} from 'class-validator';
+  MaxLength,
+  ValidateNested,
+} from "class-validator";
 // import { Response as Res, Request as Req } from 'express';
 
 // Global Interface declare
@@ -21,7 +27,7 @@ declare global {
 }
 
 // inject user in Socket interface
-declare module 'socket.io' {
+declare module "socket.io" {
   interface Socket {
     user: number;
   }
@@ -53,15 +59,22 @@ export interface Friends {
   updated_at: string;
 }
 
-/*************** Users DTO **************/
-export class GetUserQuery {
+/****************** Pagination DTO ******************/
+export class PaginationDTO {
   @IsString()
   @IsOptional()
+  @Matches(/^\d+$/)
   cursor: string;
   @IsString()
   @IsOptional()
-  @IsIn(['ONLINE', 'OFFLINE', 'PLAYING'])
-  status: 'ONLINE' | 'OFFLINE' | 'PLAYING';
+  @Matches(/^\d+$/)
+  pageSize: string;
+}
+
+/****************** Pagination DTO ******************/
+
+/*************** Users DTO **************/
+export class GetUserQuery extends PaginationDTO {
   @IsString()
   @IsOptional()
   findBy: string;
@@ -108,15 +121,15 @@ export class blockRequestBody {
 /************** QUEUE Interface ***********************/
 // queue interface
 export interface QueueInterface {
-  GameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
+  GameLevel: "EASY" | "NORMAL" | "DIFFICULT";
   users: number[];
 }
 
 // register to queue dto
 export class RegisterToQueueBody {
   @IsNotEmpty()
-  @IsIn(['EASY', 'NORMAL', 'DIFFICULT'])
-  gameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
+  @IsIn(["EASY", "NORMAL", "DIFFICULT"])
+  gameLevel: "EASY" | "NORMAL" | "DIFFICULT";
 }
 
 /************** QUEUE Interface ***********************/
@@ -128,8 +141,8 @@ export class InvitePlayGame {
   @IsNumber()
   userId: number;
   @IsNotEmpty()
-  @IsIn(['EASY', 'NORMAL', 'DIFFICULT'])
-  gameLevel: 'EASY' | 'NORMAL' | 'DIFFICULT';
+  @IsIn(["EASY", "NORMAL", "DIFFICULT"])
+  gameLevel: "EASY" | "NORMAL" | "DIFFICULT";
 }
 
 // accepte game invite
@@ -158,7 +171,7 @@ export class LeaveGameBody {
 
 export class GetGameQuery {
   @IsNotEmpty()
-  @Matches('^[0-9]*$')
+  @Matches(/^\d+$/)
   gameId: string;
 }
 
@@ -180,3 +193,52 @@ export class ReadNotification {
 }
 
 /******************** Notifcations ********************/
+
+/******************* CHAT ****************************/
+export class GetConversation {
+  @IsNotEmpty()
+  @Matches(/^\d+$/)
+  id: string;
+}
+
+export class CreateConversation {
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({}, { each: true })
+  @ArrayMaxSize(20)
+  @Type(() => Number)
+  members: number[];
+}
+
+export class MessageDTO {
+  @IsNotEmpty()
+  @IsNumber()
+  conversationId: number;
+  @IsNotEmpty()
+  @IsString()
+  @MaxLength(80)
+  message: string;
+}
+
+export class LeaveConvesation {
+  @IsNotEmpty()
+  @IsNumber()
+  conversationId: number;
+}
+
+export class DeleteConversation {
+  @IsNotEmpty()
+  @IsNumber()
+  conversationId: number;
+}
+
+export class ToggleMuteUser {
+  @IsNotEmpty()
+  @IsNumber()
+  memberId: number;
+  @IsNotEmpty()
+  @IsNumber()
+  conversationId: number;
+}
+
+/******************* CHAT ****************************/
