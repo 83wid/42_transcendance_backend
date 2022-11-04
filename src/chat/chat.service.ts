@@ -48,37 +48,47 @@ export class ChatService {
       return res.status(500).json({ message: "server error" });
     }
   }
-
   async createConversation(res: Response, userId: number, dto: CreateConversation) {
     const members = [userId, ...dto.members];
     try {
-      const blockeds = await this.prismaService.users.findMany({
+      const users = await this.prismaService.users.findMany({
         where: {
-          intra_id: { in: members },
+          AND: [
+            { intra_id: { in: members } },
+            { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
+            { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
+          ],
         },
-        select: {
-          blocked_blocked_useridTousers: { where: { blockedid: { in: members } }, select: { userid: true, blockedid: true } },
-        },
+        select: { intra_id: true },
       });
-      const test =[] 
-      blockeds.forEach(b => {
-        b.blocked_blocked_useridTousers.forEach(t => {
-          test.push(t.blockedid)
-          test.push(t.userid)
-        })
-      })
-      // if (blockeds.length) return res.status(400).json({ message: "can't create conversation" });
-      // const users = await this.prismaService.users.findMany({
-      //   where: {
-      //     AND: [
-      //       { intra_id: { in: members } },
-      //       { blocked_blocked_useridTousers: { none: { userid: {in: members} }} },
-      //       { blocked_blocked_blockedidTousers:  {none: {userid: {in: members}}}},
-      //     ],
-      //   },
-      //   select: { intra_id: true },
-      // });
-      return res.status(200).json(test);
+      if (users.length < 2) return res.status(400).json({ message: "can't create conversation" });
+      const ids = users.map((u) => {
+        return { userid: u.intra_id };
+      });
+      if (ids.length === 2) {
+        const conversationIsExist = await this.prismaService.conversation.findFirst({
+          where: {
+            AND: [{ type: "DIRECT" }, { members: { every: { userid: { in: [ids[0].userid, ids[1].userid] } } } }],
+          },
+          include: { members: true },
+        });
+        if (conversationIsExist) return res.status(200).json(conversationIsExist);
+      }
+      const type = ids.length === 2 ? "DIRECT" : "GROUP";
+      const conversation = await this.prismaService.conversation.create({
+        data: {
+          adminid: userId,
+          type,
+          title: "test",
+          members: {
+            createMany: {
+              data: ids,
+            },
+          },
+        },
+        include: { members: true },
+      });
+      return res.status(200).json(conversation);
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }
