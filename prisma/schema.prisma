@@ -81,7 +81,7 @@ model invites {
 }
 
 model members {
-  id             Int          @id @default(autoincrement())
+  id             Int          @unique @default(autoincrement())
   conversationid Int
   userid         Int
   mute           Boolean?     @default(false)
@@ -91,6 +91,8 @@ model members {
   conversation   conversation @relation(fields: [conversationid], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users          users        @relation(fields: [userid], references: [intra_id], onDelete: NoAction, onUpdate: NoAction)
   message        message[]
+
+  @@id([conversationid, userid])
 }
 
 model message {

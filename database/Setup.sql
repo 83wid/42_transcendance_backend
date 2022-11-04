@@ -81,7 +81,7 @@ CREATE TABLE conversation (
 );
 -- ?create table for conversation members
 CREATE TABLE members (
-  id SERIAL,
+  id SERIAL UNIQUE,
   conversationId INT NOT NULL,
   userId INT NOT NULL,
   mute BOOLEAN DEFAULT false,
@@ -90,7 +90,7 @@ CREATE TABLE members (
   updated_at timestamp DEFAULT now(),
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (conversationId) REFERENCES conversation (id),
-  PRIMARY KEY (id)
+  PRIMARY KEY (conversationId, userId)
 );
 -- ?create table for messages
 CREATE TABLE message (

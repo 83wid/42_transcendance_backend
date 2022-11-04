@@ -36,14 +36,24 @@ export class ChatService {
   }
 
   async getConversationMessages(res: Response, userId: number, conversationId: number, query: PaginationDTO) {
+    const Pagination = { take: query.pageSize || 20 };
+    query.cursor && Object.assign(Pagination, { cursor: { id: query.cursor } });
     try {
       const messages = await this.prismaService.conversation.findFirst({
-        where: {AND:[{id: conversationId}, {members: {some: {userid: userId}}}]},
-        include: {message: {include: {members: {select: {users: true}}}}}
-      })
-      if (!messages) return res.status(404).json({messages: 'conversation not found'})
-      return res.status(200).json(messages)
+        where: { AND: [{ id: conversationId }, { members: { some: { userid: userId } } }] },
+        select: {
+          message: {
+            orderBy: { created_at: "desc" },
+            include: { members: { select: { users: true } } },
+            ...Pagination,
+          },
+        },
+      });
+      if (!messages) return res.status(404).json({ messages: "conversation not found" });
+      return res.status(200).json(messages);
     } catch (error) {
+      console.log(error);
+
       return res.status(500).json({ message: "server error" });
     }
   }
@@ -111,6 +121,22 @@ export class ChatService {
 
   async sendMessage(res: Response, userId: number, dto: MessageDTO) {
     try {
+      if (dto.conversationId) {
+        const conversation = await this.prismaService.conversation.findFirst({
+          where: { AND: [{ id: dto.conversationId }, { members: { some: { userid: userId } } }] },
+        });
+        if (!conversation) return res.status(400).json({ message: "Bad Request" });
+        const newMessage = await this.prismaService.members.update({
+          where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
+          data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
+        });
+        return res.status(200).json(newMessage);
+      }
+      return res.status(400).json({ message: "Bad Request" });
+      // const newMessage = await this.prismaService.message.create({
+
+      // })
+      // return res.status(200).json(newMessage);
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }

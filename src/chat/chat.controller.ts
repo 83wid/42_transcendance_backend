@@ -31,7 +31,7 @@ export class ChatController {
   @Post("message")
   @UseGuards(JwtAuthGuard)
   newMessage(@Req() req: Request, @Res() res: Response, @Body() dto: MessageDTO) {
-    return res.status(200).json(dto);
+    return this.chatService.sendMessage(res, req.user.sub, dto)
   }
 
   @Put("togglemute")
@@ -66,7 +66,6 @@ export class ChatController {
   @Get("/:id")
   @UseGuards(JwtAuthGuard)
   getConversation(@Req() req: Request, @Res() res: Response, @Param() dto: GetConversation) {
-    // return res.status(200).json({ message: dto });
     return this.chatService.getConversation(res, req.user.sub, dto.id);
   }
 }

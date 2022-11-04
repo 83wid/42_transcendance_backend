@@ -62,14 +62,18 @@ export interface Friends {
 
 /****************** Pagination DTO ******************/
 export class PaginationDTO {
-  @IsString()
+  @IsNumber()
   @IsOptional()
-  @Matches(/^\d+$/)
-  cursor: string;
-  @IsString()
+  // @Matches(/^\d+$/)
+  @Type(() => Number)
+  @Min(1)
+  cursor: number;
+  @IsNumber()
   @IsOptional()
-  @Matches(/^\d+$/)
-  pageSize: string;
+  @Type(() => Number)
+  @Min(1)
+  // @Matches(/^\d+$/)
+  pageSize: number;
 }
 
 /****************** Pagination DTO ******************/
@@ -214,17 +218,21 @@ export class CreateConversation {
   @IsArray()
   @ArrayNotEmpty()
   @IsNumber({}, { each: true })
-  @Min(1, {each: true})
+  @Min(1, { each: true })
   @ArrayMaxSize(20)
   @Type(() => Number)
   members: number[];
 }
 
 export class MessageDTO {
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumber()
   @Min(1)
   conversationId: number;
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  userId: number;
   @IsNotEmpty()
   @IsString()
   @MaxLength(80)
