@@ -22,9 +22,7 @@ export class ChatService {
         include: {
           members: {
             include: {
-              users: {
-                select: { username: true, intra_id: true, img_url: true, email: true },
-              },
+              users: true,
             },
           },
         },
@@ -62,7 +60,10 @@ export class ChatService {
         ...Pagination,
         where: { members: { some: { userid: userId, active: true } } },
         orderBy: { updated_at: "desc" },
-        include: { members: { where: {active: true}, include: { users: true } } },
+        include: {
+          members: { where: { active: true }, include: { users: true } },
+          message: { orderBy: { created_at: "desc" }, take: 1 },
+        },
       });
       return res.status(200).json(conversations);
     } catch (error) {
@@ -71,6 +72,7 @@ export class ChatService {
   }
   async createConversation(res: Response, userId: number, dto: CreateConversation) {
     const members = [userId, ...dto.members];
+    const title = dto.title || "";
     try {
       const users = await this.prismaService.users.findMany({
         where: {
@@ -92,7 +94,12 @@ export class ChatService {
             AND: [{ type: "DIRECT" }, { members: { every: { userid: { in: [ids[0].userid, ids[1].userid] } } } }],
           },
           include: {
-            members: { include: { users: { select: { username: true, intra_id: true, img_url: true, email: true } } } },
+            members: {
+              include: {
+                users: true,
+              },
+            },
+            message: { orderBy: { created_at: "desc" }, take: 1 },
           },
         });
         if (conversationIsExist) return res.status(200).json(conversationIsExist);
@@ -102,20 +109,29 @@ export class ChatService {
         data: {
           adminid: userId,
           type,
-          title: "test",
+          title,
           members: {
             createMany: {
               data: ids,
             },
           },
         },
-        include: { members: { include: { users: { select: { username: true, intra_id: true, img_url: true, email: true } } } } },
+        include: {
+          members: { include: { users: true } },
+          message: { orderBy: { created_at: "desc" }, take: 1 },
+        },
       });
       return res.status(200).json(conversation);
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }
   }
+
+  // const newMessage = await this.prismaService.members.update({
+  //   where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
+  //   data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
+  //   select: { message: { include: { members: { select: { users: true } } }, orderBy: { created_at: "desc" }, take: 1 } },
+  // });
 
   async sendMessage(userId: number, dto: MessageDTO) {
     return new Promise(async (resolve, reject) => {
@@ -129,14 +145,25 @@ export class ChatService {
                 { members: { some: { userid: userId, mute: false, active: true } } },
               ],
             },
+            include: { members: { where: { active: true }, include: { users: true } } },
           });
           if (!conversation) return reject({ message: "Bad Request" });
-          const newMessage = await this.prismaService.members.update({
-            where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
-            data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
-            select: { message: { include: { members: { select: { users: true } } }, orderBy: { created_at: "desc" }, take: 1 } },
+          const newMessage = await this.prismaService.conversation.update({
+            where: { id: conversation.id },
+            data: {
+              members: {
+                update: {
+                  where: { conversationid_userid: { userid: userId, conversationid: conversation.id } },
+                  data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
+                },
+              },
+            },
+            include: {
+              members: { include: { users: true } },
+              message: { include: { members: { select: { users: true } } }, orderBy: { created_at: "desc" }, take: 1 },
+            },
           });
-          return resolve(newMessage.message[0]);
+          return resolve(newMessage);
         }
         return reject({ message: "Bad Request" });
       } catch (error) {

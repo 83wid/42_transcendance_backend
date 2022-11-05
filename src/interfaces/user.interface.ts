@@ -12,6 +12,7 @@ import {
   Matches,
   MaxLength,
   Min,
+  MinLength,
   ValidateNested,
 } from "class-validator";
 // import { Response as Res, Request as Req } from 'express';
@@ -223,6 +224,11 @@ export class CreateConversation {
   @ArrayMaxSize(20)
   @Type(() => Number)
   members: number[];
+  @IsString()
+  @IsOptional()
+  @MinLength(3)
+  @MaxLength(15)
+  title: string
 }
 
 export class MessageDTO {
