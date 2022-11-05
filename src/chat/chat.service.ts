@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { Request, Response } from "express";
+import { throwError } from "rxjs";
 import {
   CreateConversation,
   DeleteConversation,
@@ -39,16 +40,11 @@ export class ChatService {
     const Pagination = { take: query.pageSize || 20 };
     query.cursor && Object.assign(Pagination, { cursor: { id: query.cursor } });
     try {
-      const messages = await this.prismaService.conversation.findFirst({
-        where: { AND: [{ id: conversationId }, { members: { some: { userid: userId } } }] },
-        select: {
-          message: {
-            orderBy: { created_at: "desc" },
-            include: { members: { select: { users: true } } },
-            ...Pagination,
-          },
-        },
-      });
+      const messages = await this.prismaService.conversation
+        .findFirst({
+          where: { AND: [{ id: conversationId }, { members: { some: { userid: userId } } }] },
+        })
+        .message({ orderBy: { created_at: "desc" }, include: { members: { select: { users: true } } }, ...Pagination });
       if (!messages) return res.status(404).json({ messages: "conversation not found" });
       return res.status(200).json(messages);
     } catch (error) {
@@ -64,9 +60,9 @@ export class ChatService {
     try {
       const conversations = await this.prismaService.conversation.findMany({
         ...Pagination,
-        where: { members: { some: { userid: userId } } },
+        where: { members: { some: { userid: userId, active: true } } },
         orderBy: { updated_at: "desc" },
-        include: { message: { orderBy: { created_at: "desc" }, take: 1 } },
+        include: { members: { where: {active: true}, include: { users: true } } },
       });
       return res.status(200).json(conversations);
     } catch (error) {
@@ -121,30 +117,32 @@ export class ChatService {
     }
   }
 
-  async sendMessage(res: Response, userId: number, dto: MessageDTO) {
-    try {
-      if (dto.conversationId) {
-        const conversation = await this.prismaService.conversation.findFirst({
-          where: {
-            AND: [
-              { id: dto.conversationId },
-              { active: true },
-              { members: { some: { userid: userId, mute: false, active: true } } },
-            ],
-          },
-        });
-        if (!conversation) return res.status(400).json({ message: "Bad Request" });
-        const newMessage = await this.prismaService.members.update({
-          where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
-          data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
-          select: { message: { include: { members: { select: { users: true } } }, orderBy: { created_at: "desc" }, take: 1 } },
-        });
-        return res.status(200).json(newMessage);
+  async sendMessage(userId: number, dto: MessageDTO) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (dto.conversationId) {
+          const conversation = await this.prismaService.conversation.findFirst({
+            where: {
+              AND: [
+                { id: dto.conversationId },
+                { active: true },
+                { members: { some: { userid: userId, mute: false, active: true } } },
+              ],
+            },
+          });
+          if (!conversation) return reject({ message: "Bad Request" });
+          const newMessage = await this.prismaService.members.update({
+            where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
+            data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
+            select: { message: { include: { members: { select: { users: true } } }, orderBy: { created_at: "desc" }, take: 1 } },
+          });
+          return resolve(newMessage.message[0]);
+        }
+        return reject({ message: "Bad Request" });
+      } catch (error) {
+        return reject({ message: "server error" });
       }
-      return res.status(400).json({ message: "Bad Request" });
-    } catch (error) {
-      return res.status(500).json({ message: "server error" });
-    }
+    });
   }
 
   async toggleMuteUser(res: Response, userId: number, dto: ToggleMuteUser) {

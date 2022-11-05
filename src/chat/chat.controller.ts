@@ -28,11 +28,11 @@ export class ChatController {
     return this.chatService.createConversation(res, req.user.sub, dto);
   }
 
-  @Post("message")
-  @UseGuards(JwtAuthGuard)
-  newMessage(@Req() req: Request, @Res() res: Response, @Body() dto: MessageDTO) {
-    return this.chatService.sendMessage(res, req.user.sub, dto);
-  }
+  // @Post("message")
+  // @UseGuards(JwtAuthGuard)
+  // newMessage(@Req() req: Request, @Res() res: Response, @Body() dto: MessageDTO) {
+  //   return this.chatService.sendMessage(res, req.user.sub, dto);
+  // }
 
   @Put("togglemute")
   @UseGuards(JwtAuthGuard)
