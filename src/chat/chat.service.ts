@@ -37,6 +37,8 @@ export class ChatService {
   async getConversationMessages(res: Response, userId: number, conversationId: number, query: PaginationDTO) {
     const Pagination = { take: query.pageSize || 20 };
     query.cursor && Object.assign(Pagination, { cursor: { id: query.cursor } });
+    console.log(Pagination);
+    
     try {
       const messages = await this.prismaService.conversation
         .findFirst({
