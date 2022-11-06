@@ -10,6 +10,7 @@ import {
   PaginationDTO,
   ConversationDataReturn,
   JoinConversation,
+  AddMember,
 } from "src/interfaces/user.interface";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
@@ -81,7 +82,7 @@ export class ChatService {
     const members = [userId, ...dto.members];
     const title = dto.title || "";
     try {
-      const hashPassword = dto.password ? await bcrypt.hash(dto.password, this.salt) : "";
+      const hashPassword = dto.password ? await bcrypt.hash(dto.password, this.salt) : null;
       const users = await this.prismaService.users.findMany({
         where: {
           AND: [
@@ -116,11 +117,11 @@ export class ChatService {
 
   async joinConversation(res: Response, userId: number, dto: JoinConversation) {
     try {
-      const conversation = await this.prismaService.conversation.findUnique({
-        where: { id: dto.conversationId },
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: { id: dto.conversationId, public: true },
       });
       if (!conversation) res.status(404).json({ message: "conversation not found" });
-      if (!conversation.public) {
+      if (conversation) {
         if (!dto.password) return res.status(404).json({ message: "Permission denied" });
         const passwordMatch = await bcrypt.compare(dto.password, conversation.password);
         if (!passwordMatch) return res.status(404).json({ message: "Permission denied" });
@@ -138,6 +139,41 @@ export class ChatService {
         include: { members: { include: { users: true } } },
       });
       return res.send(plainToInstance(ConversationDataReturn, join));
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "server error" });
+    }
+  }
+
+  async addMember(res: Response, userId: number, dto: AddMember) {
+    try {
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: { id: dto.conversationId, members: { some: { userid: userId, isadmin: true } } },
+      });
+      if (!conversation) return res.status(404).json({ message: "conversation not found" });
+      const user = await this.prismaService.users.findFirst({
+        where: {
+          AND: [
+            { intra_id: userId },
+            { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
+            { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
+          ],
+        },
+      });
+      if (!user) return res.status(404).json({ message: "user nout found" });
+      const update = await this.prismaService.conversation.update({
+        where: { id: conversation.id },
+        data: {
+          members: {
+            connectOrCreate: {
+              where: { conversationid_userid: { userid: dto.userId, conversationid: dto.conversationId } },
+              create: { userid: dto.userId },
+            },
+          },
+        },
+        include: {members: {include: {users: true}}}
+      });
+      return res.send(update);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "server error" });

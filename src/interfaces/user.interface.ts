@@ -235,7 +235,7 @@ export class CreateConversation {
   password: string;
   @IsNotEmpty()
   @IsBoolean()
-  public: boolean
+  public: boolean;
 }
 
 export class MessageDTO {
@@ -291,6 +291,17 @@ export class JoinConversation {
   @MinLength(6)
   @MaxLength(20)
   password: string;
+}
+
+export class AddMember {
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  conversationId: number;
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  userId: number;
 }
 
 export class ConversationDataReturn {
