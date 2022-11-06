@@ -10,6 +10,7 @@ import {
   LeaveConvesation,
   DeleteConversation,
   PaginationDTO,
+  JoinConversation,
 } from "src/interfaces/user.interface";
 
 @Controller("conversation")
@@ -26,6 +27,12 @@ export class ChatController {
   @UseGuards(JwtAuthGuard)
   createConversation(@Req() req: Request, @Res() res: Response, @Body() dto: CreateConversation) {
     return this.chatService.createConversation(res, req.user.sub, dto);
+  }
+
+  @Post("join")
+  @UseGuards(JwtAuthGuard)
+  joinConversation(@Req() req: Request, @Res() res: Response, @Body() dto: JoinConversation) {
+    return this.chatService.joinConversation(res, req.user.sub, dto);
   }
 
   // @Post("message")

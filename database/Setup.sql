@@ -6,7 +6,7 @@ CREATE TYPE level_type AS ENUM ('BRONZE', 'SILVER', 'GOLD', 'PLATINUM');
 CREATE TYPE game_diff AS ENUM ('EASY', 'NORMAL', 'DIFFICULT');
 -- ?game status
 CREATE TYPE game_status AS ENUM('WAITING', 'PLAYING', 'END');
--- ?converstaions types
+-- ?conversations types
 CREATE TYPE conversation_type AS ENUM ('DIRECT', 'GROUP');
 -- ?notifications types
 CREATE TYPE NOTIFICATION_T AS ENUM (
@@ -73,11 +73,11 @@ CREATE TABLE conversation (
   id SERIAL,
   title varchar(40),
   type conversation_type DEFAULT 'DIRECT',
-  adminId INT NOT NULL,
   active BOOLEAN DEFAULT true,
+  public BOOLEAN DEFAULT false,
+  password varchar(225),
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
-  FOREIGN KEY (adminId) REFERENCES users (intra_id),
   PRIMARY KEY (id)
 );
 -- ?create table for conversation members
@@ -87,12 +87,26 @@ CREATE TABLE members (
   userId INT NOT NULL,
   mute BOOLEAN DEFAULT false,
   active BOOLEAN DEFAULT true,
+  endMute timestamp DEFAULT now(),
+  endBan timestamp DEFAULT now(),
+  isAdmin boolean DEFAULT false,
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
   FOREIGN KEY (userId) REFERENCES users (intra_id),
   FOREIGN KEY (conversationId) REFERENCES conversation (id),
   PRIMARY KEY (conversationId, userId)
 );
+-- ?create table for conversation admins
+-- CREATE table conversation_admins (
+--   id SERIAL UNIQUE,
+--   conversationId INT NOT NULL,
+--   memberId INT NOT NULL,
+--   created_at timestamp DEFAULT now(),
+--   updated_at timestamp DEFAULT now(),
+--   FOREIGN KEY (conversationId) REFERENCES conversation (id),
+--   FOREIGN KEY (memberId) REFERENCES members (id),
+--   PRIMARY KEY (conversationId, memberId)
+-- );
 -- ?create table for messages
 CREATE TABLE message (
   id SERIAL,

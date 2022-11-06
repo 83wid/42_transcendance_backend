@@ -1,4 +1,4 @@
-import { Type } from "class-transformer";
+import { Exclude, Type } from "class-transformer";
 import {
   ArrayMaxSize,
   ArrayNotEmpty,
@@ -221,14 +221,21 @@ export class CreateConversation {
   @ArrayNotEmpty()
   @IsNumber({}, { each: true })
   @Min(1, { each: true })
-  @ArrayMaxSize(20)
   @Type(() => Number)
   members: number[];
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @MinLength(3)
   @MaxLength(15)
-  title: string
+  title: string;
+  @IsString()
+  @IsOptional()
+  @MinLength(6)
+  @MaxLength(20)
+  password: string;
+  @IsNotEmpty()
+  @IsBoolean()
+  public: boolean
 }
 
 export class MessageDTO {
@@ -272,6 +279,23 @@ export class ToggleMuteUser {
   @IsNotEmpty()
   @IsBoolean()
   mute: boolean;
+}
+
+export class JoinConversation {
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  conversationId: number;
+  @IsString()
+  @IsOptional()
+  @MinLength(6)
+  @MaxLength(20)
+  password: string;
+}
+
+export class ConversationDataReturn {
+  @Exclude()
+  password: string;
 }
 
 /******************* CHAT ****************************/
