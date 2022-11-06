@@ -284,7 +284,7 @@ export class ToggleMuteUser {
   mute: boolean;
   @IsOptional()
   @IsDate()
-  @ValidateIf((m) => !(new Date(m.muteAt).getTime() > new Date().getTime()))
+  @ValidateIf((d) => !(new Date(d.muteAt).getTime() > new Date().getTime()))
   muteAt: Date;
 }
 
@@ -299,10 +299,10 @@ export class ToggleBanUser {
   conversationId: number;
   @IsNotEmpty()
   @IsBoolean()
-  mute: boolean;
+  ban: boolean;
   @IsOptional()
   @IsDate()
-  @ValidateIf((m) => !(new Date(m.muteAt).getTime() > new Date().getTime()))
+  @ValidateIf((d) => !(new Date(d.muteAt).getTime() > new Date().getTime()))
   banAt: Date;
 }
 

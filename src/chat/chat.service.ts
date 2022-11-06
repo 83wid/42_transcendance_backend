@@ -12,6 +12,7 @@ import {
   JoinConversation,
   AddMember,
   addAdminConversation,
+  ToggleBanUser,
 } from "src/interfaces/user.interface";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
@@ -189,14 +190,14 @@ export class ChatService {
             { id: dto.conversationId },
             { type: "GROUP" },
             { members: { some: { userid: userId, isadmin: true } } },
-            { members: { some: { userid: dto.userId } } },
+            { members: { some: { userid: dto.userId, endban: { lt: new Date() }, endmute: { lt: new Date() } } } },
           ],
         },
       });
       if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
       const update = await this.prismaService.members.update({
         where: { conversationid_userid: { userid: dto.userId, conversationid: conversation.id } },
-        data: { isadmin: true, mute: false, blocked: false },
+        data: { isadmin: true, mute: false, ban: false },
       });
       return res.send(update);
     } catch (error) {
@@ -268,7 +269,29 @@ export class ChatService {
     }
   }
 
-  // async toggleBanUser
+  async toggleBanUser(res: Response, userId: number, dto: ToggleBanUser) {
+    try {
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: {
+          AND: [
+            { id: dto.conversationId },
+            { type: "GROUP" },
+            { members: { some: { userid: userId, isadmin: true } } },
+            { members: { some: { userid: dto.userId, isadmin: false } } },
+          ],
+        },
+      });
+      if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
+      const update = await this.prismaService.members.update({
+        where: { conversationid_userid: { conversationid: conversation.id, userid: dto.userId } },
+        data: { ban: dto.ban, endban: dto.banAt || new Date() },
+      });
+      return res.status(200).json(update);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "server error" });
+    }
+  }
 
   async leaveConversation(res: Response, userId: number, dto: LeaveConvesation) {
     // try {

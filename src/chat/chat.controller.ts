@@ -13,6 +13,7 @@ import {
   JoinConversation,
   AddMember,
   addAdminConversation,
+  ToggleBanUser,
 } from "src/interfaces/user.interface";
 
 @Controller("conversation")
@@ -48,7 +49,6 @@ export class ChatController {
   addAdmin(@Req() req: Request, @Res() res: Response, @Body() dto: addAdminConversation) {
     return this.chatService.addAdminConversation(res, req.user.sub, dto);
   }
-
   // @Post("message")
   // @UseGuards(JwtAuthGuard)
   // newMessage(@Req() req: Request, @Res() res: Response, @Body() dto: MessageDTO) {
@@ -59,6 +59,12 @@ export class ChatController {
   @UseGuards(JwtAuthGuard)
   toggleMuteUser(@Req() req: Request, @Res() res: Response, @Body() dto: ToggleMuteUser) {
     return this.chatService.toggleMuteUser(res, req.user.sub, dto);
+  }
+
+  @Put("toggleban")
+  @UseGuards(JwtAuthGuard)
+  toggleBanUser(@Req() req: Request, @Res() res: Response, @Body() dto: ToggleBanUser) {
+    return this.chatService.toggleBanUser(res, req.user.sub, dto);
   }
 
   @Put("leave")
