@@ -304,6 +304,17 @@ export class AddMember {
   userId: number;
 }
 
+export class addAdminConversation {
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  conversationId: number;
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  userId: number;
+}
+
 export class ConversationDataReturn {
   @Exclude()
   password: string;

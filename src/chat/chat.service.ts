@@ -11,6 +11,7 @@ import {
   ConversationDataReturn,
   JoinConversation,
   AddMember,
+  addAdminConversation,
 } from "src/interfaces/user.interface";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
@@ -118,7 +119,7 @@ export class ChatService {
   async joinConversation(res: Response, userId: number, dto: JoinConversation) {
     try {
       const conversation = await this.prismaService.conversation.findFirst({
-        where: { id: dto.conversationId, public: true },
+        where: { id: dto.conversationId, public: true, type: "GROUP" },
       });
       if (!conversation) res.status(404).json({ message: "conversation not found" });
       if (conversation) {
@@ -148,7 +149,7 @@ export class ChatService {
   async addMember(res: Response, userId: number, dto: AddMember) {
     try {
       const conversation = await this.prismaService.conversation.findFirst({
-        where: { id: dto.conversationId, members: { some: { userid: userId, isadmin: true } } },
+        where: { id: dto.conversationId, type: "GROUP", members: { some: { userid: userId, isadmin: true } } },
       });
       if (!conversation) return res.status(404).json({ message: "conversation not found" });
       const user = await this.prismaService.users.findFirst({
@@ -171,7 +172,31 @@ export class ChatService {
             },
           },
         },
-        include: {members: {include: {users: true}}}
+        include: { members: { include: { users: true } } },
+      });
+      return res.send(update);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "server error" });
+    }
+  }
+
+  async addAdminConversation(res: Response, userId: number, dto: addAdminConversation) {
+    try {
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: {
+          AND: [
+            { id: dto.conversationId },
+            { type: "GROUP" },
+            { members: { some: { userid: userId, isadmin: true } } },
+            { members: { some: { userid: dto.userId } } },
+          ],
+        },
+      });
+      if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
+      const update = await this.prismaService.members.update({
+        where: { conversationid_userid: { userid: dto.userId, conversationid: conversation.id } },
+        data: { isadmin: true, mute: false },
       });
       return res.send(update);
     } catch (error) {

@@ -12,6 +12,7 @@ import {
   PaginationDTO,
   JoinConversation,
   AddMember,
+  addAdminConversation,
 } from "src/interfaces/user.interface";
 
 @Controller("conversation")
@@ -40,6 +41,12 @@ export class ChatController {
   @UseGuards(JwtAuthGuard)
   addMember(@Req() req: Request, @Res() res: Response, @Body() dto: AddMember) {
     return this.chatService.addMember(res, req.user.sub, dto);
+  }
+
+  @Put("addadmin")
+  @UseGuards(JwtAuthGuard)
+  addAdmin(@Req() req: Request, @Res() res: Response, @Body() dto: addAdminConversation) {
+    return this.chatService.addAdminConversation(res, req.user.sub, dto);
   }
 
   // @Post("message")
