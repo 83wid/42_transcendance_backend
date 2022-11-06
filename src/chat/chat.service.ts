@@ -196,7 +196,7 @@ export class ChatService {
       if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
       const update = await this.prismaService.members.update({
         where: { conversationid_userid: { userid: dto.userId, conversationid: conversation.id } },
-        data: { isadmin: true, mute: false },
+        data: { isadmin: true, mute: false, blocked: false },
       });
       return res.send(update);
     } catch (error) {
@@ -245,39 +245,30 @@ export class ChatService {
   }
 
   async toggleMuteUser(res: Response, userId: number, dto: ToggleMuteUser) {
-    // try {
-    //   const conversation = await this.prismaService.conversation.findFirst({
-    //     where: {
-    //       AND: [
-    //         { id: dto.conversationId },
-    //         { type: "GROUP" },
-    //         { active: true },
-    //         { adminid: userId },
-    //         { members: { some: { userid: dto.memberId, mute: { not: dto.mute } } } },
-    //       ],
-    //     },
-    //     include: { members: { where: { userid: dto.memberId } } },
-    //   });
-    //   if (!conversation) return res.status(400).json({ message: "Bad Request" });
-    //   const update = await this.prismaService.conversation.update({
-    //     where: { id: conversation.id },
-    //     data: {
-    //       members: {
-    //         update: {
-    //           where: { conversationid_userid: { conversationid: conversation.id, userid: dto.memberId } },
-    //           data: { mute: dto.mute },
-    //         },
-    //       },
-    //     },
-    //     include: {
-    //       members: { include: { users: { select: { username: true, intra_id: true, img_url: true, email: true } } } },
-    //     },
-    //   });
-    //   return res.status(200).json(update);
-    // } catch (error) {
-    //   return res.status(500).json({ message: "server error" });
-    // }
+    try {
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: {
+          AND: [
+            { id: dto.conversationId },
+            { type: "GROUP" },
+            { members: { some: { userid: userId, isadmin: true } } },
+            { members: { some: { userid: dto.userId, isadmin: false } } },
+          ],
+        },
+      });
+      if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
+      const update = await this.prismaService.members.update({
+        where: { conversationid_userid: { conversationid: conversation.id, userid: dto.userId } },
+        data: { mute: dto.mute, endmute: dto.muteAt || new Date() },
+      });
+      return res.status(200).json(update);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "server error" });
+    }
   }
+
+  // async toggleBanUser
 
   async leaveConversation(res: Response, userId: number, dto: LeaveConvesation) {
     // try {

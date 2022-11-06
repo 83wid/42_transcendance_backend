@@ -4,6 +4,7 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsBoolean,
+  IsDate,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -12,7 +13,9 @@ import {
   Matches,
   MaxLength,
   Min,
+  MinDate,
   MinLength,
+  ValidateIf,
   ValidateNested,
 } from "class-validator";
 // import { Response as Res, Request as Req } from 'express';
@@ -271,7 +274,7 @@ export class ToggleMuteUser {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
-  memberId: number;
+  userId: number;
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
@@ -279,6 +282,28 @@ export class ToggleMuteUser {
   @IsNotEmpty()
   @IsBoolean()
   mute: boolean;
+  @IsOptional()
+  @IsDate()
+  @ValidateIf((m) => !(new Date(m.muteAt).getTime() > new Date().getTime()))
+  muteAt: Date;
+}
+
+export class ToggleBanUser {
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  userId: number;
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  conversationId: number;
+  @IsNotEmpty()
+  @IsBoolean()
+  mute: boolean;
+  @IsOptional()
+  @IsDate()
+  @ValidateIf((m) => !(new Date(m.muteAt).getTime() > new Date().getTime()))
+  banAt: Date;
 }
 
 export class JoinConversation {
