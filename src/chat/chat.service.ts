@@ -132,9 +132,10 @@ export class ChatService {
         where: { id: dto.conversationId },
         data: {
           members: {
-            connectOrCreate: {
+            upsert: {
               where: { conversationid_userid: { userid: userId, conversationid: dto.conversationId } },
               create: { userid: userId },
+              update: { active: true },
             },
           },
         },
@@ -150,7 +151,7 @@ export class ChatService {
   async addMember(res: Response, userId: number, dto: AddMember) {
     try {
       const conversation = await this.prismaService.conversation.findFirst({
-        where: { id: dto.conversationId, type: "GROUP", members: { some: { userid: userId, isadmin: true } } },
+        where: { id: dto.conversationId, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
       });
       if (!conversation) return res.status(404).json({ message: "conversation not found" });
       const user = await this.prismaService.users.findFirst({
@@ -167,9 +168,10 @@ export class ChatService {
         where: { id: conversation.id },
         data: {
           members: {
-            connectOrCreate: {
+            upsert: {
               where: { conversationid_userid: { userid: dto.userId, conversationid: dto.conversationId } },
               create: { userid: dto.userId },
+              update: { active: true },
             },
           },
         },
@@ -190,7 +192,7 @@ export class ChatService {
             { id: dto.conversationId },
             { type: "GROUP" },
             { members: { some: { userid: userId, isadmin: true } } },
-            { members: { some: { userid: dto.userId, endban: { lt: new Date() }, endmute: { lt: new Date() } } } },
+            { members: { some: { userid: dto.userId, active: true, endban: { lt: new Date() }, endmute: { lt: new Date() } } } },
           ],
         },
       });
@@ -294,70 +296,38 @@ export class ChatService {
   }
 
   async leaveConversation(res: Response, userId: number, dto: LeaveConvesation) {
-    // try {
-    //   // todo change to updateMany
-    //   console.log(dto);
-    //   const conversation = await this.prismaService.conversation.findFirst({
-    //     where: { AND: [{ id: dto.conversationId }, { members: { some: { userid: userId, active: true } } }] },
-    //     // include: {members: {where: {userid: userId}}}
-    //   });
-    //   // return res.status(201).json(conversation);
-    //   if (!conversation) return res.status(400).json({ message: "Bad Request" });
-    //   if (conversation.type === "DIRECT") {
-    //     await this.prismaService.conversation.update({
-    //       where: { id: conversation.id },
-    //       data: {
-    //         active: false,
-    //         members: {
-    //           update: {
-    //             where: { conversationid_userid: { userid: userId, conversationid: conversation.id } },
-    //             data: { active: false },
-    //           },
-    //         },
-    //       },
-    //     });
-    //     // todo emit update
-    //     return res.status(200).json({ message: "success leave conversation" });
-    //   }
-    //   await this.prismaService.members.update({
-    //     where: { conversationid_userid: { conversationid: conversation.id, userid: userId } },
-    //     data: { active: false },
-    //   });
-    //   // await this.prismaService.
-    //   if (conversation.adminid === userId) {
-    //     const findNewAdmin = await this.prismaService.members.findFirst({
-    //       where: { AND: [{ id: conversation.id }, { active: true }] },
-    //     });
-    //     if (findNewAdmin) {
-    //       const updateAdmin = await this.prismaService.conversation.update({
-    //         where: { id: conversation.id },
-    //         data: { adminid: findNewAdmin.userid },
-    //         include: {
-    //           members: {
-    //             include: {
-    //               users: {
-    //                 select: { username: true, intra_id: true, img_url: true, email: true },
-    //               },
-    //             },
-    //           },
-    //         },
-    //       });
-    //       // TODO emit update
-    //       // return res.status(201).json({ message: "success leave conversation" });
-    //     } else {
-    //       await this.prismaService.conversation.update({
-    //         where: { id: conversation.id },
-    //         data: { active: false },
-    //       });
-    //     }
-    //     //TODO if !findNewAdmin set conversation.active false
-    //     // return res.status(201).json(findNewAdmin);
-    //   }
-    //   return res.status(200).json({ message: "success leave conversation" });
-    // } catch (error) {
-    //   console.log(error);
-    //   return res.status(500).json({ message: "server error" });
-    // }
+    try {
+      const member = await this.prismaService.members.findUnique({
+        where: { conversationid_userid: { conversationid: dto.conversationId, userid: userId } },
+      });
+      if (!member || !member.active) return res.status(404).json({ message: "conversation not found" });
+      const update = await this.prismaService.members.update({
+        where: { id: member.id },
+        data: { active: false, isadmin: false },
+      });
+      if (member.isadmin) {
+        const admins = await this.prismaService.members.findMany({
+          where: { conversationid: dto.conversationId, isadmin: true },
+        });
+        // ?set new admin
+        if (!admins.length) {
+          const newAdmin = await this.prismaService.members.findFirst({
+            where: { conversationid: dto.conversationId, active: true, ban: false, mute: false },
+            orderBy: { created_at: "asc" },
+          });
+          if (newAdmin) {
+            await this.prismaService.members.update({
+              where: { id: newAdmin.id },
+              data: { isadmin: true },
+            });
+          }
+        }
+      }
+      return res.status(201).json(update); //.json({ message: "success leave conversation" });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "server error" });
+    }
   }
 
   async deleteConversation(res: Response, userId: number, dto: DeleteConversation) {
