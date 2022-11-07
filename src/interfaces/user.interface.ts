@@ -211,13 +211,23 @@ export class ReadNotification {
 /******************** Notifcations ********************/
 
 /******************* CHAT ****************************/
-export class GetConversation {
+// Param
+export class GetConversationParam {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
   @Type(() => Number)
   id: number;
 }
+
+export class GetConversationBody {
+  @IsString()
+  @IsOptional()
+  @MinLength(6)
+  @MaxLength(20)
+  password: string;
+}
+// body
 
 export class CreateConversation {
   @IsArray()

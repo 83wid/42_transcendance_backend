@@ -3,7 +3,8 @@ import { Request, Response } from "express";
 import {
   CreateConversation,
   DeleteConversation,
-  GetConversation,
+  GetConversationParam,
+  GetConversationBody,
   LeaveConvesation,
   MessageDTO,
   ToggleMuteUser,
@@ -24,10 +25,10 @@ export class ChatService {
   private salt = 10;
 
   // TODO update
-  async getConversation(res: Response, userId: number, conversationId: number) {
+  async getConversation(res: Response, userId: number, dto: GetConversationBody & GetConversationParam) {
     try {
       const conversation = await this.prismaService.conversation.findFirst({
-        where: { AND: [{ id: conversationId }, { members: { some: { userid: userId, active: true } } }] },
+        where: { AND: [{ id: dto.id }, { members: { some: { userid: userId, active: true } } }] },
         include: {
           members: {
             include: {
@@ -37,6 +38,10 @@ export class ChatService {
         },
       });
       if (!conversation) return res.status(404).json({ message: "conversation not found" });
+      if (conversation.password) {
+        if (!dto.password || !(await bcrypt.compare(dto.password, conversation.password)))
+          return res.status(401).json({ message: "unauthorized" });
+      }
       return res.status(200).json(conversation);
     } catch (error) {
       return res.status(500).json({ message: "server error" });

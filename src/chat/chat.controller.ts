@@ -4,7 +4,8 @@ import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { ChatService } from "./chat.service";
 import {
   CreateConversation,
-  GetConversation,
+  GetConversationParam,
+  GetConversationBody,
   MessageDTO,
   ToggleMuteUser,
   LeaveConvesation,
@@ -84,7 +85,7 @@ export class ChatController {
   getConversationMessages(
     @Req() req: Request,
     @Res() res: Response,
-    @Param() dto: GetConversation,
+    @Param() dto: GetConversationParam,
     @Query() query: PaginationDTO
   ) {
     return this.chatService.getConversationMessages(res, req.user.sub, dto.id, query);
@@ -92,7 +93,14 @@ export class ChatController {
 
   @Get("/:id")
   @UseGuards(JwtAuthGuard)
-  getConversation(@Req() req: Request, @Res() res: Response, @Param() dto: GetConversation) {
-    return this.chatService.getConversation(res, req.user.sub, dto.id);
+  getConversation(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() param: GetConversationParam,
+    @Body() body: GetConversationBody
+  ) {
+    // console.log({...dto, ...body});
+
+    return this.chatService.getConversation(res, req.user.sub, { ...param, ...body });
   }
 }
