@@ -374,6 +374,11 @@ export class ConversationUpdate {
   @Type(() => Number)
   @ValidateIf((d) => true)
   members: number[];
+  @IsString()
+  @IsOptional()
+  @MinLength(3)
+  @MaxLength(20)
+  title: string
 }
 
 /******************* CHAT ****************************/
