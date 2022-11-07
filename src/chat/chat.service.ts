@@ -88,7 +88,6 @@ export class ChatService {
   }
   // ? done
   async createConversation(res: Response, userId: number, dto: CreateConversation) {
-    const members = [userId, ...dto.members];
     const title = dto.title || "";
     try {
       const hashPassword = dto.password ? await bcrypt.hash(dto.password, this.salt) : null;
@@ -112,6 +111,7 @@ export class ChatService {
           type: "GROUP",
           title,
           password: hashPassword,
+          protected: hashPassword ? true : false,
           public: dto.public,
           members: { createMany: { data: ids } },
         },
@@ -194,22 +194,25 @@ export class ChatService {
   async updateConversation(res: Response, userId: number, dto: ConversationUpdate & ConversationParam) {
     const { id, password } = dto;
     delete dto.id;
-    delete dto.password;
+    // delete dto.password;
+    if (!dto.protected) delete dto.newPassword;
     console.log(dto);
 
     try {
-      if (!Object.keys(dto).length) return res.status(400).json({ message: "Bad Request" });
-      if (dto.newPassword) dto.newPassword = await bcrypt.hash(dto.newPassword, this.salt);
+      if (!Object.keys(dto).length || (dto.protected && !dto.newPassword))
+        return res.status(400).json({ message: "Bad Request" });
       const conversation = await this.prismaService.conversation.findFirst({
         where: { id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
         include: { members: true },
       });
       if (!conversation) return res.status(404).json({ message: "conversation not found" });
-      if (conversation.password && (!password || !(await bcrypt.compare(password, conversation.password))))
+      if (conversation.protected && (!password || !(await bcrypt.compare(password, conversation.password))))
         return res.status(401).json({ message: "unauthorized" });
-      const dataUpdate: Prisma.conversationUpdateInput = {};
-      Object.assign(dataUpdate, { password: dto.newPassword, title: dto.title });
-      console.log(dto.members);
+      const dataUpdate: Prisma.conversationUpdateInput = { protected: dto.protected, title: dto.title };
+      // ? if updateProtected as false set password null
+      if (dto.protected === false) Object.assign(dataUpdate, { password: null });
+      // ? if new password assign it in dataUpdate hashed
+      if (dto.newPassword) Object.assign(dataUpdate, { password: await bcrypt.hash(dto.newPassword, this.salt) });
       if (dto.members) {
         const users = await this.prismaService.users.findMany({
           where: {
@@ -217,18 +220,16 @@ export class ChatService {
               { intra_id: { in: dto.members } },
               { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
               { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
-              { NOT: { members: { some: { conversationid: conversation.id } } } },
+              { NOT: { members: { some: { conversationid: id } } } },
             ],
           },
           select: { intra_id: true },
         });
-        console.log(users);
-
         const ids = users.map((u) => {
           return { userid: u.intra_id };
         });
         await this.prismaService.conversation.update({
-          where: { id: conversation.id },
+          where: { id },
           data: { members: { create: ids } },
         });
       }
@@ -240,7 +241,6 @@ export class ChatService {
       return res.send(update);
     } catch (error) {
       console.log(error);
-
       return res.status(500).json({ message: "server error" });
     }
   }

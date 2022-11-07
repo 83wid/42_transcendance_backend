@@ -61,6 +61,7 @@ model conversation {
   type       conversation_type? @default(DIRECT)
   active     Boolean?           @default(true)
   public     Boolean?           @default(false)
+  protected  Boolean?           @default(false)
   password   String?            @db.VarChar(225)
   created_at DateTime?          @default(now()) @db.Timestamp(6)
   updated_at DateTime?          @default(now()) @db.Timestamp(6)

@@ -75,6 +75,7 @@ CREATE TABLE conversation (
   type conversation_type DEFAULT 'DIRECT',
   active BOOLEAN DEFAULT true,
   public BOOLEAN DEFAULT false,
+  protected BOOLEAN DEFAULT false,
   password varchar(225) DEFAULT NULL,
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),

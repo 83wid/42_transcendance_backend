@@ -378,7 +378,10 @@ export class ConversationUpdate {
   @IsOptional()
   @MinLength(3)
   @MaxLength(20)
-  title: string
+  title: string;
+  @IsOptional()
+  @IsBoolean()
+  protected: boolean;
 }
 
 /******************* CHAT ****************************/
