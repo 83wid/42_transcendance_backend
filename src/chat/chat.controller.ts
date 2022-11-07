@@ -4,7 +4,6 @@ import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { ChatService } from "./chat.service";
 import {
   CreateConversation,
-  GetConversationParam,
   GetConversationBody,
   MessageDTO,
   ToggleMuteUser,
@@ -15,6 +14,8 @@ import {
   AddMember,
   addAdminConversation,
   ToggleBanUser,
+  ConversationUpdate,
+  ConversationParam,
 } from "src/interfaces/user.interface";
 
 @Controller("conversation")
@@ -85,10 +86,22 @@ export class ChatController {
   getConversationMessages(
     @Req() req: Request,
     @Res() res: Response,
-    @Param() dto: GetConversationParam,
+    @Param() dto: ConversationParam,
     @Query() query: PaginationDTO
   ) {
     return this.chatService.getConversationMessages(res, req.user.sub, dto.id, query);
+  }
+
+  @Put("/:id/update")
+  @UseGuards(JwtAuthGuard)
+  updateConversation(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() param: ConversationParam,
+    @Body() body: ConversationUpdate
+  ) {
+    if (!Object.keys(body).length) return res.status(400).json({message: 'Bad Request'})
+    return this.chatService.updateConversation(res, req.user.sub, { ...param, ...body });
   }
 
   @Get("/:id")
@@ -96,11 +109,10 @@ export class ChatController {
   getConversation(
     @Req() req: Request,
     @Res() res: Response,
-    @Param() param: GetConversationParam,
+    @Param() param: ConversationParam,
     @Body() body: GetConversationBody
   ) {
     // console.log({...dto, ...body});
-
     return this.chatService.getConversation(res, req.user.sub, { ...param, ...body });
   }
 }

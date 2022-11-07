@@ -212,7 +212,7 @@ export class ReadNotification {
 
 /******************* CHAT ****************************/
 // Param
-export class GetConversationParam {
+export class ConversationParam {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
@@ -353,6 +353,27 @@ export class addAdminConversation {
 export class ConversationDataReturn {
   @Exclude()
   password: string;
+}
+
+export class ConversationUpdate {
+  @IsString()
+  @IsOptional()
+  @MinLength(6)
+  @MaxLength(20)
+  password: string;
+  @IsString()
+  @IsOptional()
+  @MinLength(6)
+  @MaxLength(20)
+  newPassword: string;
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsNumber({}, { each: true })
+  @Min(1, { each: true })
+  @Type(() => Number)
+  @ValidateIf((d) => true)
+  members: number[];
 }
 
 /******************* CHAT ****************************/

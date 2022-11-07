@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import {
   CreateConversation,
   DeleteConversation,
-  GetConversationParam,
   GetConversationBody,
   LeaveConvesation,
   MessageDTO,
@@ -14,10 +13,13 @@ import {
   AddMember,
   addAdminConversation,
   ToggleBanUser,
+  ConversationUpdate,
+  ConversationParam,
 } from "src/interfaces/user.interface";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
 import { plainToInstance } from "class-transformer";
+import { Prisma,conversation } from "@prisma/client";
 
 @Injectable()
 export class ChatService {
@@ -25,7 +27,7 @@ export class ChatService {
   private salt = 10;
 
   // TODO update
-  async getConversation(res: Response, userId: number, dto: GetConversationBody & GetConversationParam) {
+  async getConversation(res: Response, userId: number, dto: GetConversationBody & ConversationParam) {
     try {
       const conversation = await this.prismaService.conversation.findFirst({
         where: { AND: [{ id: dto.id }, { members: { some: { userid: userId, active: true } } }] },
@@ -100,7 +102,7 @@ export class ChatService {
         },
         select: { intra_id: true },
       });
-      if (users.length < 2) return res.status(400).json({ message: "can't create conversation" });
+      if (!users.length) return res.status(400).json({ message: "can't create conversation" });
       const ids = users.map((u) => {
         return { userid: u.intra_id, isadmin: false };
       });
@@ -185,6 +187,47 @@ export class ChatService {
       return res.send(update);
     } catch (error) {
       console.log(error);
+      return res.status(500).json({ message: "server error" });
+    }
+  }
+
+  async updateConversation(res: Response, userId: number, dto: ConversationUpdate & ConversationParam) {
+    const { id, password } = dto;
+    delete dto.id;
+    delete dto.password;
+    console.log(dto);
+
+    try {
+      if (!Object.keys(dto).length) return res.status(400).json({ message: "Bad Request" });
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: { id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
+      });
+      if (!conversation) return res.status(404).json({ message: "conversation not found" });
+      if (!password || !(await bcrypt.compare(password, conversation.password)))
+        return res.status(401).json({ message: "unauthorized" });
+      const dataUpdate :Prisma.conversationUpdateInput = {};
+      if (dto.newPassword) Object.assign(dataUpdate, { password: dto.newPassword });
+      const users = await this.prismaService.users.findMany({
+        where: {
+          AND: [
+            { intra_id: { in: dto.members } },
+            { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
+            { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
+          ],
+        },
+        select: { intra_id: true },
+      });
+      const ids = users.map((u) => {
+        return { userid: u.intra_id };
+      });
+      const update = await this.prismaService.conversation.update({
+        where: {id},
+        data: {...dataUpdate, members: {createMany: {data: ids}}}
+      })
+      return res.send(update);
+    } catch (error) {
+      console.log(error);
+      
       return res.status(500).json({ message: "server error" });
     }
   }
