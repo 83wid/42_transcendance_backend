@@ -42,34 +42,18 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
    * @returns
    */
   async handleConnection(client: Socket, ...args: any[]) {
-    this.logger.log(
-      `socket new client ${client.id} connected token ${client.handshake.auth.token} ${client.handshake.headers.authorization}<<<<<`
-    );
-    // try {
-      // ! delete client.handshake.headers.authorization it's for test postman
-      // const decoded = await this.authService.verifyJwt(
-      //   client.handshake.auth.token || client.handshake.headers.authorization,
-      // );
-      // const user = await this.prismaService.users.findUnique({
-      //   where: { intra_id: decoded.sub },
-      // });
-      // if (!user) return this.disconnect(client);
-      // await this.prismaService.users.update({
-      //   where: { intra_id: user.intra_id },
-      //   data: { status: 'ONLINE' },
-      // });
+    this.logger.log(`socket new client ${client.id} connected token ${client.handshake.auth.token}<<<<<`);
+    try {
+      await this.prismaService.users.update({
+        where: { intra_id: client.user },
+        data: { status: "ONLINE" },
+      });
       await client.join("online");
       this.users.push({ intra_id: client.user, socketId: client.id });
       this.logger.log(client.user);
-
-      // client.to('online').emit('userChangeStatus', {
-      //   intra_id: user.intra_id,
-      //   status: 'ONLINE',
-      // });
-      // client.user = user.intra_id;
-    // } catch (error) {
-    //   return this.disconnect(client);
-    // }
+    } catch (error) {
+      return this.disconnect(client);
+    }
   }
 
   /**
@@ -103,6 +87,9 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   private disconnect(socket: Socket) {
     socket.emit("error", new UnauthorizedException());
     socket.disconnect();
+    // const event = 'error'
+    // const error = new UnauthorizedException()
+    // return {event, error}
   }
 
   getSocketIdFromUserId(userId: number) {

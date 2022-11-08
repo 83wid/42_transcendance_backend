@@ -4,7 +4,8 @@ import { Socket, Server } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 import { SocketGateway } from "src/socket/socket.gateway";
 import { ConversationParam, GetConversationBody } from "src/interfaces/user.interface";
-import { UsePipes, ValidationPipe } from "@nestjs/common";
+import { UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
+import { WSValidationPipe } from "../socket/handleErrors";
 
 @WebSocketGateway()
 export class ChatGateway {
@@ -32,22 +33,9 @@ export class ChatGateway {
     }
   }
   // create(@MessageBody(new ValidationPipe()) createDto: CreateCatDto)
-  @UsePipes(
-    new ValidationPipe({
-      exceptionFactory(validationErrors = []) {
-        console.log(validationErrors);
-        
-        if (this.isDetailedOutputDisabled) {
-          return new WsException("Bad request");
-        }
-        const errors = this.flattenValidationErrors(validationErrors);
-
-        return new WsException(errors);
-      },
-    })
-  )
+  @UsePipes(WSValidationPipe)
   @SubscribeMessage("getConversation")
-  async handleGetConversations(@MessageBody() data: ConversationParam): Promise<any> {
+  handleGetConversations(client: Socket, @MessageBody() data: ConversationParam){
     console.log(data);
     // throw new WsException('Invalid data');
     const event = "getConversation";
