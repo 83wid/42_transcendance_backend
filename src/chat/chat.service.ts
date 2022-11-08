@@ -27,37 +27,54 @@ export class ChatService {
   private salt = 10;
 
   // TODO update
-  async getConversation(res: Response, userId: number, dto: GetConversationBody & ConversationParam) {
-    try {
-      const conversation = await this.prismaService.conversation.findFirst({
-        where: { AND: [{ id: dto.id }, { members: { some: { userid: userId, active: true } } }] },
-        include: {
-          members: {
-            include: {
-              users: true,
+  async getConversation(userId: number, dto: GetConversationBody & ConversationParam) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        console.log(dto.password, ">>>>>>>>>>>>>>>>>>>>>>>");
+
+        const conversation = await this.prismaService.conversation.findFirst({
+          where: { AND: [{ id: dto.id }, { members: { some: { userid: userId, active: true } } }] },
+          include: {
+            members: {
+              include: {
+                users: true,
+              },
             },
           },
-        },
-      });
-      if (!conversation) return res.status(404).json({ message: "conversation not found" });
-      if (conversation.password) {
-        if (!dto.password || !(await bcrypt.compare(dto.password, conversation.password)))
-          return res.status(401).json({ message: "unauthorized" });
+        });
+        if (!conversation) return reject({ message: "conversation not found" });
+        if (conversation.password) {
+          if (!dto.password || !(await bcrypt.compare(dto.password, conversation.password)))
+            // return res.status(401).json({ message: "unauthorized" });
+            return reject({ message: "unauthorized" });
+        }
+        return resolve(conversation);
+      } catch (error) {
+        return reject({ message: "server error" });
       }
-      return res.status(200).json(conversation);
-    } catch (error) {
-      return res.status(500).json({ message: "server error" });
-    }
+    });
   }
   // TODO update
-  async getConversationMessages(res: Response, userId: number, conversationId: number, query: PaginationDTO) {
+  async getConversationMessages(
+    res: Response,
+    userId: number,
+    conversationId: number,
+    query: PaginationDTO,
+    dto: GetConversationBody
+  ) {
+    console.log(dto.password, "<<<<<<<<<<<<<<<<<<<<");
+
     const Pagination = { take: query.pageSize || 20 };
     query.cursor && Object.assign(Pagination, { cursor: { id: query.cursor } });
     try {
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: { AND: [{ id: conversationId }, { OR: [{ public: true }, { members: { some: { userid: userId } } }] }] },
+      });
+      if (!conversation) return res.status(404).json({ messages: "conversation not found" });
+      if (conversation.protected && (!dto.password || !(await bcrypt.compare(dto.password, conversation.password))))
+        return res.status(401).json({ message: "unauthorized" });
       const messages = await this.prismaService.conversation
-        .findFirst({
-          where: { AND: [{ id: conversationId }, { members: { some: { userid: userId } } }] },
-        })
+        .findUnique({ where: { id: conversation.id } })
         .message({ orderBy: { created_at: "desc" }, include: { members: { select: { users: true } } }, ...Pagination });
       if (!messages) return res.status(404).json({ messages: "conversation not found" });
       return res.status(200).json(messages);
@@ -67,6 +84,7 @@ export class ChatService {
       return res.status(500).json({ message: "server error" });
     }
   }
+
   // TODO update
   async getAllConversation(res: Response, userId: number, query: PaginationDTO) {
     const Pagination = { take: query.pageSize || 20 };
@@ -74,11 +92,10 @@ export class ChatService {
     try {
       const conversations = await this.prismaService.conversation.findMany({
         ...Pagination,
-        where: { members: { some: { userid: userId, active: true } } },
+        where: { OR: [{ members: { some: { userid: userId, active: true } } }, { public: false }] },
         orderBy: { updated_at: "desc" },
         include: {
           members: { include: { users: true } },
-          message: { orderBy: { created_at: "desc" }, take: 1 },
         },
       });
       return res.status(200).json(conversations);

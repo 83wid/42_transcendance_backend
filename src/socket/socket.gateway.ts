@@ -6,36 +6,33 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   MessageBody,
-} from '@nestjs/websockets';
-import { Logger, UnauthorizedException } from '@nestjs/common';
-import { Socket, Server } from 'socket.io';
-import { AuthService } from 'src/auth/auth.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+  BaseWsExceptionFilter,
+  WsException,
+} from "@nestjs/websockets";
+import { ArgumentsHost, BadRequestException, Catch, Logger, UnauthorizedException } from "@nestjs/common";
+import { Socket, Server } from "socket.io";
+import { AuthService } from "src/auth/auth.service";
+import { PrismaService } from "src/prisma/prisma.service";
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: "*",
   },
 })
-export class SocketGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
-  constructor(
-    private authService: AuthService,
-    private prismaService: PrismaService,
-  ) {}
+export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  constructor(private authService: AuthService, private prismaService: PrismaService) {}
 
   @WebSocketServer()
   private server: Server;
   private users: { intra_id: number; socketId: string }[] = [];
-  private logger: Logger = new Logger('AppGateway');
+  private logger: Logger = new Logger("AppGateway");
 
   /**
    * handle after init socket
    * @param server
    */
   afterInit(server: Server) {
-    this.logger.log('AppGateway init');
+    this.logger.log("AppGateway init");
   }
 
   /**
@@ -46,32 +43,33 @@ export class SocketGateway
    */
   async handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(
-      `socket new client ${client.id} connected token ${client.handshake.auth.token} ${client.handshake.headers.authorization}<<<<<`,
+      `socket new client ${client.id} connected token ${client.handshake.auth.token} ${client.handshake.headers.authorization}<<<<<`
     );
-    try {
+    // try {
       // ! delete client.handshake.headers.authorization it's for test postman
-      const decoded = await this.authService.verifyJwt(
-        client.handshake.auth.token || client.handshake.headers.authorization,
-      );
-      const user = await this.prismaService.users.findUnique({
-        where: { intra_id: decoded.sub },
-      });
-      if (!user) return this.disconnect(client);
-      await this.prismaService.users.update({
-        where: { intra_id: user.intra_id },
-        data: { status: 'ONLINE' },
-      });
-      await client.join('online');
-      this.users.push({ intra_id: user.intra_id, socketId: client.id });
+      // const decoded = await this.authService.verifyJwt(
+      //   client.handshake.auth.token || client.handshake.headers.authorization,
+      // );
+      // const user = await this.prismaService.users.findUnique({
+      //   where: { intra_id: decoded.sub },
+      // });
+      // if (!user) return this.disconnect(client);
+      // await this.prismaService.users.update({
+      //   where: { intra_id: user.intra_id },
+      //   data: { status: 'ONLINE' },
+      // });
+      await client.join("online");
+      this.users.push({ intra_id: client.user, socketId: client.id });
+      this.logger.log(client.user);
 
-      client.to('online').emit('userChangeStatus', {
-        intra_id: user.intra_id,
-        status: 'ONLINE',
-      });
-      client.user = user.intra_id;
-    } catch (error) {
-      return this.disconnect(client);
-    }
+      // client.to('online').emit('userChangeStatus', {
+      //   intra_id: user.intra_id,
+      //   status: 'ONLINE',
+      // });
+      // client.user = user.intra_id;
+    // } catch (error) {
+    //   return this.disconnect(client);
+    // }
   }
 
   /**
@@ -84,20 +82,18 @@ export class SocketGateway
       const { intra_id } = this.users[userIndex];
       await this.prismaService.users.update({
         where: { intra_id },
-        data: { status: 'OFFLINE' },
+        data: { status: "OFFLINE" },
       });
       this.users.splice(userIndex, 1);
-      this.server
-        .to('online')
-        .emit('userChangeStatus', { intra_id, status: 'OFFLINE' });
+      this.server.to("online").emit("userChangeStatus", { intra_id, status: "OFFLINE" });
     }
     this.logger.log(`socket client ${client.id} disconnect`);
   }
   // ! for test pleas remove it
-  @SubscribeMessage('events')
+  @SubscribeMessage("events")
   handleEvent(client: Socket, data: any): any {
     this.logger.log(`events data ${data.message} ${client.id}`);
-    return { message: 'done' };
+    return { message: "done" };
   }
 
   /**
@@ -105,7 +101,7 @@ export class SocketGateway
    * @param socket
    */
   private disconnect(socket: Socket) {
-    socket.emit('error', new UnauthorizedException());
+    socket.emit("error", new UnauthorizedException());
     socket.disconnect();
   }
 

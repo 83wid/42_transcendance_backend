@@ -8,7 +8,7 @@ import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Get("/login")
+  @Post("/login")
   @UseGuards(FortyTwoAuthGuard)
   async Auth() {
     //return req.query
@@ -22,7 +22,7 @@ export class AuthController {
     return res.redirect(`${req.headers.referer}?token=${token}`);
   }
 
-  @Post("/me")
+  @Get("/me")
   @UseGuards(JwtAuthGuard)
   async Login(@Req() req: Request, @Res() res: Response) {
     return await this.authService.authMe(req.user.sub, res);

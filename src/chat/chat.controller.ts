@@ -81,15 +81,16 @@ export class ChatController {
     return res.status(200).json(dto);
   }
 
-  @Get("/:id/messages")
+  @Post("/:id/messages")
   @UseGuards(JwtAuthGuard)
   getConversationMessages(
     @Req() req: Request,
     @Res() res: Response,
     @Param() dto: ConversationParam,
-    @Query() query: PaginationDTO
+    @Query() query: PaginationDTO,
+    @Body() body: GetConversationBody
   ) {
-    return this.chatService.getConversationMessages(res, req.user.sub, dto.id, query);
+    return this.chatService.getConversationMessages(res, req.user.sub, dto.id, query, body);
   }
 
   @Put("/:id/update")
@@ -104,15 +105,17 @@ export class ChatController {
     return this.chatService.updateConversation(res, req.user.sub, { ...param, ...body });
   }
 
-  @Get("/:id")
-  @UseGuards(JwtAuthGuard)
-  getConversation(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Param() param: ConversationParam,
-    @Body() body: GetConversationBody
-  ) {
-    // console.log({...dto, ...body});
-    return this.chatService.getConversation(res, req.user.sub, { ...param, ...body });
-  }
+  // @Post("/:id")
+  // @UseGuards(JwtAuthGuard)
+  // getConversation(
+  //   @Req() req: Request,
+  //   @Res() res: Response,
+  //   @Param() param: ConversationParam,
+  //   @Body() body: GetConversationBody
+  // ) {
+  //   console.log(req.headers);
+    
+  //   // console.log({...dto, ...body});
+  //   return this.chatService.getConversation(res, req.user.sub, { ...param, ...body });
+  // }
 }
