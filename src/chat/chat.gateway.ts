@@ -3,7 +3,7 @@ import { ChatService } from "./chat.service";
 import { Socket, Server } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 import { SocketGateway } from "src/socket/socket.gateway";
-import { ConversationParam, GetConversationBody } from "src/interfaces/user.interface";
+import { ConversationParam, GetConversation, GetConversationBody } from "src/interfaces/user.interface";
 import { UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
 import { WSValidationPipe } from "../socket/handleErrors";
 
@@ -35,10 +35,17 @@ export class ChatGateway {
   // create(@MessageBody(new ValidationPipe()) createDto: CreateCatDto)
   @UsePipes(WSValidationPipe)
   @SubscribeMessage("getConversation")
-  handleGetConversations(client: Socket, @MessageBody() data: ConversationParam){
-    console.log(data);
+  async handleGetConversations(client: Socket, data: GetConversation ){
+    console.log(client.user);
+    try {
+      const conversation = await this.chatService.getConversation(2, data)
+      return conversation
+    } catch (error) {
+    throw new WsException(error)
+    // return error
+    }
     // throw new WsException('Invalid data');
-    const event = "getConversation";
-    return data;
+    // const event = "getConversation";
+    // return data;
   }
 }

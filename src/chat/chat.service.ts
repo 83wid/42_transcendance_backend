@@ -15,6 +15,7 @@ import {
   ToggleBanUser,
   ConversationUpdate,
   ConversationParam,
+  GetConversation,
 } from "src/interfaces/user.interface";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
@@ -27,10 +28,10 @@ export class ChatService {
   private salt = 10;
 
   // TODO update
-  async getConversation(userId: number, dto: GetConversationBody & ConversationParam) {
+  async getConversation(userId: number, dto: GetConversation) {
     return new Promise(async (resolve, reject) => {
       try {
-        console.log(dto.password, ">>>>>>>>>>>>>>>>>>>>>>>");
+        // console.log(dto.password, ">>>>>>>>>>>>>>>>>>>>>>>");
 
         const conversation = await this.prismaService.conversation.findFirst({
           where: { AND: [{ id: dto.id }, { members: { some: { userid: userId, active: true } } }] },
@@ -50,6 +51,7 @@ export class ChatService {
         }
         return resolve(conversation);
       } catch (error) {
+
         return reject({ message: "server error" });
       }
     });

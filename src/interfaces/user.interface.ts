@@ -229,6 +229,19 @@ export class GetConversationBody {
 }
 // body
 
+export class GetConversation {
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  id: number;
+  @IsString()
+  @IsOptional()
+  @MinLength(6)
+  @MaxLength(20)
+  password: string;
+}
+
 export class CreateConversation {
   @IsArray()
   @ArrayNotEmpty()
