@@ -15,6 +15,7 @@ import {
   Min,
   MinDate,
   MinLength,
+  validate,
   ValidateIf,
   ValidateNested,
 } from "class-validator";
@@ -379,17 +380,12 @@ export class ConversationDataReturn {
   password: string;
 }
 
-export class ConversationUpdate {
+export class ConversationUpdate  {
   @IsString()
   @IsOptional()
   @MinLength(6)
   @MaxLength(20)
   password: string;
-  @IsString()
-  @IsOptional()
-  @MinLength(6)
-  @MaxLength(20)
-  newPassword: string;
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()
@@ -405,7 +401,11 @@ export class ConversationUpdate {
   title: string;
   @IsOptional()
   @IsBoolean()
+  @ValidateIf((v) => (v.protected && !v.password ? true : false))
   protected: boolean;
+  @IsOptional()
+  @IsBoolean()
+  public: boolean;
 }
 
 /******************* CHAT ****************************/

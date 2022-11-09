@@ -70,4 +70,9 @@ export class ChatGateway {
       throw new WsException(error);
     }
   }
+  // @UsePipes(WSValidationPipe)
+  // @SubscribeMessage("leaveChatRoom")
+  // handleLeaveChatRoom(client: Socket, data: Conversation) {
+  //   client.leave(`chatRoom_${data.id}`);
+  // }
 }

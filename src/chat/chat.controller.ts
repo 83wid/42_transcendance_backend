@@ -15,6 +15,7 @@ import {
   addAdminConversation,
   ToggleBanUser,
   ConversationUpdate,
+  Conversation,
   // ConversationParam,
 } from "src/interfaces/user.interface";
 
@@ -93,17 +94,17 @@ export class ChatController {
   //   return this.chatService.getConversationMessages(res, req.user.sub, dto.id, query, body);
   // }
 
-  // @Put("/:id/update")
-  // @UseGuards(JwtAuthGuard)
-  // updateConversation(
-  //   @Req() req: Request,
-  //   @Res() res: Response,
-  //   @Param() param: ConversationParam,
-  //   @Body() body: ConversationUpdate
-  // ) {
-  //   if (!Object.keys(body).length) return res.status(400).json({message: 'Bad Request'})
-  //   return this.chatService.updateConversation(res, req.user.sub, { ...param, ...body });
-  // }
+  @Put("/:id/update")
+  @UseGuards(JwtAuthGuard)
+  updateConversation(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param() param: Conversation,
+    @Body() body: ConversationUpdate
+  ) {
+    if (!Object.keys(body).length) return res.status(400).json({message: 'Bad Request'})
+    return this.chatService.updateConversation(res, req.user.sub, { ...param, ...body });
+  }
 
   // @Post("/:id")
   // @UseGuards(JwtAuthGuard)
