@@ -18,7 +18,7 @@ export class ChatGateway {
     try {
       if (!client.rooms.has(`chatRoom_${data.id}`)) throw new WsException("unauthorized");
       const message = await this.chatService.sendMessage(client.user, data);
-      client.to(`chatRoom${data.id}`).emit("newMessage", message);
+      client.to(`chatRoom_${data.id}`).emit("newMessage", message);
       return message;
     } catch (error) {
       // console.log(error);
