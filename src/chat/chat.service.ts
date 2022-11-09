@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import {
   CreateConversation,
   DeleteConversation,
-  GetConversationBody,
   LeaveConvesation,
   MessageDTO,
   ToggleMuteUser,
@@ -11,16 +10,14 @@ import {
   ConversationDataReturn,
   JoinConversation,
   AddMember,
-  addAdminConversation,
   ToggleBanUser,
-  ConversationUpdate,
-  ConversationParam,
   GetConversation,
+  GetMessages,
+  SendMessage,
 } from "src/interfaces/user.interface";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
 import { plainToInstance } from "class-transformer";
-import { Prisma, conversation } from "@prisma/client";
 
 @Injectable()
 export class ChatService {
@@ -31,10 +28,14 @@ export class ChatService {
   async getConversation(userId: number, dto: GetConversation) {
     return new Promise(async (resolve, reject) => {
       try {
-        // console.log(dto.password, ">>>>>>>>>>>>>>>>>>>>>>>");
-
+        const currentDate = new Date();
         const conversation = await this.prismaService.conversation.findFirst({
-          where: { AND: [{ id: dto.id }, { members: { some: { userid: userId, active: true } } }] },
+          where: {
+            AND: [
+              { id: dto.id },
+              { members: { some: { userid: userId, active: true, ban: false, endban: { lt: currentDate } } } },
+            ],
+          },
           include: {
             members: {
               include: {
@@ -45,56 +46,48 @@ export class ChatService {
         });
         if (!conversation) return reject({ message: "conversation not found" });
         if (conversation.password) {
-          if (!dto.password || !(await bcrypt.compare(dto.password, conversation.password)))
-            // return res.status(401).json({ message: "unauthorized" });
+          if (!dto.password || !(await bcrypt.compare(dto.password, conversation.password))) {
+            console.log(conversation.password, dto.password);
             return reject({ message: "unauthorized" });
+          }
         }
         return resolve(conversation);
       } catch (error) {
-
         return reject({ message: "server error" });
       }
     });
   }
   // TODO update
-  async getConversationMessages(
-    res: Response,
-    userId: number,
-    conversationId: number,
-    query: PaginationDTO,
-    dto: GetConversationBody
-  ) {
-    console.log(dto.password, "<<<<<<<<<<<<<<<<<<<<");
+  async getConversationMessages(userId: number, dto: GetMessages) {
+    return new Promise(async (resolve, reject) => {
+      const Pagination = { take: dto.pageSize || 20 };
+      dto.cursor && Object.assign(Pagination, { cursor: { id: dto.cursor } });
+      try {
+        const conversation = await this.prismaService.conversation.findFirst({
+          where: { AND: [{ id: dto.id }, { OR: [{ public: true }, { members: { some: { userid: userId } } }] }] },
+        });
+        if (!conversation) return reject({ messages: "conversation not found" });
+        const messages = await this.prismaService.conversation
+          .findUnique({ where: { id: conversation.id } })
+          .message({ orderBy: { created_at: "desc" }, include: { users: true }, ...Pagination });
+        return resolve(messages);
+      } catch (error) {
+        console.log(error);
 
-    const Pagination = { take: query.pageSize || 20 };
-    query.cursor && Object.assign(Pagination, { cursor: { id: query.cursor } });
-    try {
-      const conversation = await this.prismaService.conversation.findFirst({
-        where: { AND: [{ id: conversationId }, { OR: [{ public: true }, { members: { some: { userid: userId } } }] }] },
-      });
-      if (!conversation) return res.status(404).json({ messages: "conversation not found" });
-      if (conversation.protected && (!dto.password || !(await bcrypt.compare(dto.password, conversation.password))))
-        return res.status(401).json({ message: "unauthorized" });
-      const messages = await this.prismaService.conversation
-        .findUnique({ where: { id: conversation.id } })
-        .message({ orderBy: { created_at: "desc" }, include: { members: { select: { users: true } } }, ...Pagination });
-      if (!messages) return res.status(404).json({ messages: "conversation not found" });
-      return res.status(200).json(messages);
-    } catch (error) {
-      console.log(error);
-
-      return res.status(500).json({ message: "server error" });
-    }
+        return reject({ message: "server error" });
+      }
+    });
   }
 
   // TODO update
   async getAllConversation(res: Response, userId: number, query: PaginationDTO) {
-    const Pagination = { take: query.pageSize || 20 };
-    query.cursor && Object.assign(Pagination, { cursor: { id: query.cursor } });
     try {
+      const Pagination = { take: query.pageSize || 20 };
+      query.cursor && Object.assign(Pagination, { cursor: { id: query.cursor } });
+      const currentDate = new Date();
       const conversations = await this.prismaService.conversation.findMany({
         ...Pagination,
-        where: { OR: [{ members: { some: { userid: userId, active: true } } }, { public: false }] },
+        where: { members: { some: { userid: userId, active: true, ban: false, endban: { lt: currentDate } } } },
         orderBy: { updated_at: "desc" },
         include: {
           members: { include: { users: true } },
@@ -210,118 +203,107 @@ export class ChatService {
     }
   }
 
-  async updateConversation(res: Response, userId: number, dto: ConversationUpdate & ConversationParam) {
-    const { id, password } = dto;
-    delete dto.id;
-    // delete dto.password;
-    if (!dto.protected) delete dto.newPassword;
-    console.log(dto);
+  // async updateConversation(res: Response, userId: number, dto: ConversationUpdate & ConversationParam) {
+  //   const { id, password } = dto;
+  //   delete dto.id;
+  //   // delete dto.password;
+  //   if (!dto.protected) delete dto.newPassword;
+  //   console.log(dto);
 
-    try {
-      if (!Object.keys(dto).length || (dto.protected && !dto.newPassword))
-        return res.status(400).json({ message: "Bad Request" });
-      const conversation = await this.prismaService.conversation.findFirst({
-        where: { id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
-        include: { members: true },
-      });
-      if (!conversation) return res.status(404).json({ message: "conversation not found" });
-      if (conversation.protected && (!password || !(await bcrypt.compare(password, conversation.password))))
-        return res.status(401).json({ message: "unauthorized" });
-      const dataUpdate: Prisma.conversationUpdateInput = { protected: dto.protected, title: dto.title };
-      // ? if updateProtected as false set password null
-      if (dto.protected === false) Object.assign(dataUpdate, { password: null });
-      // ? if new password assign it in dataUpdate hashed
-      if (dto.newPassword) Object.assign(dataUpdate, { password: await bcrypt.hash(dto.newPassword, this.salt) });
-      if (dto.members) {
-        const users = await this.prismaService.users.findMany({
-          where: {
-            AND: [
-              { intra_id: { in: dto.members } },
-              { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
-              { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
-              { NOT: { members: { some: { conversationid: id } } } },
-            ],
-          },
-          select: { intra_id: true },
-        });
-        const ids = users.map((u) => {
-          return { userid: u.intra_id };
-        });
-        await this.prismaService.conversation.update({
-          where: { id },
-          data: { members: { create: ids } },
-        });
-      }
-      const update = await this.prismaService.conversation.update({
-        where: { id },
-        data: { ...dataUpdate },
-        include: { members: true },
-      });
-      return res.send(update);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "server error" });
-    }
-  }
+  //   try {
+  //     if (!Object.keys(dto).length || (dto.protected && !dto.newPassword))
+  //       return res.status(400).json({ message: "Bad Request" });
+  //     const conversation = await this.prismaService.conversation.findFirst({
+  //       where: { id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
+  //       include: { members: true },
+  //     });
+  //     if (!conversation) return res.status(404).json({ message: "conversation not found" });
+  //     if (conversation.protected && (!password || !(await bcrypt.compare(password, conversation.password))))
+  //       return res.status(401).json({ message: "unauthorized" });
+  //     const dataUpdate: Prisma.conversationUpdateInput = { protected: dto.protected, title: dto.title };
+  //     // ? if updateProtected as false set password null
+  //     if (dto.protected === false) Object.assign(dataUpdate, { password: null });
+  //     // ? if new password assign it in dataUpdate hashed
+  //     if (dto.newPassword) Object.assign(dataUpdate, { password: await bcrypt.hash(dto.newPassword, this.salt) });
+  //     if (dto.members) {
+  //       const users = await this.prismaService.users.findMany({
+  //         where: {
+  //           AND: [
+  //             { intra_id: { in: dto.members } },
+  //             { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
+  //             { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
+  //             { NOT: { members: { some: { conversationid: id } } } },
+  //           ],
+  //         },
+  //         select: { intra_id: true },
+  //       });
+  //       const ids = users.map((u) => {
+  //         return { userid: u.intra_id };
+  //       });
+  //       await this.prismaService.conversation.update({
+  //         where: { id },
+  //         data: { members: { create: ids } },
+  //       });
+  //     }
+  //     const update = await this.prismaService.conversation.update({
+  //       where: { id },
+  //       data: { ...dataUpdate },
+  //       include: { members: true },
+  //     });
+  //     return res.send(update);
+  //   } catch (error) {
+  //     console.log(error);
+  //     return res.status(500).json({ message: "server error" });
+  //   }
+  // }
 
-  async addAdminConversation(res: Response, userId: number, dto: addAdminConversation) {
-    try {
-      const conversation = await this.prismaService.conversation.findFirst({
-        where: {
-          AND: [
-            { id: dto.conversationId },
-            { type: "GROUP" },
-            { members: { some: { userid: userId, isadmin: true } } },
-            { members: { some: { userid: dto.userId, active: true, endban: { lt: new Date() }, endmute: { lt: new Date() } } } },
-          ],
-        },
-      });
-      if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
-      const update = await this.prismaService.members.update({
-        where: { conversationid_userid: { userid: dto.userId, conversationid: conversation.id } },
-        data: { isadmin: true, mute: false, ban: false },
-      });
-      return res.send(update);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "server error" });
-    }
-  }
+  // async addAdminConversation(res: Response, userId: number, dto: addAdminConversation) {
+  //   try {
+  //     const conversation = await this.prismaService.conversation.findFirst({
+  //       where: {
+  //         AND: [
+  //           { id: dto.conversationId },
+  //           { type: "GROUP" },
+  //           { members: { some: { userid: userId, isadmin: true } } },
+  //           { members: { some: { userid: dto.userId, active: true, endban: { lt: new Date() }, endmute: { lt: new Date() } } } },
+  //         ],
+  //       },
+  //     });
+  //     if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
+  //     const update = await this.prismaService.members.update({
+  //       where: { conversationid_userid: { userid: dto.userId, conversationid: conversation.id } },
+  //       data: { isadmin: true, mute: false, ban: false },
+  //     });
+  //     return res.send(update);
+  //   } catch (error) {
+  //     console.log(error);
+  //     return res.status(500).json({ message: "server error" });
+  //   }
+  // }
 
-  async sendMessage(userId: number, dto: MessageDTO) {
+  async sendMessage(userId: number, dto: SendMessage) {
     return new Promise(async (resolve, reject) => {
       try {
-        if (dto.conversationId) {
-          const conversation = await this.prismaService.conversation.findFirst({
-            where: {
-              AND: [
-                { id: dto.conversationId },
-                { active: true },
-                { members: { some: { userid: userId, mute: false, active: true } } },
-              ],
-            },
-            include: { members: { where: { active: true }, include: { users: true } } },
-          });
-          if (!conversation) return reject({ message: "Bad Request" });
-          const newMessage = await this.prismaService.conversation.update({
-            where: { id: conversation.id },
-            data: {
-              members: {
-                update: {
-                  where: { conversationid_userid: { userid: userId, conversationid: conversation.id } },
-                  data: { message: { create: { message: dto.message, conversationid: conversation.id } } },
-                },
-              },
-            },
-            include: {
-              members: { include: { users: true } },
-              message: { include: { members: { select: { users: true } } }, orderBy: { created_at: "desc" }, take: 1 },
-            },
-          });
-          return resolve(newMessage);
-        }
-        return reject({ message: "Bad Request" });
+        const currentDate = new Date();
+        const member = await this.prismaService.members.findFirst({
+          where: {
+            conversationid: dto.id,
+            userid: userId,
+            active: true,
+            ban: false,
+            mute: false,
+            endban: { lt: currentDate },
+            endmute: { lt: currentDate },
+          },
+        });
+        if (!member) return reject({ message: "Bad Request" });
+        const newMessage = await this.prismaService.message.create({
+          data: { senderid: userId, conversationid: member.conversationid, message: dto.message },
+          include: { users: true },
+        });
+        return resolve(newMessage);
       } catch (error) {
+        console.log(error);
         return reject({ message: "server error" });
       }
     });

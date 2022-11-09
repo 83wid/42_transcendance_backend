@@ -5,11 +5,8 @@ import {
   WebSocketServer,
   OnGatewayConnection,
   OnGatewayDisconnect,
-  MessageBody,
-  BaseWsExceptionFilter,
-  WsException,
 } from "@nestjs/websockets";
-import { ArgumentsHost, BadRequestException, Catch, Logger, UnauthorizedException } from "@nestjs/common";
+import { Logger, UnauthorizedException } from "@nestjs/common";
 import { Socket, Server } from "socket.io";
 import { AuthService } from "src/auth/auth.service";
 import { PrismaService } from "src/prisma/prisma.service";

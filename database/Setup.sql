@@ -117,7 +117,7 @@ CREATE TABLE message (
   conversationId INT NOT NULL,
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
-  FOREIGN KEY (senderId) REFERENCES members (id),
+  FOREIGN KEY (senderId) REFERENCES users (intra_id),
   FOREIGN KEY (conversationId) REFERENCES conversation (id),
   PRIMARY KEY (id)
 );

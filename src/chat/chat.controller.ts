@@ -4,8 +4,8 @@ import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { ChatService } from "./chat.service";
 import {
   CreateConversation,
-  GetConversationBody,
-  MessageDTO,
+  // GetConversationBody,
+  // MessageDTO,
   ToggleMuteUser,
   LeaveConvesation,
   DeleteConversation,
@@ -15,7 +15,7 @@ import {
   addAdminConversation,
   ToggleBanUser,
   ConversationUpdate,
-  ConversationParam,
+  // ConversationParam,
 } from "src/interfaces/user.interface";
 
 @Controller("conversation")
@@ -46,11 +46,11 @@ export class ChatController {
     return this.chatService.addMember(res, req.user.sub, dto);
   }
 
-  @Put("addadmin")
-  @UseGuards(JwtAuthGuard)
-  addAdmin(@Req() req: Request, @Res() res: Response, @Body() dto: addAdminConversation) {
-    return this.chatService.addAdminConversation(res, req.user.sub, dto);
-  }
+  // @Put("addadmin")
+  // @UseGuards(JwtAuthGuard)
+  // addAdmin(@Req() req: Request, @Res() res: Response, @Body() dto: addAdminConversation) {
+  //   return this.chatService.addAdminConversation(res, req.user.sub, dto);
+  // }
   // @Post("message")
   // @UseGuards(JwtAuthGuard)
   // newMessage(@Req() req: Request, @Res() res: Response, @Body() dto: MessageDTO) {
@@ -81,29 +81,29 @@ export class ChatController {
     return res.status(200).json(dto);
   }
 
-  @Post("/:id/messages")
-  @UseGuards(JwtAuthGuard)
-  getConversationMessages(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Param() dto: ConversationParam,
-    @Query() query: PaginationDTO,
-    @Body() body: GetConversationBody
-  ) {
-    return this.chatService.getConversationMessages(res, req.user.sub, dto.id, query, body);
-  }
+  // @Post("/:id/messages")
+  // @UseGuards(JwtAuthGuard)
+  // getConversationMessages(
+  //   @Req() req: Request,
+  //   @Res() res: Response,
+  //   @Param() dto: ConversationParam,
+  //   @Query() query: PaginationDTO,
+  //   @Body() body: GetConversationBody
+  // ) {
+  //   return this.chatService.getConversationMessages(res, req.user.sub, dto.id, query, body);
+  // }
 
-  @Put("/:id/update")
-  @UseGuards(JwtAuthGuard)
-  updateConversation(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Param() param: ConversationParam,
-    @Body() body: ConversationUpdate
-  ) {
-    if (!Object.keys(body).length) return res.status(400).json({message: 'Bad Request'})
-    return this.chatService.updateConversation(res, req.user.sub, { ...param, ...body });
-  }
+  // @Put("/:id/update")
+  // @UseGuards(JwtAuthGuard)
+  // updateConversation(
+  //   @Req() req: Request,
+  //   @Res() res: Response,
+  //   @Param() param: ConversationParam,
+  //   @Body() body: ConversationUpdate
+  // ) {
+  //   if (!Object.keys(body).length) return res.status(400).json({message: 'Bad Request'})
+  //   return this.chatService.updateConversation(res, req.user.sub, { ...param, ...body });
+  // }
 
   // @Post("/:id")
   // @UseGuards(JwtAuthGuard)

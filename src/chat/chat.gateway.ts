@@ -3,7 +3,7 @@ import { ChatService } from "./chat.service";
 import { Socket, Server } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 import { SocketGateway } from "src/socket/socket.gateway";
-import { ConversationParam, GetConversation, GetConversationBody } from "src/interfaces/user.interface";
+import { GetConversation, GetMessages, PaginationDTO, SendMessage } from "src/interfaces/user.interface";
 import { UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
 import { WSValidationPipe } from "../socket/handleErrors";
 
@@ -12,40 +12,41 @@ export class ChatGateway {
   constructor(private chatService: ChatService, private prismaService: PrismaService, private socketGateway: SocketGateway) {}
   @WebSocketServer()
   private server: Server;
+  @UsePipes(WSValidationPipe)
   @SubscribeMessage("sendMessage")
-  async handleSendMessage(client: Socket, payload: any): Promise<any> {
+  async handleSendMessage(client: Socket, data: SendMessage): Promise<unknown> {
     try {
-      const data = (await this.chatService.sendMessage(client.user, payload)) as { members: {}[]; message: {}[] };
-      // const { data, conversation } = res;
-      const ids = data.members
-        .map((m: { userid: number }) => {
-          if (m.userid === client.user) return null;
-          const sockeId = this.socketGateway.getSocketIdFromUserId(m.userid);
-          return sockeId ? sockeId : null;
-        })
-        .filter((i: string) => i !== null);
-      this.server.to([...ids, client.id]).emit("updateConversations", data);
-      client.to(ids).emit("newMessage", data.message[0]);
-      return { data: data.message[0] };
+      if (!client.rooms.has(`chatRoom_${data.id}`)) throw new WsException("unauthorized");
+      const message = await this.chatService.sendMessage(client.user, data);
+      client.to(`chatRoom${data.id}`).emit("newMessage", message);
+      return message;
     } catch (error) {
-      console.log(error);
-      return { error };
+      // console.log(error);
+      throw new WsException(error);
     }
   }
-  // create(@MessageBody(new ValidationPipe()) createDto: CreateCatDto)
+
   @UsePipes(WSValidationPipe)
   @SubscribeMessage("getConversation")
-  async handleGetConversations(client: Socket, data: GetConversation ){
-    console.log(client.user);
+  async handleGetConversations(client: Socket, data: GetConversation) {
     try {
-      const conversation = await this.chatService.getConversation(2, data)
-      return conversation
+      const conversation = await this.chatService.getConversation(data.id, data);
+      await client.join(`chatRoom_${data.id}`);
+      return conversation;
     } catch (error) {
-    throw new WsException(error)
-    // return error
+      throw new WsException(error);
     }
-    // throw new WsException('Invalid data');
-    // const event = "getConversation";
-    // return data;
+  }
+
+  @UsePipes(WSValidationPipe)
+  @SubscribeMessage("getConversationMessages")
+  async handleGetConversationMessages(client: Socket, data: GetMessages) {
+    try {
+      if (!client.rooms.has(`chatRoom_${data.id}`)) throw new WsException("unauthorized");
+      const messages = await this.chatService.getConversationMessages(client.user, data);
+      return messages;
+    } catch (error) {
+      throw new WsException(error);
+    }
   }
 }

@@ -212,7 +212,7 @@ export class ReadNotification {
 
 /******************* CHAT ****************************/
 // Param
-export class ConversationParam {
+export class Conversation {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
@@ -220,21 +220,16 @@ export class ConversationParam {
   id: number;
 }
 
-export class GetConversationBody {
-  @IsString()
-  @IsOptional()
-  @MinLength(6)
-  @MaxLength(20)
-  password: string;
-}
+// export class GetConversationBody {
+//   @IsString()
+//   @IsOptional()
+//   @MinLength(6)
+//   @MaxLength(20)
+//   password: string;
+// }
 // body
 
-export class GetConversation {
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  @Type(() => Number)
-  id: number;
+export class GetConversation extends Conversation {
   @IsString()
   @IsOptional()
   @MinLength(6)
@@ -276,6 +271,22 @@ export class MessageDTO {
   @IsNotEmpty()
   @IsString()
   @MaxLength(80)
+  message: string;
+}
+
+export class GetMessages extends PaginationDTO {
+  @IsNotEmpty()
+  @IsNumber()
+  @Min(1)
+  @Type(() => Number)
+  id: number;
+}
+
+export class SendMessage extends Conversation {
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(1)
+  @MaxLength(250)
   message: string;
 }
 
