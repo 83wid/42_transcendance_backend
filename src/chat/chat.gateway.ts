@@ -3,7 +3,14 @@ import { ChatService } from "./chat.service";
 import { Socket, Server } from "socket.io";
 import { PrismaService } from "src/prisma/prisma.service";
 import { SocketGateway } from "src/socket/socket.gateway";
-import { CreateConversation, GetConversation, GetMessages, PaginationDTO, SendMessage } from "src/interfaces/user.interface";
+import {
+  ConversationUpdate,
+  CreateConversation,
+  GetConversation,
+  GetMessages,
+  PaginationDTO,
+  SendMessage,
+} from "src/interfaces/user.interface";
 import { UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
 import { WSValidationPipe } from "../socket/handleErrors";
 import { conversation as Conversation, members as Members, users as Users, message as Message } from "@prisma/client";
@@ -52,6 +59,7 @@ export class ChatGateway {
     }
   }
 
+  // delete it
   @UsePipes(WSValidationPipe)
   @SubscribeMessage("createConversation")
   async handleCreateConversation(client: Socket, data: CreateConversation) {
@@ -70,6 +78,30 @@ export class ChatGateway {
       throw new WsException(error);
     }
   }
+
+  @UsePipes(WSValidationPipe)
+  @SubscribeMessage("updateConversation")
+  async handleUpdateConversation(client: Socket, data: ConversationUpdate) {
+    try {
+      if (!client.rooms.has(`chatRoom_${data.id}`)) throw new WsException("unauthorized");
+      const update = (await this.chatService.updateConversation(client.user, data)) as Conversation & { members: Members[] };
+      const ids = update.members.map((m) => this.socketGateway.getSocketIdFromUserId(m.userid)).filter((i) => i !== undefined);
+      client.to(ids).emit("newConversation", update);
+      if (data.password) {
+        this.server.socketsLeave(`chatRoom_${data.id}`);
+        await client.join(`chatRoom_${data.id}`);
+      }
+      return update;
+    } catch (error) {
+      throw new WsException(error);
+    }
+  }
+
+  // hendleEmitNewConversation(ids: number[], conversation: any) {
+  //   const SocketIds = ids.map((i) => this.socketGateway.getSocketIdFromUserId(i)).filter((i) => i !== undefined);
+  //   this.server.to(SocketIds).emit("newConversation", conversation);
+  // }
+
   // @UsePipes(WSValidationPipe)
   // @SubscribeMessage("leaveChatRoom")
   // handleLeaveChatRoom(client: Socket, data: Conversation) {

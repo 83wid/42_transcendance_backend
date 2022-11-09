@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, Res, UseGu
 import { Response, Request } from "express";
 import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { ChatService } from "./chat.service";
+import { ChatGateway } from "./chat.gateway";
 import {
   CreateConversation,
   // GetConversationBody,
@@ -18,10 +19,11 @@ import {
   Conversation,
   // ConversationParam,
 } from "src/interfaces/user.interface";
+import { conversation, members, users, message } from "@prisma/client";
 
 @Controller("conversation")
 export class ChatController {
-  constructor(private chatService: ChatService) {}
+  constructor(private chatService: ChatService, private chatGateway: ChatGateway) {}
 
   @Get("/")
   @UseGuards(JwtAuthGuard)
@@ -29,10 +31,20 @@ export class ChatController {
     return this.chatService.getAllConversation(res, req.user.sub, query);
   }
 
+  // // ! delete it
   // @Post("create")
   // @UseGuards(JwtAuthGuard)
-  // createConversation(@Req() req: Request, @Res() res: Response, @Body() dto: CreateConversation) {
-  //   return this.chatService.createConversation(res, req.user.sub, dto);
+  // async createConversation(@Req() req: Request, @Res() res: Response, @Body() dto: CreateConversation) {
+  //   try {
+  //     const conversation = (await this.chatService.createConversation(req.user.sub, dto)) as conversation & {
+  //       members: (members & { users: users })[];
+  //     };
+  //      const ids = conversation.members.map(m => m.userid).filter(i => i !== req.user.sub)
+  //      this.chatGateway.hendleEmitNewConversation(ids, conversation)
+  //     return res.status(201).json(conversation);
+  //   } catch (error) {
+  //     return res.status(400).json(error);
+  //   }
   // }
 
   @Post("join")
@@ -96,14 +108,14 @@ export class ChatController {
 
   @Put("/:id/update")
   @UseGuards(JwtAuthGuard)
-  updateConversation(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Param() param: Conversation,
-    @Body() body: ConversationUpdate
-  ) {
-    if (!Object.keys(body).length) return res.status(400).json({message: 'Bad Request'})
-    return this.chatService.updateConversation(res, req.user.sub, { ...param, ...body });
+  async updateConversation(@Req() req: Request, @Res() res: Response, @Param() param: Conversation, @Body() body: ConversationUpdate) {
+    if (!Object.keys(body).length) return res.status(400).json({ message: "Bad Request" });
+    try {
+      const update = await this.chatService.updateConversation(req.user.sub, { ...param, ...body });
+      return res.send(update)  
+    } catch (error) {
+      return res.status(400).json(error)
+    }
   }
 
   // @Post("/:id")
@@ -115,7 +127,7 @@ export class ChatController {
   //   @Body() body: GetConversationBody
   // ) {
   //   console.log(req.headers);
-    
+
   //   // console.log({...dto, ...body});
   //   return this.chatService.getConversation(res, req.user.sub, { ...param, ...body });
   // }

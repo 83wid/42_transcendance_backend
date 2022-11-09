@@ -247,8 +247,8 @@ export class CreateConversation {
   members: number[];
   @IsString()
   @IsNotEmpty()
-  @MinLength(3)
-  @MaxLength(15)
+  @MinLength(2)
+  @MaxLength(20)
   title: string;
   @IsString()
   @IsOptional()
@@ -380,7 +380,10 @@ export class ConversationDataReturn {
   password: string;
 }
 
-export class ConversationUpdate  {
+export class ConversationUpdate {
+  @IsNotEmpty()
+  @IsNumber()
+  id: number;
   @IsString()
   @IsOptional()
   @MinLength(6)
@@ -392,7 +395,6 @@ export class ConversationUpdate  {
   @IsNumber({}, { each: true })
   @Min(1, { each: true })
   @Type(() => Number)
-  @ValidateIf((d) => true)
   members: number[];
   @IsString()
   @IsOptional()
@@ -401,7 +403,6 @@ export class ConversationUpdate  {
   title: string;
   @IsOptional()
   @IsBoolean()
-  @ValidateIf((v) => (v.protected && !v.password ? true : false))
   protected: boolean;
   @IsOptional()
   @IsBoolean()

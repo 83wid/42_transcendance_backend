@@ -22,6 +22,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
 import { plainToInstance } from "class-transformer";
 import { ChatGateway } from "./chat.gateway";
+import { Prisma } from "@prisma/client";
 @Injectable()
 export class ChatService {
   constructor(private prismaService: PrismaService) {}
@@ -210,58 +211,52 @@ export class ChatService {
     }
   }
 
-  async updateConversation(res: Response, userId: number, dto: ConversationUpdate & Conversation) {
-    const { id, password } = dto;
-    delete dto.id;
-    // delete dto.password;
-    // if (!dto.protected) delete dto.newPassword;
+  async updateConversation(userId: number, dto: ConversationUpdate) {
     console.log(dto);
-
-    try {
-      // if (!Object.keys(dto).length || (dto.protected && !dto.newPassword))
-      //   return res.status(400).json({ message: "Bad Request" });
-      const conversation = await this.prismaService.conversation.findFirst({
-        where: { id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
-        // include: { members: true },
-      });
-      if (!conversation) return res.status(404).json({ message: "conversation not found" });
-      // if (conversation.protected && (!password || !(await bcrypt.compare(password, conversation.password))))
-      //   return res.status(401).json({ message: "unauthorized" });
-      // // const dataUpdate: Prisma.conversationUpdateInput = { protected: dto.protected, title: dto.title };
-      // // ? if updateProtected as false set password null
-      // if (dto.protected === false) Object.assign(dataUpdate, { password: null });
-      // // ? if new password assign it in dataUpdate hashed
-      // if (dto.newPassword) Object.assign(dataUpdate, { password: await bcrypt.hash(dto.newPassword, this.salt) });
-      // if (dto.members) {
-      //   const users = await this.prismaService.users.findMany({
-      //     where: {
-      //       AND: [
-      //         { intra_id: { in: dto.members } },
-      //         { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
-      //         { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
-      //         { NOT: { members: { some: { conversationid: id } } } },
-      //       ],
-      //     },
-      //     select: { intra_id: true },
-      //   });
-      //   const ids = users.map((u) => {
-      //     return { userid: u.intra_id };
-      //   });
-      //   await this.prismaService.conversation.update({
-      //     where: { id },
-      //     data: { members: { create: ids } },
-      //   });
-      // }
-      // const update = await this.prismaService.conversation.update({
-      //   where: { id },
-      //   data: { ...dataUpdate },
-      //   include: { members: true },
-      // });
-      return res.send(conversation);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "server error" });
-    }
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (dto.protected && !dto.password) return reject({ message: "Bad Request" });
+        const conversation = await this.prismaService.conversation.findFirst({
+          where: { id: dto.id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
+        });
+        if (!conversation) return reject({ message: "conversation not found" });
+        const dataUpdate: Prisma.conversationUpdateInput = {
+          protected: dto.protected,
+          title: dto.title,
+          password: dto.protected ? await bcrypt.hash(dto.password, this.salt) : null,
+          public: dto.public,
+        };
+        if (dto.members) {
+          const users = await this.prismaService.users.findMany({
+            where: {
+              AND: [
+                { intra_id: { in: dto.members } },
+                { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
+                { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
+                { NOT: { members: { some: { conversationid: dto.id } } } },
+              ],
+            },
+            select: { intra_id: true },
+          });
+          const ids = users.map((u) => {
+            return { userid: u.intra_id };
+          });
+          await this.prismaService.conversation.update({
+            where: { id: dto.id },
+            data: { members: { create: ids } },
+          });
+        }
+        const update = await this.prismaService.conversation.update({
+          where: { id: dto.id },
+          data: { ...dataUpdate },
+          include: { members: { include: { users: true } } },
+        });
+        return resolve(update);
+      } catch (error) {
+        console.log(error);
+        return reject({ message: "server error" });
+      }
+    });
   }
 
   async addAdminConversation(res: Response, userId: number, dto: addAdminConversation) {
