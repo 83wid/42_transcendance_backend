@@ -28,11 +28,11 @@ export class ChatController {
     return this.chatService.getAllConversation(res, req.user.sub, query);
   }
 
-  @Post("create")
-  @UseGuards(JwtAuthGuard)
-  createConversation(@Req() req: Request, @Res() res: Response, @Body() dto: CreateConversation) {
-    return this.chatService.createConversation(res, req.user.sub, dto);
-  }
+  // @Post("create")
+  // @UseGuards(JwtAuthGuard)
+  // createConversation(@Req() req: Request, @Res() res: Response, @Body() dto: CreateConversation) {
+  //   return this.chatService.createConversation(res, req.user.sub, dto);
+  // }
 
   @Post("join")
   @UseGuards(JwtAuthGuard)

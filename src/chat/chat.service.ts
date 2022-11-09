@@ -18,7 +18,7 @@ import {
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
 import { plainToInstance } from "class-transformer";
-
+import { ChatGateway } from "./chat.gateway";
 @Injectable()
 export class ChatService {
   constructor(private prismaService: PrismaService) {}
@@ -99,41 +99,43 @@ export class ChatService {
     }
   }
   // ? done
-  async createConversation(res: Response, userId: number, dto: CreateConversation) {
-    const title = dto.title || "";
-    try {
-      const hashPassword = dto.password ? await bcrypt.hash(dto.password, this.salt) : null;
-      const users = await this.prismaService.users.findMany({
-        where: {
-          AND: [
-            { intra_id: { in: dto.members } },
-            { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
-            { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
-          ],
-        },
-        select: { intra_id: true },
-      });
-      if (!users.length) return res.status(400).json({ message: "can't create conversation" });
-      const ids = users.map((u) => {
-        return { userid: u.intra_id, isadmin: false };
-      });
-      ids.push({ userid: userId, isadmin: true });
-      const conversation = await this.prismaService.conversation.create({
-        data: {
-          type: "GROUP",
-          title,
-          password: hashPassword,
-          protected: hashPassword ? true : false,
-          public: dto.public,
-          members: { createMany: { data: ids } },
-        },
-        include: { members: { include: { users: true } } },
-      });
-      return res.status(200).json(plainToInstance(ConversationDataReturn, conversation));
-      // return res.send(conversation)
-    } catch (error) {
-      return res.status(500).json({ message: "server error" });
-    }
+  async createConversation(userId: number, dto: CreateConversation) {
+    return new Promise(async (resolve, reject) => {
+      const title = dto.title || "";
+      try {
+        const hashPassword = dto.password ? await bcrypt.hash(dto.password, this.salt) : null;
+        const users = await this.prismaService.users.findMany({
+          where: {
+            AND: [
+              { intra_id: { in: dto.members } },
+              { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
+              { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
+            ],
+          },
+          select: { intra_id: true },
+        });
+        if (!users.length) return reject({ message: "can't create conversation" });
+        const ids = users.map((u) => {
+          return { userid: u.intra_id, isadmin: false };
+        });
+        ids.push({ userid: userId, isadmin: true });
+        const conversation = await this.prismaService.conversation.create({
+          data: {
+            type: "GROUP",
+            title,
+            password: hashPassword,
+            protected: hashPassword ? true : false,
+            public: dto.public,
+            members: { createMany: { data: ids } },
+          },
+          include: { members: { include: { users: true } } },
+        });
+        return resolve(plainToInstance(ConversationDataReturn, conversation));
+        // return res.send(conversation)
+      } catch (error) {
+        return resolve({ message: "server error" });
+      }
+    });
   }
 
   async joinConversation(res: Response, userId: number, dto: JoinConversation) {
