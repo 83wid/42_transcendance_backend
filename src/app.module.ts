@@ -47,7 +47,6 @@ import { SocketGateway } from './socket/socket.gateway';
     AppService,
     JwtStategy,
     FriendsService,
-    ChatService,
     AchievementsService,
     NotificationsGateway,
   ],

@@ -221,16 +221,7 @@ export class Conversation {
   id: number;
 }
 
-// export class GetConversationBody {
-//   @IsString()
-//   @IsOptional()
-//   @MinLength(6)
-//   @MaxLength(20)
-//   password: string;
-// }
-// body
-
-export class GetConversation extends Conversation {
+export class GetConversation {
   @IsString()
   @IsOptional()
   @MinLength(6)
@@ -239,8 +230,8 @@ export class GetConversation extends Conversation {
 }
 
 export class CreateConversation {
+  @IsOptional()
   @IsArray()
-  @ArrayNotEmpty()
   @IsNumber({}, { each: true })
   @Min(1, { each: true })
   @Type(() => Number)
@@ -261,14 +252,6 @@ export class CreateConversation {
 }
 
 export class MessageDTO {
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  conversationId: number;
-  @IsOptional()
-  @IsNumber()
-  @Min(1)
-  userId: number;
   @IsNotEmpty()
   @IsString()
   @MaxLength(80)
@@ -281,14 +264,6 @@ export class GetMessages extends PaginationDTO {
   @Min(1)
   @Type(() => Number)
   id: number;
-}
-
-export class SendMessage extends Conversation {
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(1)
-  @MaxLength(250)
-  message: string;
 }
 
 export class LeaveConvesation {
@@ -311,16 +286,12 @@ export class ToggleMuteUser {
   @Min(1)
   userId: number;
   @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  conversationId: number;
-  @IsNotEmpty()
   @IsBoolean()
   mute: boolean;
   @IsOptional()
   @IsDate()
-  @ValidateIf((d) => !(new Date(d.muteAt).getTime() > new Date().getTime()))
-  muteAt: Date;
+  @ValidateIf((d) => !(new Date(d.endmute).getTime() > new Date().getTime()))
+  endmute: Date;
 }
 
 export class ToggleBanUser {
@@ -329,23 +300,15 @@ export class ToggleBanUser {
   @Min(1)
   userId: number;
   @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  conversationId: number;
-  @IsNotEmpty()
   @IsBoolean()
   ban: boolean;
   @IsOptional()
   @IsDate()
-  @ValidateIf((d) => !(new Date(d.muteAt).getTime() > new Date().getTime()))
-  banAt: Date;
+  @ValidateIf((d) => !(new Date(d.endban).getTime() > new Date().getTime()))
+  endban: Date;
 }
 
 export class JoinConversation {
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  conversationId: number;
   @IsString()
   @IsOptional()
   @MinLength(6)
@@ -368,10 +331,6 @@ export class addAdminConversation {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
-  conversationId: number;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
   userId: number;
 }
 
@@ -381,9 +340,6 @@ export class ConversationDataReturn {
 }
 
 export class ConversationUpdate {
-  @IsNotEmpty()
-  @IsNumber()
-  id: number;
   @IsString()
   @IsOptional()
   @MinLength(6)
