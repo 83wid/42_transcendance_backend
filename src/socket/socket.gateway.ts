@@ -41,14 +41,22 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async handleConnection(client: Socket, ...args: any[]) {
     this.logger.log(`socket new client ${client.id} connected token ${client.handshake.auth.token}<<<<<`);
     try {
+      const userIndex = this.users.findIndex((u) => u.intra_id === client.user);
+      if (userIndex > -1) {
+        console.log(`old =>> ${this.users[userIndex].socketId}`);
+        console.log(`new =>> ${client.id}`);
+        this.server.in(this.users[userIndex].socketId).disconnectSockets();
+        this.users[userIndex].socketId = client.id;
+      } else this.users.push({ intra_id: client.user, socketId: client.id });
+      await client.join("online");
+      this.logger.log(client.user);
       await this.prismaService.users.update({
         where: { intra_id: client.user },
         data: { status: "ONLINE" },
       });
-      await client.join("online");
-      this.users.push({ intra_id: client.user, socketId: client.id });
-      this.logger.log(client.user);
     } catch (error) {
+      console.log(error);
+
       return this.disconnect(client);
     }
   }
@@ -68,13 +76,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       this.users.splice(userIndex, 1);
       this.server.to("online").emit("userChangeStatus", { intra_id, status: "OFFLINE" });
     }
-    this.logger.log(`socket client ${client.id} disconnect`);
-  }
-  // ! for test pleas remove it
-  @SubscribeMessage("events")
-  handleEvent(client: Socket, data: any): any {
-    this.logger.log(`events data ${data.message} ${client.id}`);
-    return { message: "done" };
+    this.logger.error(`socket client ${client.id} disconnect`);
   }
 
   /**
@@ -84,9 +86,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   private disconnect(socket: Socket) {
     socket.emit("error", new UnauthorizedException());
     socket.disconnect();
-    // const event = 'error'
-    // const error = new UnauthorizedException()
-    // return {event, error}
   }
 
   getSocketIdFromUserId(userId: number) {

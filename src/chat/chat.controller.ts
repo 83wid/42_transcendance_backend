@@ -12,7 +12,7 @@ import {
   DeleteConversation,
   PaginationDTO,
   JoinConversation,
-  AddMember,
+  // AddMember,
   addAdminConversation,
   ToggleBanUser,
   ConversationUpdate,
@@ -53,11 +53,11 @@ export class ChatController {
     return this.chatService.joinConversation(res, req.user.sub, dto);
   }
 
-  @Post("addmember")
-  @UseGuards(JwtAuthGuard)
-  addMember(@Req() req: Request, @Res() res: Response, @Body() dto: AddMember) {
-    return this.chatService.addMember(res, req.user.sub, dto);
-  }
+  // @Post("addmember")
+  // @UseGuards(JwtAuthGuard)
+  // addMember(@Req() req: Request, @Res() res: Response, @Body() dto: AddMember) {
+  //   return this.chatService.addMember(res, req.user.sub, dto);
+  // }
 
   // @Put("addadmin")
   // @UseGuards(JwtAuthGuard)
@@ -82,11 +82,11 @@ export class ChatController {
     return this.chatService.toggleBanUser(res, req.user.sub, dto);
   }
 
-  @Put("leave")
-  @UseGuards(JwtAuthGuard)
-  leaveConversation(@Req() req: Request, @Res() res: Response, @Body() dto: LeaveConvesation) {
-    return this.chatService.leaveConversation(res, req.user.sub, dto);
-  }
+  // @Put("leave")
+  // @UseGuards(JwtAuthGuard)
+  // leaveConversation(@Req() req: Request, @Res() res: Response, @Body() dto: LeaveConvesation) {
+  //   return this.chatService.leaveConversation(res, req.user.sub, dto);
+  // }
 
   @Delete("delete")
   @UseGuards(JwtAuthGuard)

@@ -295,14 +295,14 @@ export class LeaveConvesation {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
-  conversationId: number;
+  id: number;
 }
 
 export class DeleteConversation {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
-  conversationId: number;
+  id: number;
 }
 
 export class ToggleMuteUser {
@@ -353,16 +353,16 @@ export class JoinConversation {
   password: string;
 }
 
-export class AddMember {
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  conversationId: number;
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  userId: number;
-}
+// export class AddMember {
+//   @IsNotEmpty()
+//   @IsNumber()
+//   @Min(1)
+//   conversationId: number;
+//   @IsNotEmpty()
+//   @IsNumber()
+//   @Min(1)
+//   userId: number;
+// }
 
 export class addAdminConversation {
   @IsNotEmpty()

@@ -6,14 +6,23 @@ import { SocketGateway } from "src/socket/socket.gateway";
 import {
   ConversationUpdate,
   CreateConversation,
+  DeleteConversation,
   GetConversation,
   GetMessages,
+  LeaveConvesation,
   PaginationDTO,
   SendMessage,
 } from "src/interfaces/user.interface";
 import { UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
 import { WSValidationPipe } from "../socket/handleErrors";
-import { conversation as Conversation, members as Members, users as Users, message as Message } from "@prisma/client";
+import {
+  conversation as Conversation,
+  members as Members,
+  users as Users,
+  message as Message,
+  conversation,
+  members,
+} from "@prisma/client";
 
 @WebSocketGateway()
 export class ChatGateway {
@@ -24,9 +33,22 @@ export class ChatGateway {
   @SubscribeMessage("sendMessage")
   async handleSendMessage(client: Socket, data: SendMessage): Promise<unknown> {
     try {
+      console.log(`new message by => ${client.id}`);
       if (!client.rooms.has(`chatRoom_${data.id}`)) throw new WsException("unauthorized");
       const message = (await this.chatService.sendMessage(client.user, data)) as Message & { users: Users };
-      client.to(`chatRoom_${data.id}`).emit("newMessage", message);
+      const members = await this.prismaService.members.findMany({
+        where: {
+          conversationid: data.id,
+          users: {
+            AND: [
+              { blocked_blocked_blockedidTousers: { none: { userid: client.user } } },
+              { blocked_blocked_useridTousers: { none: { blockedid: client.user } } },
+            ],
+          },
+        },
+      });
+      const ids = members.map((m) => this.socketGateway.getSocketIdFromUserId(m.userid)).filter((i) => i !== undefined);
+      client.to(ids).emit("newMessage", message);
       return message;
     } catch (error) {
       throw new WsException(error);
@@ -92,6 +114,32 @@ export class ChatGateway {
         await client.join(`chatRoom_${data.id}`);
       }
       return update;
+    } catch (error) {
+      throw new WsException(error);
+    }
+  }
+
+  @UsePipes(WSValidationPipe)
+  @SubscribeMessage("leaveConversation")
+  async handleLeaveConversation(client: Socket, data: LeaveConvesation) {
+    try {
+      const update = await this.chatService.leaveConversation(client.user, data);
+      client.to(`chatRoom_${data.id}`).emit("newConversation", update);
+      await client.leave(`chatRoom_${data.id}`);
+      return "success leave conversation";
+    } catch (error) {
+      throw new WsException(error);
+    }
+  }
+
+  @UsePipes(WSValidationPipe)
+  @SubscribeMessage("deleteConversation")
+  async handleDeleteConversation(client: Socket, data: DeleteConversation) {
+    try {
+      const update = (await this.chatService.deleteConversation(client.user, data)) as conversation & { members: members[] };
+      client.to(`chatRoom_${data.id}`).emit("newConversation", update);
+      this.server.socketsLeave(`chatRoom_${data.id}`);
+      return "success delete conversation";
     } catch (error) {
       throw new WsException(error);
     }

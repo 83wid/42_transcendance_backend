@@ -9,7 +9,7 @@ import {
   PaginationDTO,
   ConversationDataReturn,
   JoinConversation,
-  AddMember,
+  // AddMember,
   ToggleBanUser,
   GetConversation,
   GetMessages,
@@ -40,13 +40,7 @@ export class ChatService {
               { members: { some: { userid: userId, active: true, ban: false, endban: { lt: currentDate } } } },
             ],
           },
-          include: {
-            members: {
-              include: {
-                users: true,
-              },
-            },
-          },
+          include: { members: { include: { users: true } } },
         });
         if (!conversation) return reject({ message: "conversation not found" });
         if (conversation.password) {
@@ -68,12 +62,23 @@ export class ChatService {
       dto.cursor && Object.assign(Pagination, { cursor: { id: dto.cursor } });
       try {
         const conversation = await this.prismaService.conversation.findFirst({
-          where: { AND: [{ id: dto.id }, { OR: [{ public: true }, { members: { some: { userid: userId } } }] }] },
+          where: { id: dto.id, members: { some: { userid: userId, active: true, ban: false } } },
         });
         if (!conversation) return reject({ messages: "conversation not found" });
-        const messages = await this.prismaService.conversation
-          .findUnique({ where: { id: conversation.id } })
-          .message({ orderBy: { created_at: "desc" }, include: { users: true }, ...Pagination });
+        const messages = await this.prismaService.message.findMany({
+          where: {
+            conversationid: conversation.id,
+            users: {
+              AND: [
+                { blocked_blocked_blockedidTousers: { none: { userid: userId } } },
+                { blocked_blocked_useridTousers: { none: { blockedid: userId } } },
+              ],
+            },
+          },
+          orderBy: { created_at: "desc" },
+          include: { users: true },
+          ...Pagination,
+        });
         return resolve(messages);
       } catch (error) {
         console.log(error);
@@ -169,42 +174,6 @@ export class ChatService {
         include: { members: { include: { users: true } } },
       });
       return res.send(plainToInstance(ConversationDataReturn, join));
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "server error" });
-    }
-  }
-
-  async addMember(res: Response, userId: number, dto: AddMember) {
-    try {
-      const conversation = await this.prismaService.conversation.findFirst({
-        where: { id: dto.conversationId, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
-      });
-      if (!conversation) return res.status(404).json({ message: "conversation not found" });
-      const user = await this.prismaService.users.findFirst({
-        where: {
-          AND: [
-            { intra_id: userId },
-            { NOT: { blocked_blocked_blockedidTousers: { some: { userid: userId } } } },
-            { NOT: { blocked_blocked_useridTousers: { some: { blockedid: userId } } } },
-          ],
-        },
-      });
-      if (!user) return res.status(404).json({ message: "user nout found" });
-      const update = await this.prismaService.conversation.update({
-        where: { id: conversation.id },
-        data: {
-          members: {
-            upsert: {
-              where: { conversationid_userid: { userid: dto.userId, conversationid: dto.conversationId } },
-              create: { userid: dto.userId },
-              update: { active: true },
-            },
-          },
-        },
-        include: { members: { include: { users: true } } },
-      });
-      return res.send(update);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "server error" });
@@ -359,45 +328,67 @@ export class ChatService {
     }
   }
 
-  async leaveConversation(res: Response, userId: number, dto: LeaveConvesation) {
-    try {
-      const member = await this.prismaService.members.findUnique({
-        where: { conversationid_userid: { conversationid: dto.conversationId, userid: userId } },
-      });
-      if (!member || !member.active) return res.status(404).json({ message: "conversation not found" });
-      const update = await this.prismaService.members.update({
-        where: { id: member.id },
-        data: { active: false, isadmin: false },
-      });
-      if (member.isadmin) {
-        const admins = await this.prismaService.members.findMany({
-          where: { conversationid: dto.conversationId, isadmin: true },
+  async leaveConversation(userId: number, dto: LeaveConvesation) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const member = await this.prismaService.members.findUnique({
+          where: { conversationid_userid: { conversationid: dto.id, userid: userId } },
         });
-        // ?set new admin
-        if (!admins.length) {
-          const newAdmin = await this.prismaService.members.findFirst({
-            where: { conversationid: dto.conversationId, active: true, ban: false, mute: false },
-            orderBy: { created_at: "asc" },
+        if (!member || !member.active) return reject({ message: "conversation not found" });
+        if (member.isadmin) {
+          const admins = await this.prismaService.members.findMany({
+            where: { conversationid: dto.id, isadmin: true },
           });
-          if (newAdmin) {
-            await this.prismaService.members.update({
-              where: { id: newAdmin.id },
-              data: { isadmin: true },
+          // ?set new admin
+          if (!admins.length) {
+            const newAdmin = await this.prismaService.members.findFirst({
+              where: { conversationid: dto.id, active: true, ban: false, mute: false, userid: { not: userId } },
+              orderBy: { created_at: "asc" },
             });
+            if (newAdmin) {
+              await this.prismaService.members.update({
+                where: { id: newAdmin.id },
+                data: { isadmin: true },
+              });
+            }
           }
         }
+        const update = await this.prismaService.conversation.update({
+          where: { id: dto.id },
+          data: {
+            members: {
+              update: {
+                where: { conversationid_userid: { userid: userId, conversationid: dto.id } },
+                data: { active: false, isadmin: false },
+              },
+            },
+          },
+          include: { members: { include: { users: true } } },
+        });
+        return resolve(update); //.json({ message: "success leave conversation" });
+      } catch (error) {
+        console.log(error);
+        return reject({ message: "server error" });
       }
-      return res.status(201).json(update); //.json({ message: "success leave conversation" });
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ message: "server error" });
-    }
+    });
   }
 
-  async deleteConversation(res: Response, userId: number, dto: DeleteConversation) {
-    try {
-    } catch (error) {
-      return res.status(500).json({ message: "server error" });
-    }
+  async deleteConversation(userId: number, dto: DeleteConversation) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const conversation = await this.prismaService.conversation.findFirst({
+          where: { id: dto.id, members: { some: { userid: userId, isadmin: true, active: true } } },
+        });
+        if (!conversation) return reject({ message: "conversation not found" });
+        const update = await this.prismaService.conversation.update({
+          where: { id: dto.id },
+          data: { active: false },
+          include: { members: true },
+        });
+        return resolve(update);
+      } catch (error) {
+        return reject({ message: "server error" });
+      }
+    });
   }
 }
