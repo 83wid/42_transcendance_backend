@@ -71,7 +71,6 @@ export interface Friends {
 export class PaginationDTO {
   @IsNumber()
   @IsOptional()
-  // @Matches(/^\d+$/)
   @Type(() => Number)
   @Min(1)
   cursor: number;
@@ -79,7 +78,6 @@ export class PaginationDTO {
   @IsOptional()
   @Type(() => Number)
   @Min(1)
-  // @Matches(/^\d+$/)
   pageSize: number;
 }
 
@@ -321,17 +319,6 @@ export class JoinConversation {
   password: string;
 }
 
-// export class AddMember {
-//   @IsNotEmpty()
-//   @IsNumber()
-//   @Min(1)
-//   conversationId: number;
-//   @IsNotEmpty()
-//   @IsNumber()
-//   @Min(1)
-//   userId: number;
-// }
-
 export class addAdminConversation {
   @IsNotEmpty()
   @IsNumber()
@@ -368,6 +355,12 @@ export class ConversationUpdate {
   @IsOptional()
   @IsBoolean()
   public: boolean;
+}
+
+export class Search extends PaginationDTO {
+  @IsString()
+  @IsOptional()
+  title: string;
 }
 
 /******************* CHAT ****************************/

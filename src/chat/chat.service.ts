@@ -17,6 +17,7 @@ import {
   ConversationUpdate,
   Conversation,
   addAdminConversation,
+  Search,
 } from "src/interfaces/user.interface";
 import { PrismaService } from "src/prisma/prisma.service";
 import * as bcrypt from "bcrypt";
@@ -27,6 +28,34 @@ import { Prisma } from "@prisma/client";
 export class ChatService {
   constructor(private prismaService: PrismaService, private chatGateway: ChatGateway) {}
   private salt = 10;
+
+  async searshConversation(res: Response, userId: number, dto: Search) {
+    try {
+      const pageSize = dto.pageSize || 20;
+      const cursor = dto.cursor || 1;
+      const data = await this.prismaService.conversation.findMany({
+        take: pageSize,
+        cursor: { id: cursor },
+        where: { title: dto.title, type: "GROUP", public: true },
+        include: {
+          members: {
+            where: {
+              users: {
+                AND: [
+                  { blocked_blocked_blockedidTousers: { none: { userid: userId } } },
+                  { blocked_blocked_useridTousers: { none: { blockedid: userId } } },
+                ],
+              },
+            },
+            include: { users: true },
+          },
+        },
+      });
+      return res.status(200).json(data);
+    } catch (error) {
+      return res.status(500).json({ message: "server error" });
+    }
+  }
 
   // TODO update
   async getConversation(res: Response, userId: number, dto: GetConversation & Conversation) {
@@ -346,10 +375,6 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
-      // await this.prismaService.members.update({
-      //   where: { conversationid_userid: { conversationid: conversation.id, userid: dto.userId } },
-      //   data: { ban: dto.ban, endban: dto.endban || new Date() },
-      // });
       return res.status(200).json(update);
     } catch (error) {
       console.log(error);

@@ -82,8 +82,8 @@ export class UsersService {
   }
 
   async getAllUsers(userId: number, dto: GetUserQuery, res: Response) {
-    const pageSize = Number(dto.pageSize) || 22;
-    const cursor = Number(dto.cursor) || 1;
+    const pageSize = dto.pageSize || 22;
+    const cursor = dto.cursor || 1;
     try {
       const data = await this.prisma.users.findMany({
         take: pageSize,

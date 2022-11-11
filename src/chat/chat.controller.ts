@@ -19,6 +19,7 @@ import {
   Conversation,
   GetConversation,
   MessageDTO,
+  Search,
   // SendMessage,
   // ConversationParam,
 } from "src/interfaces/user.interface";
@@ -38,6 +39,12 @@ export class ChatController {
   @UseGuards(JwtAuthGuard)
   async createConversation(@Req() req: Request, @Res() res: Response, @Body() dto: CreateConversation) {
     return await this.chatService.createConversation(res, req.user.sub, dto);
+  }
+
+  @Get("search")
+  @UseGuards(JwtAuthGuard)
+  async seachConversation(@Req() req: Request, @Res() res: Response, @Query() dto: Search) {
+    return await this.chatService.searshConversation(res, req.user.sub, dto);
   }
 
   @Post("/:id")
