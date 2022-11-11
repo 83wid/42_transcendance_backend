@@ -13,6 +13,7 @@ import {
   Matches,
   MaxLength,
   Min,
+  minDate,
   MinDate,
   MinLength,
   validate,
@@ -289,7 +290,9 @@ export class ToggleMuteUser {
   @IsBoolean()
   mute: boolean;
   @IsOptional()
-  @IsDate()
+  @IsDate({
+    message: `minimal allowed date for endmute is current date + 10min (Coordinated Universal Time),endmute must be a Date instance`,
+  })
   @ValidateIf((d) => !(new Date(d.endmute).getTime() > new Date().getTime()))
   endmute: Date;
 }
@@ -303,7 +306,9 @@ export class ToggleBanUser {
   @IsBoolean()
   ban: boolean;
   @IsOptional()
-  @IsDate()
+  @IsDate({
+    message: `minimal allowed date for banend is current date (Coordinated Universal Time),endmute must be a Date instance`,
+  })
   @ValidateIf((d) => !(new Date(d.endban).getTime() > new Date().getTime()))
   endban: Date;
 }

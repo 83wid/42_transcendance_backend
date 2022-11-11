@@ -244,11 +244,11 @@ export class ChatService {
           members: {
             update: {
               where: { conversationid_userid: { conversationid: conversation.id, userid: dto.userId } },
-              data: { isadmin: true, mute: false ,ban: false, endban: new Date(), endmute: new Date()},
+              data: { isadmin: true, mute: false, ban: false, endban: new Date(), endmute: new Date() },
             },
           },
         },
-        include: {members: {include: {users: true}}}
+        include: { members: { include: { users: true } } },
       });
       return res.send(update);
     } catch (error) {
@@ -286,21 +286,30 @@ export class ChatService {
 
   async toggleMuteUser(res: Response, userId: number, dto: ToggleMuteUser & Conversation) {
     try {
-      console.log(dto, 'muteUser');
+      console.log(dto, userId, "muteUser");
       const conversation = await this.prismaService.conversation.findFirst({
         where: {
           AND: [
             { id: dto.id },
             { type: "GROUP" },
-            { members: { some: { userid: userId, isadmin: true } } },
-            { members: { some: { userid: dto.userId, isadmin: false } } },
+            { active: true },
+            { members: { some: { userid: userId, isadmin: true, active: true } } },
+            { members: { some: { userid: dto.userId, active: true } } },
           ],
         },
       });
       if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
-      const update = await this.prismaService.members.update({
-        where: { conversationid_userid: { conversationid: conversation.id, userid: dto.userId } },
-        data: { mute: dto.mute, endmute: dto.endmute || new Date() },
+      const update = await this.prismaService.conversation.update({
+        where: { id: dto.id },
+        data: {
+          members: {
+            update: {
+              where: { conversationid_userid: { conversationid: dto.id, userid: dto.userId } },
+              data: { mute: dto.mute, endmute: dto.endmute || new Date() },
+            },
+          },
+        },
+        include: { members: { include: { users: true } } },
       });
       return res.status(200).json(update);
     } catch (error) {
@@ -311,23 +320,36 @@ export class ChatService {
 
   async toggleBanUser(res: Response, userId: number, dto: ToggleBanUser & Conversation) {
     try {
-      console.log(dto, 'banUser');
-      
+      console.log(dto, "banUser");
+
       const conversation = await this.prismaService.conversation.findFirst({
         where: {
           AND: [
             { id: dto.id },
             { type: "GROUP" },
-            { members: { some: { userid: userId, isadmin: true } } },
-            { members: { some: { userid: dto.userId, isadmin: false } } },
+            { active: true },
+            { members: { some: { userid: userId, isadmin: true, active: true } } },
+            { members: { some: { userid: dto.userId, active: true } } },
           ],
         },
       });
       if (!conversation) return res.status(404).json({ message: "conversation or member not found" });
-      const update = await this.prismaService.members.update({
-        where: { conversationid_userid: { conversationid: conversation.id, userid: dto.userId } },
-        data: { ban: dto.ban, endban: dto.endban || new Date() },
+      const update = await this.prismaService.conversation.update({
+        where: { id: dto.id },
+        data: {
+          members: {
+            update: {
+              where: { conversationid_userid: { userid: dto.userId, conversationid: dto.id } },
+              data: { ban: dto.ban, endban: dto.endban || new Date() },
+            },
+          },
+        },
+        include: { members: { include: { users: true } } },
       });
+      // await this.prismaService.members.update({
+      //   where: { conversationid_userid: { conversationid: conversation.id, userid: dto.userId } },
+      //   data: { ban: dto.ban, endban: dto.endban || new Date() },
+      // });
       return res.status(200).json(update);
     } catch (error) {
       console.log(error);
