@@ -82,12 +82,6 @@ export class ChatController {
     return this.chatService.leaveConversation(res, req.user.sub, dto);
   }
 
-  @Delete("/:id/delete")
-  @UseGuards(JwtAuthGuard)
-  deleteConversation(@Req() req: Request, @Res() res: Response, @Body() dto: Conversation) {
-    return res.status(200).json(dto);
-  }
-
   @Get("/:id/messages")
   @UseGuards(JwtAuthGuard)
   getConversationMessages(
@@ -110,5 +104,10 @@ export class ChatController {
   ) {
     if (!Object.keys(body).length) return res.status(400).json({ message: "Bad Request" });
     return this.chatService.updateConversation(res, req.user.sub, { ...param, ...body });
+  }
+  @Delete("/:id/delete")
+  @UseGuards(JwtAuthGuard)
+  deleteConversation(@Req() req: Request, @Res() res: Response, @Param() dto: Conversation) {
+    return this.chatService.deleteConversation(res, req.user.sub, dto);
   }
 }

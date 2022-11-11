@@ -401,22 +401,19 @@ export class ChatService {
     }
   }
 
-  async deleteConversation(userId: number, dto: DeleteConversation) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const conversation = await this.prismaService.conversation.findFirst({
-          where: { id: dto.id, members: { some: { userid: userId, isadmin: true, active: true } } },
-        });
-        if (!conversation) return reject({ message: "conversation not found" });
-        const update = await this.prismaService.conversation.update({
-          where: { id: dto.id },
-          data: { active: false },
-          include: { members: true },
-        });
-        return resolve(update);
-      } catch (error) {
-        return reject({ message: "server error" });
-      }
-    });
+  async deleteConversation(res: Response, userId: number, dto: Conversation) {
+    try {
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: { id: dto.id, members: { some: { userid: userId, isadmin: true, active: true } } },
+      });
+      if (!conversation) return res.status(404).json({ message: "conversation not found" });
+      await this.prismaService.conversation.update({
+        where: { id: dto.id },
+        data: { active: false },
+      });
+      return res.status(201).json({ message: "success deleted" });
+    } catch (error) {
+      return res.status(500).json({ message: "server error" });
+    }
   }
 }
