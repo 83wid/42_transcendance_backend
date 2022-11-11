@@ -36,7 +36,12 @@ export class ChatService {
       const data = await this.prismaService.conversation.findMany({
         take: pageSize,
         cursor: { id: cursor },
-        where: { title: dto.title, type: "GROUP", public: true },
+        where: {
+          title: { contains: dto.title },
+          type: "GROUP",
+          public: true,
+          members: { none: { userid: userId, active: true } },
+        },
         include: {
           members: {
             where: {
@@ -179,10 +184,12 @@ export class ChatService {
 
   async joinConversation(res: Response, userId: number, dto: JoinConversation & Conversation) {
     try {
+      console.log(dto);
+
       const conversation = await this.prismaService.conversation.findFirst({
-        where: { id: dto.id, public: true, type: "GROUP" },
+        where: { id: dto.id, public: true, type: "GROUP", active: true },
       });
-      if (!conversation) res.status(404).json({ message: "conversation not found" });
+      if (!conversation) return res.status(404).json({ message: "conversation not found" });
       if (conversation.protected) {
         if (!dto.password) return res.status(404).json({ message: "Permission denied" });
         const passwordMatch = await bcrypt.compare(dto.password, conversation.password);
