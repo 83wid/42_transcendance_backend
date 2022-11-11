@@ -319,11 +319,14 @@ export class JoinConversation {
   password: string;
 }
 
-export class addAdminConversation {
+export class ToggleAdmin {
   @IsNotEmpty()
   @IsNumber()
   @Min(1)
   userId: number;
+  @IsNotEmpty()
+  @IsBoolean()
+  setAs: boolean;
 }
 
 export class ConversationDataReturn {

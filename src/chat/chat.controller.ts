@@ -13,7 +13,7 @@ import {
   PaginationDTO,
   JoinConversation,
   // AddMember,
-  addAdminConversation,
+  ToggleAdmin,
   ToggleBanUser,
   ConversationUpdate,
   Conversation,
@@ -59,10 +59,10 @@ export class ChatController {
     return this.chatService.joinConversation(res, req.user.sub, { ...id, ...dto });
   }
 
-  @Put("/:id/addadmin")
+  @Put("/:id/toggleadmin")
   @UseGuards(JwtAuthGuard)
-  addAdmin(@Req() req: Request, @Res() res: Response, @Param() id: Conversation, @Body() dto: addAdminConversation) {
-    return this.chatService.addAdminConversation(res, req.user.sub, { ...dto, ...id });
+  toggleAdmin(@Req() req: Request, @Res() res: Response, @Param() id: Conversation, @Body() dto: ToggleAdmin) {
+    return this.chatService.toggleAdmin(res, req.user.sub, { ...dto, ...id });
   }
 
   @Put("/:id/togglemute")

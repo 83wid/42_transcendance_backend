@@ -16,7 +16,7 @@ import {
   // SendMessage,
   ConversationUpdate,
   Conversation,
-  addAdminConversation,
+  ToggleAdmin,
   Search,
 } from "src/interfaces/user.interface";
 import { PrismaService } from "src/prisma/prisma.service";
@@ -173,7 +173,6 @@ export class ChatService {
         include: { members: { include: { users: true } } },
       });
       return res.status(200).json(plainToInstance(ConversationDataReturn, conversation));
-      // return res.send(conversation)
     } catch (error) {
       console.log(error);
 
@@ -260,7 +259,7 @@ export class ChatService {
     }
   }
 
-  async addAdminConversation(res: Response, userId: number, dto: addAdminConversation & Conversation) {
+  async toggleAdmin(res: Response, userId: number, dto: ToggleAdmin & Conversation) {
     try {
       const conversation = await this.prismaService.conversation.findFirst({
         where: {
@@ -280,7 +279,7 @@ export class ChatService {
           members: {
             update: {
               where: { conversationid_userid: { conversationid: conversation.id, userid: dto.userId } },
-              data: { isadmin: true, mute: false, ban: false, endban: new Date(), endmute: new Date() },
+              data: { isadmin: dto.setAs, mute: false, ban: false, endban: new Date(), endmute: new Date() },
             },
           },
         },
