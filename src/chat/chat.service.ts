@@ -308,7 +308,7 @@ export class ChatService {
         data: { senderid: userId, conversationid: member.conversationid, message: dto.message },
         include: { users: true },
       });
-      this.chatGateway.handleEmitNewMessage(newMessage)
+      this.chatGateway.handleEmitNewMessage(newMessage);
       return res.status(200).json(newMessage);
     } catch (error) {
       console.log(error);
@@ -393,10 +393,10 @@ export class ChatService {
       if (!member || !member.active) return res.status(400).json({ message: "conversation not found" });
       if (member.isadmin) {
         const admins = await this.prismaService.members.findMany({
-          where: { conversationid: dto.id, isadmin: true },
+          where: { conversationid: dto.id, isadmin: true, active: true },
         });
         // ?set new admin
-        if (!admins.length) {
+        if (admins.length === 1) {
           const newAdmin = await this.prismaService.members.findFirst({
             where: { conversationid: dto.id, active: true, ban: false, mute: false, userid: { not: userId } },
             orderBy: { created_at: "asc" },
