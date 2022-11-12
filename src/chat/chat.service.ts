@@ -2,18 +2,15 @@ import { Injectable } from "@nestjs/common";
 import { Request, Response } from "express";
 import {
   CreateConversation,
-  DeleteConversation,
   LeaveConvesation,
   MessageDTO,
   ToggleMuteUser,
   PaginationDTO,
   ConversationDataReturn,
   JoinConversation,
-  // AddMember,
   ToggleBanUser,
   GetConversation,
   GetMessages,
-  // SendMessage,
   ConversationUpdate,
   Conversation,
   ToggleAdmin,
@@ -83,12 +80,13 @@ export class ChatService {
       return res.status(500).json({ message: "server error" });
     }
   }
-  // TODO update
+
   async getConversationMessages(res: Response, userId: number, dto: GetMessages) {
     // Todo check if user socket has room chat
-    const Pagination = { take: dto.pageSize || 20 };
-    dto.cursor && Object.assign(Pagination, { cursor: { id: dto.cursor } });
     try {
+      await this.chatGateway.handleUserInRoom(userId, dto.id);
+      const Pagination = { take: dto.pageSize || 20 };
+      dto.cursor && Object.assign(Pagination, { cursor: { id: dto.cursor } });
       const conversation = await this.prismaService.conversation.findFirst({
         where: { id: dto.id, members: { some: { userid: userId, active: true, ban: false } } },
       });
@@ -136,9 +134,6 @@ export class ChatService {
   }
   // ? done
   async createConversation(res: Response, userId: number, dto: CreateConversation) {
-    // return new Promise(async (resolve, reject) => {
-    console.log(dto);
-
     try {
       const title = dto.title || "";
       var ids = [];
@@ -172,6 +167,7 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
+      this.chatGateway.handleMemberJoinRoomChat(userId, conversation.id);
       return res.status(200).json(plainToInstance(ConversationDataReturn, conversation));
     } catch (error) {
       console.log(error);
@@ -183,8 +179,6 @@ export class ChatService {
 
   async joinConversation(res: Response, userId: number, dto: JoinConversation & Conversation) {
     try {
-      console.log(dto);
-
       const conversation = await this.prismaService.conversation.findFirst({
         where: { id: dto.id, public: true, type: "GROUP", active: true },
       });
@@ -207,7 +201,8 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
-      return res.send(plainToInstance(ConversationDataReturn, join));
+      this.chatGateway.handleMemberJoinRoomChat(userId, join.id);
+      return res.status(200).json(plainToInstance(ConversationDataReturn, join));
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "server error" });
@@ -295,6 +290,7 @@ export class ChatService {
   async sendMessage(res: Response, userId: number, dto: MessageDTO & Conversation) {
     try {
       // todo check user socket in chat room
+      await this.chatGateway.handleUserInRoom(userId, dto.id);
       const currentDate = new Date();
       const member = await this.prismaService.members.findFirst({
         where: {
@@ -312,10 +308,11 @@ export class ChatService {
         data: { senderid: userId, conversationid: member.conversationid, message: dto.message },
         include: { users: true },
       });
+      this.chatGateway.handleEmitNewMessage(newMessage)
       return res.status(200).json(newMessage);
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "server error" });
+      return res.status(500).json(error);
     }
   }
 
