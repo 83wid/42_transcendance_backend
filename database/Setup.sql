@@ -98,17 +98,6 @@ CREATE TABLE members (
   FOREIGN KEY (conversationId) REFERENCES conversation (id),
   PRIMARY KEY (conversationId, userId)
 );
--- ?create table for conversation admins
--- CREATE table conversation_admins (
---   id SERIAL UNIQUE,
---   conversationId INT NOT NULL,
---   memberId INT NOT NULL,
---   created_at timestamp DEFAULT now(),
---   updated_at timestamp DEFAULT now(),
---   FOREIGN KEY (conversationId) REFERENCES conversation (id),
---   FOREIGN KEY (memberId) REFERENCES members (id),
---   PRIMARY KEY (conversationId, memberId)
--- );
 -- ?create table for messages
 CREATE TABLE message (
   id SERIAL,

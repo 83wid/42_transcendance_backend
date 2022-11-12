@@ -167,14 +167,12 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
+      // todo if members.length > 1 emit new conversation
       this.chatGateway.handleMemberJoinRoomChat(userId, conversation.id);
       return res.status(200).json(plainToInstance(ConversationDataReturn, conversation));
     } catch (error) {
-      console.log(error);
-
       return res.status(500).json({ message: "server error" });
     }
-    // });
   }
 
   async joinConversation(res: Response, userId: number, dto: JoinConversation & Conversation) {
@@ -188,6 +186,10 @@ export class ChatService {
         const passwordMatch = await bcrypt.compare(dto.password, conversation.password);
         if (!passwordMatch) return res.status(404).json({ message: "Permission denied" });
       }
+      const admins = await this.prismaService.members.findMany({
+        where: { conversationid: dto.id, active: true, isadmin: true },
+      });
+      const setAsAdmin = !admins.length;
       const join = await this.prismaService.conversation.update({
         where: { id: dto.id },
         data: {
@@ -195,12 +197,13 @@ export class ChatService {
             upsert: {
               where: { conversationid_userid: { userid: userId, conversationid: dto.id } },
               create: { userid: userId },
-              update: { active: true },
+              update: { active: true, isadmin: setAsAdmin },
             },
           },
         },
         include: { members: { include: { users: true } } },
       });
+      this.chatGateway.handleEmitUpdateConversation(join, userId);
       this.chatGateway.handleMemberJoinRoomChat(userId, join.id);
       return res.status(200).json(plainToInstance(ConversationDataReturn, join));
     } catch (error) {
@@ -247,6 +250,7 @@ export class ChatService {
         data: { ...dataUpdate },
         include: { members: { include: { users: true } } },
       });
+      this.chatGateway.handleEmitUpdateConversation(update, userId);
       return res.status(201).json(update);
     } catch (error) {
       console.log(error);
@@ -280,7 +284,8 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
-      return res.send(update);
+      this.chatGateway.handleEmitUpdateConversation(update, userId);
+      return res.status(201).json(update);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "server error" });
@@ -343,6 +348,7 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
+      this.chatGateway.handleEmitUpdateConversation(update, userId);
       return res.status(200).json(update);
     } catch (error) {
       console.log(error);
@@ -378,6 +384,7 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
+      this.chatGateway.handleEmitUpdateConversation(update, userId);
       return res.status(200).json(update);
     } catch (error) {
       console.log(error);
@@ -387,11 +394,14 @@ export class ChatService {
 
   async leaveConversation(res: Response, userId: number, dto: LeaveConvesation) {
     try {
-      const member = await this.prismaService.members.findUnique({
-        where: { conversationid_userid: { conversationid: dto.id, userid: userId } },
+      const conversation = await this.prismaService.conversation.findFirst({
+        where: { id: dto.id, members: { some: { userid: userId, active: true } } },
+        include: { members: { where: { userid: userId, active: true } } },
       });
-      if (!member || !member.active) return res.status(400).json({ message: "conversation not found" });
-      if (member.isadmin) {
+      if (!conversation || !conversation.active || !conversation.members.length)
+        return res.status(400).json({ message: "conversation not found" });
+      var isActive = conversation.type === "GROUP" ? true : false;
+      if (conversation.type === "GROUP" && conversation.members[0].isadmin) {
         const admins = await this.prismaService.members.findMany({
           where: { conversationid: dto.id, isadmin: true, active: true },
         });
@@ -406,12 +416,24 @@ export class ChatService {
               where: { id: newAdmin.id },
               data: { isadmin: true },
             });
+          } else {
+            const newAdmin = await this.prismaService.members.findFirst({
+              where: { conversationid: dto.id, active: true, userid: { not: userId } },
+              orderBy: { created_at: "asc" },
+            });
+            if (newAdmin) {
+              await this.prismaService.members.update({
+                where: { id: newAdmin.id },
+                data: { isadmin: true, mute: false, ban: false, endban: new Date(), endmute: new Date() },
+              });
+            } else isActive = conversation.public ? true : false;
           }
         }
       }
       const update = await this.prismaService.conversation.update({
         where: { id: dto.id },
         data: {
+          active: isActive,
           members: {
             update: {
               where: { conversationid_userid: { userid: userId, conversationid: dto.id } },
@@ -421,7 +443,8 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
-      // todo emit update conversation
+      if (update.active) this.chatGateway.handleEmitUpdateConversation(update, userId);
+      this.chatGateway.handleRemoveSocketIdFromRoom(userId, dto.id);
       return res.status(200).json({ message: "success leave conversation" });
     } catch (error) {
       console.log(error);
@@ -435,10 +458,12 @@ export class ChatService {
         where: { id: dto.id, members: { some: { userid: userId, isadmin: true, active: true } } },
       });
       if (!conversation) return res.status(404).json({ message: "conversation not found" });
-      await this.prismaService.conversation.update({
+      const update = await this.prismaService.conversation.update({
         where: { id: dto.id },
         data: { active: false },
+        include: { members: { include: { users: true } } },
       });
+      // todo emit conversation deleted
       return res.status(201).json({ message: "success deleted" });
     } catch (error) {
       return res.status(500).json({ message: "server error" });
