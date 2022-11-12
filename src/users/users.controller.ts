@@ -59,11 +59,12 @@ export class UsersController {
   @Get("all")
   @UseGuards(JwtAuthGuard)
   async getAllUsers(@Req() req: Request, @Query() query: GetUserQuery, @Res() res: Response) {
-    return this.usersService.getAllUsers(req.user.sub,query, res);
+    return this.usersService.getAllUsers(req.user.sub, query, res);
   }
   @Get(":username")
   @UseGuards(JwtAuthGuard)
   async findUser(@Param("username") username: string) {
-    return this.usersService.user({ username: username });
+    if (/^(\d)+$/.test(username)) return this.usersService.user({ intra_id: Number(username) });
+    else return this.usersService.user({ username: username });
   }
 }

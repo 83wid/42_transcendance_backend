@@ -161,7 +161,7 @@ export class ChatService {
       ids.push({ userid: userId, isadmin: true });
       const conversation = await this.prismaService.conversation.create({
         data: {
-          type: "GROUP",
+          type: dto.type,
           title,
           password: hashPassword,
           protected: hashPassword ? true : false,
@@ -170,6 +170,14 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
+      if (dto.message) {
+        await this.prismaService.conversation.update({
+          where: { id: conversation.id },
+          data: {
+            message: { create: { senderid: userId, message: dto.message } },
+          },
+        });
+      }
       if (conversation.members.length > 1) this.chatGateway.handleEmitUpdateConversation(conversation, userId);
       this.chatGateway.handleMemberJoinRoomChat(userId, conversation.id);
       return res.status(200).json(plainToInstance(ConversationDataReturn, conversation));

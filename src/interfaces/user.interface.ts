@@ -93,7 +93,7 @@ export class GetUserQuery extends PaginationDTO {
 /*************** Users DTO **************/
 
 /************ Profile DTO **************/
-export class ProfileBody {
+export class GetUserParam {
   @IsString()
   id: string;
 }
@@ -236,7 +236,7 @@ export class CreateConversation {
   @Type(() => Number)
   members: number[];
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MinLength(2)
   @MaxLength(20)
   title: string;
@@ -248,6 +248,13 @@ export class CreateConversation {
   @IsNotEmpty()
   @IsBoolean()
   public: boolean;
+  @IsNotEmpty()
+  @IsIn(["DIRECT", "GROUP"])
+  type: "DIRECT" | "GROUP";
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  message: string;
 }
 
 export class MessageDTO {
