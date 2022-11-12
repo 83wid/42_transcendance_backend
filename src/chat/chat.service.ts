@@ -62,6 +62,8 @@ export class ChatService {
   // TODO update
   async getConversation(res: Response, userId: number, dto: GetConversation & Conversation) {
     try {
+      console.log(dto);
+
       const currentDate = new Date();
       const conversation = await this.prismaService.conversation.findFirst({
         where: {
@@ -69,7 +71,6 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
-
       if (!conversation) return res.status(400).json({ message: "conversation not found" });
       if (conversation.protected && !dto.password) return res.status(404).json({ message: "unauthorized" });
       if (conversation.protected && !(await bcrypt.compare(dto.password, conversation.password)))
@@ -77,6 +78,8 @@ export class ChatService {
       this.chatGateway.handleMemberJoinRoomChat(userId, conversation.id);
       return res.status(201).json(conversation);
     } catch (error) {
+      console.log(error);
+
       return res.status(500).json({ message: "server error" });
     }
   }
@@ -167,7 +170,7 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
-      // todo if members.length > 1 emit new conversation
+      if (conversation.members.length > 1) this.chatGateway.handleEmitUpdateConversation(conversation, userId);
       this.chatGateway.handleMemberJoinRoomChat(userId, conversation.id);
       return res.status(200).json(plainToInstance(ConversationDataReturn, conversation));
     } catch (error) {
@@ -214,6 +217,7 @@ export class ChatService {
 
   async updateConversation(res: Response, userId: number, dto: ConversationUpdate & Conversation) {
     try {
+      var users = null;
       if (dto.protected && !dto.password) return res.status(401).json({ message: "Bad Request" });
       const conversation = await this.prismaService.conversation.findFirst({
         where: { id: dto.id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
@@ -226,7 +230,7 @@ export class ChatService {
         public: dto.public,
       };
       if (dto.members) {
-        const users = await this.prismaService.users.findMany({
+        users = await this.prismaService.users.findMany({
           where: {
             AND: [
               { intra_id: { in: dto.members } },

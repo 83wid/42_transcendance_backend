@@ -7,7 +7,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { UsePipes } from "@nestjs/common";
 import { WSValidationPipe } from "src/socket/handleErrors";
 import { Conversation, GetConversation } from "src/interfaces/user.interface";
-import { members, message, conversation } from "@prisma/client";
+import { members, message, conversation, users } from "@prisma/client";
 
 @WebSocketGateway()
 export class ChatGateway {
@@ -35,9 +35,11 @@ export class ChatGateway {
     this.server.to(`chatRoom_${message.conversationid}`).except(socketId).emit("newMessage", message);
   }
 
-  handleEmitUpdateConversation(update: conversation, userId: number) {
+  handleEmitUpdateConversation(update: conversation & { members: members[] }, userId: number) {
     const socketId = this.socketGateway.getSocketIdFromUserId(userId);
-    this.server.to(`chatRoom_${update.id}`).except(socketId).emit("updateConversation", update);
+    const ids = update.members.map((m) => this.socketGateway.getSocketIdFromUserId(m.userid)).filter((i) => i !== undefined);
+    console.log(ids);
+    this.server.to(ids).except(socketId).emit("updateConversation", update);
   }
 
   handleRemoveSocketIdFromRoom(userId: number, conversationId: number) {
@@ -45,6 +47,8 @@ export class ChatGateway {
     const socketId = this.socketGateway.getSocketIdFromUserId(userId);
     if (socketId) this.server.in(socketId).socketsLeave(`chatRoom_${conversationId}`);
   }
+
+  // handleEmitMultiUsers(list: users[], conversationId: number, userId: number){}
 
   @UsePipes(WSValidationPipe)
   @SubscribeMessage("leaveChatRoom")
