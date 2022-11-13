@@ -62,8 +62,6 @@ export class ChatService {
   // TODO update
   async getConversation(res: Response, userId: number, dto: GetConversation & Conversation) {
     try {
-      console.log(dto);
-
       const currentDate = new Date();
       const conversation = await this.prismaService.conversation.findFirst({
         where: {
@@ -155,7 +153,7 @@ export class ChatService {
         if (!users.length) return res.status(400).json({ message: "can't create conversation" });
         ids =
           users.map((u) => {
-            return { userid: u.intra_id, isadmin: false };
+            return { userid: u.intra_id, isadmin: dto.type === "DIRECT" ? true : false };
           }) || [];
       }
       ids.push({ userid: userId, isadmin: true });
@@ -227,6 +225,9 @@ export class ChatService {
     try {
       var users = null;
       if (dto.protected && !dto.password) return res.status(401).json({ message: "Bad Request" });
+      if (dto.password) Object.assign(dto, { protected: true });
+      console.log(dto);
+      
       const conversation = await this.prismaService.conversation.findFirst({
         where: { id: dto.id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
       });
@@ -249,7 +250,7 @@ export class ChatService {
           },
           select: { intra_id: true },
         });
-        const ids = users.map((u) => {
+        const ids = users.map((u: { intra_id: number }) => {
           return { userid: u.intra_id };
         });
         await this.prismaService.conversation.update({
@@ -263,6 +264,7 @@ export class ChatService {
         include: { members: { include: { users: true } } },
       });
       this.chatGateway.handleEmitUpdateConversation(update, userId);
+      if (dto.password) this.chatGateway.handlePasswordChanged(userId, conversation.id);
       return res.status(201).json(update);
     } catch (error) {
       console.log(error);
@@ -309,20 +311,25 @@ export class ChatService {
       // todo check user socket in chat room
       await this.chatGateway.handleUserInRoom(userId, dto.id);
       const currentDate = new Date();
-      const member = await this.prismaService.members.findFirst({
+      const conversation = await this.prismaService.conversation.findFirst({
         where: {
-          conversationid: dto.id,
-          userid: userId,
+          id: dto.id,
           active: true,
-          ban: false,
-          mute: false,
-          endban: { lt: currentDate },
-          endmute: { lt: currentDate },
+          members: {
+            some: {
+              userid: userId,
+              active: true,
+              ban: false,
+              mute: false,
+              endban: { lt: currentDate },
+              endmute: { lt: currentDate },
+            },
+          },
         },
       });
-      if (!member) return res.status(400).json({ message: "Bad Request" });
+      if (!conversation) return res.status(400).json({ message: "Bad Request" });
       const newMessage = await this.prismaService.message.create({
-        data: { senderid: userId, conversationid: member.conversationid, message: dto.message },
+        data: { senderid: userId, conversationid: dto.id, message: dto.message },
         include: { users: true },
       });
       this.chatGateway.handleEmitNewMessage(newMessage);
@@ -335,7 +342,6 @@ export class ChatService {
 
   async toggleMuteUser(res: Response, userId: number, dto: ToggleMuteUser & Conversation) {
     try {
-      console.log(dto, userId, "muteUser");
       const conversation = await this.prismaService.conversation.findFirst({
         where: {
           AND: [
@@ -370,8 +376,6 @@ export class ChatService {
 
   async toggleBanUser(res: Response, userId: number, dto: ToggleBanUser & Conversation) {
     try {
-      console.log(dto, "banUser");
-
       const conversation = await this.prismaService.conversation.findFirst({
         where: {
           AND: [
@@ -396,6 +400,7 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
+      this.chatGateway.handleRemoveSocketIdFromRoom(dto.userId, conversation.id);
       this.chatGateway.handleEmitUpdateConversation(update, userId);
       return res.status(200).json(update);
     } catch (error) {
@@ -455,7 +460,7 @@ export class ChatService {
         },
         include: { members: { include: { users: true } } },
       });
-      if (update.active) this.chatGateway.handleEmitUpdateConversation(update, userId);
+      this.chatGateway.handleEmitUpdateConversation(update, userId);
       this.chatGateway.handleRemoveSocketIdFromRoom(userId, dto.id);
       return res.status(200).json({ message: "success leave conversation" });
     } catch (error) {
@@ -472,10 +477,15 @@ export class ChatService {
       if (!conversation) return res.status(404).json({ message: "conversation not found" });
       const update = await this.prismaService.conversation.update({
         where: { id: dto.id },
-        data: { active: false },
+        data: {
+          active: false,
+          members: {
+            update: { where: { conversationid_userid: { conversationid: dto.id, userid: userId } }, data: { active: false } },
+          },
+        },
         include: { members: { include: { users: true } } },
       });
-      // todo emit conversation deleted
+      this.chatGateway.handleEmitUpdateConversation(update, userId);
       return res.status(201).json({ message: "success deleted" });
     } catch (error) {
       return res.status(500).json({ message: "server error" });

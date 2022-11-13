@@ -20,10 +20,7 @@ import {
   GetConversation,
   MessageDTO,
   Search,
-  // SendMessage,
-  // ConversationParam,
 } from "src/interfaces/user.interface";
-import { conversation, members, users, message } from "@prisma/client";
 
 @Controller("conversation")
 export class ChatController {

@@ -37,18 +37,23 @@ export class ChatGateway {
 
   handleEmitUpdateConversation(update: conversation & { members: members[] }, userId: number) {
     const socketId = this.socketGateway.getSocketIdFromUserId(userId);
-    const ids = update.members.map((m) => this.socketGateway.getSocketIdFromUserId(m.userid)).filter((i) => i !== undefined);
+    const ids = update.members
+      .map((m) => m.active && this.socketGateway.getSocketIdFromUserId(m.userid))
+      .filter((i) => i !== undefined);
     console.log(ids);
     this.server.to(ids).except(socketId).emit("updateConversation", update);
   }
 
   handleRemoveSocketIdFromRoom(userId: number, conversationId: number) {
-    // this.server.in(this.users[userIndex].socketId).disconnectSockets();
     const socketId = this.socketGateway.getSocketIdFromUserId(userId);
     if (socketId) this.server.in(socketId).socketsLeave(`chatRoom_${conversationId}`);
   }
 
-  // handleEmitMultiUsers(list: users[], conversationId: number, userId: number){}
+  handlePasswordChanged(userId: number, conversationId: number) {
+    const socketId = this.socketGateway.getSocketIdFromUserId(userId);
+    this.server.in(`chatRoom_${conversationId}`).except(socketId).emit("passwordChanged", conversationId);
+    this.server.in(`chatRoom_${conversationId}`).except(socketId).socketsLeave(`chatRoom_${conversationId}`);
+  }
 
   @UsePipes(WSValidationPipe)
   @SubscribeMessage("leaveChatRoom")
