@@ -45,10 +45,12 @@ export class UsersController {
     @UploadedFiles()
     files: { avatar?: Express.Multer.File[]; cover?: Express.Multer.File[] }
   ) {
-    const { avatar, cover } = files;
     let data = req.body;
-    if (avatar) data.img_url = `${process.env.PUBLIC_URL}/users/image/${avatar[0].filename}`;
-    if (cover) data.cover = `${process.env.PUBLIC_URL}/users/image/${cover[0].filename}`;
+    if (files) {
+      const { avatar, cover } = files;
+      if (avatar) data.img_url = `${process.env.PUBLIC_URL}/users/image/${avatar[0].filename}`;
+      if (cover) data.cover = `${process.env.PUBLIC_URL}/users/image/${cover[0].filename}`;
+    }
     return this.usersService.updateUser(req, res, { data });
   }
   @Get("/image/:fileName")
