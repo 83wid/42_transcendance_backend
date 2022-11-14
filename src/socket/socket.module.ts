@@ -8,18 +8,10 @@ import { AuthService } from "src/auth/auth.service";
 import { UsersModule } from "src/users/users.module";
 import { JwtService } from "@nestjs/jwt";
 import { JwtModule } from "@nestjs/jwt";
-import { jwtConstants } from "src/auth/constants";
 
 @Global()
 @Module({
-  imports: [
-    PrismaModule,
-    AuthModule,
-    UsersModule,
-    JwtModule.register({
-      secret: jwtConstants.secret,
-    }),
-  ],
+  imports: [PrismaModule, AuthModule, UsersModule, JwtModule],
   providers: [JwtService, AuthService, PrismaService, SocketService, SocketGateway],
   exports: [SocketGateway],
 })

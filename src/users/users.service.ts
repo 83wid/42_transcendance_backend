@@ -108,4 +108,26 @@ export class UsersService {
       return res.status(400).json(error);
     }
   }
+
+  async setTwoFactorAuthenticationSecret(userId: number, secret: string) {
+    try {
+      await this.prisma.users.update({
+        where: { intra_id: userId },
+        data: { two_factor_secret: secret, two_factor_activate: true },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async disableTwoFactorAuthentication(userId: number) {
+    try {
+      return await this.prisma.users.update({
+        where: { intra_id: userId },
+        data: { two_factor_activate: false, two_factor_secret: null },
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }

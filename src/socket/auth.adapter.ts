@@ -16,7 +16,9 @@ export class AuthAdapter extends IoAdapter {
     const server = super.createIOServer(port, { ...options, cors: true });
     server.use(async (client: Socket, next: any) => {
       try {
-        const decoded = await this.authService.verifyJwt(client.handshake.auth.token || client.handshake.headers.authorization);
+        const decoded = await this.authService.verifyAccessToken(
+          client.handshake.auth.token || client.handshake.headers.authorization
+        );
         const user = await this.prismaService.users.findUnique({ where: { intra_id: decoded.sub } });
         if (!user) next(new Error("Authentication error"));
         client.user = user.intra_id;

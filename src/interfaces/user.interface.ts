@@ -90,6 +90,15 @@ export class GetUserQuery extends PaginationDTO {
   findBy: string;
 }
 
+export class TwoFactorAuthentication {
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^\d+$/)
+  @MaxLength(6)
+  @MinLength(6)
+  code: string;
+}
+
 /*************** Users DTO **************/
 
 /************ Profile DTO **************/

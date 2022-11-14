@@ -61,7 +61,8 @@ CREATE TABLE users (
   xp INT DEFAULT 0,
   img_url varchar(255),
   cover varchar(255),
-  two_factor boolean DEFAULT false,
+  two_factor_activate boolean DEFAULT false,
+  two_factor_secret varchar(255),
   created_at timestamp DEFAULT now(),
   updated_at TIMESTAMP DEFAULT now(),
   PRIMARY KEY (id)

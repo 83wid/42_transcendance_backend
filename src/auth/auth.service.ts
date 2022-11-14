@@ -2,15 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { UsersService } from "src/users/users.service";
 import { JwtService } from "@nestjs/jwt";
 import { Response } from "express";
-import { PrismaService } from "src/prisma/prisma.service";
 import { pick } from "lodash";
-import { jwtConstants } from "./constants";
-import { decode } from "querystring";
+import { authenticator } from "otplib";
+import { toFileStream } from "qrcode";
 
 @Injectable()
 export class AuthService {
-  constructor(private UserService: UsersService, private jwtService: JwtService, private prisma: PrismaService) {}
-  async authenticate(req: any) {
+  constructor(private UserService: UsersService, private jwtService: JwtService) {}
+  async authenticate(req: any, res: Response) {
     if (!req.user) {
       return "";
     }
@@ -23,8 +22,6 @@ export class AuthService {
     const user = await this.UserService.user({
       intra_id,
     });
-    console.log(user);
-
     if (!user) {
       try {
         const newUser = await this.UserService.createUser({
@@ -35,37 +32,30 @@ export class AuthService {
           last_name,
           img_url,
         });
-        console.log(newUser);
-
         const payload = {
-          username: newUser.username,
           sub: newUser.intra_id,
-          first_name: newUser.first_name,
-          last_name: newUser.last_name,
-          img_url: newUser.img_url,
-          first_log: true,
+          tow_factor_validate: !newUser.two_factor_activate,
         };
 
-        return this.jwtService.sign(payload);
+        const token = await this.getAccessToken(payload);
+        return res.redirect(`${process.env.FRONT_END_URL}/?token=${token}`);
       } catch (error) {
         console.log(error);
 
-        return "";
+        return res.status(500).json({ message: "server error" });
       }
     }
     const payload = {
       sub: user.intra_id,
+      tow_factor_validate: !user.two_factor_activate,
     };
-    console.log(this.jwtService.sign({ sub: 1 }));
-    console.log(this.jwtService.sign({ sub: 2 }));
-    return this.jwtService.sign(payload);
+    const token = await this.getAccessToken(payload);
+    return res.redirect(`${process.env.FRONT_END_URL}/?token=${token}&tow_factor_activate=${user.two_factor_activate}`);
   }
   // get auth profile
-  async authMe(id: number, res: Response) {
+  async authMe(intra_id: number, res: Response) {
     try {
-      const data = await this.prisma.users.findUnique({
-        where: { intra_id: id },
-      });
+      const data = await this.UserService.user({ intra_id });
       if (!data) return res.status(404).json({ message: "user not found" });
       const ret = pick(data, [
         "id",
@@ -78,8 +68,6 @@ export class AuthService {
         "created_at",
         "updated_at",
       ]);
-      console.log(this.jwtService.sign({ sub: 1 }));
-      console.log(this.jwtService.sign({ sub: 2 }));
       return res.status(200).json(ret);
     } catch (error) {
       return res.status(400).json({
@@ -87,7 +75,38 @@ export class AuthService {
       });
     }
   }
-  verifyJwt(jwt: string): Promise<any> {
-    return this.jwtService.verifyAsync(jwt, { secret: jwtConstants.secret });
+
+  async getAccessToken(payload: any) {
+    return await this.jwtService.signAsync(payload, { secret: process.env.JWT_SECRET });
+  }
+
+  async verifyAccessToken(jwt: string): Promise<any> {
+    return await this.jwtService.verifyAsync(jwt, { secret: process.env.JWT_SECRET });
+  }
+
+  async generateTwoFactorAuthenticationSecret(res: Response, userId: number) {
+    try {
+      const user = await this.UserService.user({ intra_id: userId });
+      if (!user) return res.status(404).json({ message: "user not found" });
+      const secret = authenticator.generateSecret();
+      const otpauthUrl = authenticator.keyuri(user.username, process.env.APP_NAME, secret);
+      await this.UserService.setTwoFactorAuthenticationSecret(userId, secret);
+      return this.pipeQrCodeStream(res, otpauthUrl);
+    } catch (error) {
+      return res.status(500).json({ message: "server error" });
+    }
+  }
+
+  pipeQrCodeStream(res: Response, otpauthUrl: string) {
+    return toFileStream(res, otpauthUrl);
+  }
+
+  async verifyTwoFaCode(code: string, secret: string) {
+    console.log(code, secret);
+    
+    return authenticator.verify({
+      token: code,
+      secret,
+    });
   }
 }
