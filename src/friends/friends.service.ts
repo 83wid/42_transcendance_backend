@@ -374,6 +374,14 @@ export class FriendsService {
         data: { status: "END" },
       });
 
+      // disactivat all DIRECT conversations
+      await this.prisma.conversation.deleteMany({
+        where: {
+          type: "DIRECT",
+          AND: [{ members: { some: { userid: Number(dto.id) } } }, { members: { some: { userid: req.user.sub } } }],
+        },
+      });
+
       // Block Friend
       const blocked = await this.prisma.blocked.findMany({
         where: {

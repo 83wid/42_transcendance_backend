@@ -96,8 +96,8 @@ CREATE TABLE members (
   isAdmin boolean DEFAULT false,
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
-  FOREIGN KEY (userId) REFERENCES users (intra_id),
-  FOREIGN KEY (conversationId) REFERENCES conversation (id),
+  FOREIGN KEY (userId) REFERENCES users (intra_id) ON DELETE CASCADE,
+  FOREIGN KEY (conversationId) REFERENCES conversation (id) ON DELETE CASCADE,
   PRIMARY KEY (conversationId, userId)
 );
 -- ?create table for messages
@@ -108,8 +108,8 @@ CREATE TABLE message (
   conversationId INT NOT NULL,
   created_at timestamp DEFAULT now(),
   updated_at timestamp DEFAULT now(),
-  FOREIGN KEY (senderId) REFERENCES users (intra_id),
-  FOREIGN KEY (conversationId) REFERENCES conversation (id),
+  FOREIGN KEY (senderId) REFERENCES users (intra_id) ON DELETE CASCADE,
+  FOREIGN KEY (conversationId) REFERENCES conversation (id) ON DELETE CASCADE,
   PRIMARY KEY (id)
 );
 -- ?create trigger auto increment user.xp by achievement.xp on insert
