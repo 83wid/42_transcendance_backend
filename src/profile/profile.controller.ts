@@ -7,15 +7,15 @@ import {
   Param,
   Put,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { Response, Request } from 'express';
+import { JwtTwoFactorGuard } from 'src/auth/jwt-two-factor.guard';
 import { ProfileService } from './profile.service';
 
 @Controller('profile')
 export class ProfileController {
   constructor(private profileService: ProfileService) {}
   @Get('/:username?')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getProfile(
     @Req() req: Request,
     @Res() res: Response,
@@ -25,7 +25,7 @@ export class ProfileController {
     return this.profileService.profile(req, res, username);
   }
   // @Put('update')
-  // @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtTwoFactorGuard)
   // async updateUser(@Req() req: any, @Res() res: Response) {
   //   const user = await this.profileService.updateProfile({
   //     data: req.body,

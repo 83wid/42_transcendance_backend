@@ -4,7 +4,7 @@ import { JwtService } from "@nestjs/jwt";
 import { Response } from "express";
 import { pick } from "lodash";
 import { authenticator } from "otplib";
-import { toFileStream } from "qrcode";
+import { toFileStream, toDataURL } from "qrcode";
 
 @Injectable()
 export class AuthService {
@@ -91,19 +91,14 @@ export class AuthService {
       const secret = authenticator.generateSecret();
       const otpauthUrl = authenticator.keyuri(user.username, process.env.APP_NAME, secret);
       await this.UserService.setTwoFactorAuthenticationSecret(userId, secret);
-      return this.pipeQrCodeStream(res, otpauthUrl);
+      const url = await toDataURL(otpauthUrl);
+      return res.send(url);
     } catch (error) {
       return res.status(500).json({ message: "server error" });
     }
   }
 
-  pipeQrCodeStream(res: Response, otpauthUrl: string) {
-    return toFileStream(res, otpauthUrl);
-  }
-
   async verifyTwoFaCode(code: string, secret: string) {
-    console.log(code, secret);
-    
     return authenticator.verify({
       token: code,
       secret,

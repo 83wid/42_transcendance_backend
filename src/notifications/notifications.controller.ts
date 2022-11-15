@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtTwoFactorGuard } from 'src/auth/jwt-two-factor.guard';
 import { NotificationsService } from './notifications.service';
 import { GetNotifcaions } from 'src/interfaces/user.interface';
 
@@ -9,7 +9,7 @@ import { GetNotifcaions } from 'src/interfaces/user.interface';
 export class NotificationsController {
   constructor(private notificationsService: NotificationsService){}
   @Get('/get')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getNotifications(@Req() req: Request, @Res() res: Response){
     return this.notificationsService.getNotifications(req, res)
   }

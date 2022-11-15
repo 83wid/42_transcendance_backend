@@ -1,17 +1,17 @@
 import { Controller, Get, Param, Put, Req, Res, Query, UseGuards, UseInterceptors, UploadedFiles, Post } from "@nestjs/common";
-import { JwtAuthGuard } from "src/auth/jwt-auth.guard";
 import { UsersService } from "./users.service";
 import { Request, Response } from "express";
 import { GetUserQuery } from "src/interfaces/user.interface";
 import { FileFieldsInterceptor, FileInterceptor } from "@nestjs/platform-express/multer";
 import { diskStorage } from "multer";
 import { existsSync, mkdirSync } from "fs";
+import { JwtTwoFactorGuard } from "src/auth/jwt-two-factor.guard";
 
 @Controller("users")
 export class UsersController {
   constructor(private usersService: UsersService) {}
   @Put("update")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -59,12 +59,12 @@ export class UsersController {
     res.sendFile(fileName, { root: "upload" });
   }
   @Get("all")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   async getAllUsers(@Req() req: Request, @Query() query: GetUserQuery, @Res() res: Response) {
     return this.usersService.getAllUsers(req.user.sub, query, res);
   }
   @Get(":username")
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   async findUser(@Param("username") username: string) {
     if (/^(\d)+$/.test(username)) return this.usersService.user({ intra_id: Number(username) });
     else return this.usersService.user({ username: username });

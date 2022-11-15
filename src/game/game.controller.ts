@@ -11,7 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtTwoFactorGuard } from 'src/auth/jwt-two-factor.guard';
 import { GameService } from './game.service';
 import {
   RegisterToQueueBody,
@@ -28,7 +28,7 @@ export class GameController {
   constructor(private gameService: GameService) {}
 
   @Get('/')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getGameById(
     @Req() req: Request,
     @Res() res: Response,
@@ -38,18 +38,18 @@ export class GameController {
   }
 
   @Get('/history')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getUserGame(@Req() req: Request, @Res() res: Response) {
     return this.gameService.getUserHistoryGame(req, res);
   }
   @Get('current')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getCurrentGames(@Req() req: Request, @Res() res: Response) {
     return this.gameService.getCurrentGames(Number(req.query.cursor) || 1, res);
   }
 
   @Post('registerqueue')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   registerQueue(
     @Req() req: Request,
     @Res() res: Response,
@@ -59,7 +59,7 @@ export class GameController {
   }
 
   @Post('creategame')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   createGame(
     @Req() req: Request,
     @Res() res: Response,
@@ -69,13 +69,13 @@ export class GameController {
   }
 
   @Delete('leavequeue')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   leaveQueue(@Req() req: Request, @Res() res: Response) {
     return this.gameService.leaveQueue(req, res);
   }
 
   @Put('leaveGame')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   leaveGame(
     @Req() req: Request,
     @Res() res: Response,
@@ -84,7 +84,7 @@ export class GameController {
     return this.gameService.leaveGame(req, res, dto);
   }
   @Post('invite')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   inviteToPlayGame(
     @Req() req: Request,
     @Res() res: Response,
@@ -93,7 +93,7 @@ export class GameController {
     return this.gameService.inviteUserToGame(req, res, dto);
   }
   @Put('invite/accepte')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   accepteInvite(
     @Req() req: Request,
     @Res() res: Response,
@@ -103,7 +103,7 @@ export class GameController {
   }
 
   @Delete('invite/reject')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   rejecteInvite(
     @Req() req: Request,
     @Res() res: Response,

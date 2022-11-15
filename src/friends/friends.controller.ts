@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { JwtTwoFactorGuard } from 'src/auth/jwt-two-factor.guard';
 import {
   acceptRequestBody,
   blockRequestBody,
@@ -30,7 +30,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Post('sendrequest')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   sendRequest(
     @Body() dto: friendRequestBody,
     @Req() req: any,
@@ -45,7 +45,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Get('invites')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getInvites(@Req() req: any, @Res() res: Response) {
     return this.friendsService.getInvites(Number(req.user.sub), res);
   }
@@ -56,7 +56,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Post('acceptrequest')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   acceptRequest(
     @Req() req: any,
     @Res() res: Response,
@@ -71,7 +71,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Post('rejectrequest')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   rejectRequest(
     @Req() req: any,
     @Res() res: Response,
@@ -86,7 +86,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Post('unfriend')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   unfriend(@Body() dto: unfriendRequestBody, @Res() res: Response) {
     return this.friendsService.unfriend(dto, res);
   }
@@ -96,7 +96,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Get('')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getFriends(@Req() req: any, @Res() res: Response) {
     return this.friendsService.getFriends(req, res);
   }
@@ -107,7 +107,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Post('blockfriend')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   blockFriend(
     @Req() req: any,
     @Res() res: Response,
@@ -122,7 +122,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Get('user/:username')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getFriendsByUsername(@Req() req: any, @Res() res: Response) {
     return this.friendsService.getFriendsByUsername(req, res);
   }
@@ -133,7 +133,7 @@ export class FriendsController {
    */
 
   @Get('blocked')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   getBlockedUsers(@Req() req: any, @Res() res: Response) {
     return this.friendsService.getBlockedUsers(req, res);
   }
@@ -144,7 +144,7 @@ export class FriendsController {
    ** @return {object} response
    */
   @Post('unblock')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtTwoFactorGuard)
   unblockUser(
     @Req() req: any,
     @Res() res: Response,

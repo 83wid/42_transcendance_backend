@@ -14,10 +14,9 @@ export class JwtTwoFaStrategy extends PassportStrategy(Strategy, "jwt-two-factor
   }
 
   async validate(payload: any) {
-    // { sub: 51111, tow_factor_validate: true, iat: 1668442980 }
-    // console.log(payload);
-    // if (payload.tow_factor_validate) return payload;
     try {
+      console.log(payload);
+      
       const user = await this.usersService.user({ intra_id: payload.sub });
       if (!user.two_factor_activate) return payload;
       if (payload.tow_factor_validate) return payload;
