@@ -153,7 +153,7 @@ CREATE TABLE game (
   status game_status DEFAULT 'WAITING',
   level game_diff DEFAULT 'NORMAL',
   started boolean DEFAULT false,
-  created_at timestamp NOT NULL,
+  created_at timestamp NOT NULL DEFAULT now(),
   updated_at timestamp NOT NULL DEFAULT now(),
   PRIMARY KEY (id)
 );
@@ -347,8 +347,23 @@ SELECT id,
 FROM generate_series(1, 120) AS id;
 -- ?insert notifications
 --TODO delete this insert (^_^)
-INSERT INTO notification (userId, fromId, content)
+INSERT INTO notification (userId, fromId, content, type)
 SELECT 51111,
   id,
-  'send you friend request'
+  'send you friend request',
+  'FRIEND_REQUEST'
 FROM generate_series(1, 120) AS id;
+INSERT INTO game (status, started)
+SELECT 'PLAYING',
+  true
+FROM generate_series(1, 50) AS id;
+INSERT INTO players (userId, gameId, ready)
+SELECT id,
+  id,
+  true
+FROM generate_series(1, 50) AS id;
+INSERT INTO players (userId, gameId, ready)
+SELECT id + 50,
+  id,
+  true
+FROM generate_series(1, 50) AS id;
