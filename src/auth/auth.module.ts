@@ -5,8 +5,8 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { UsersModule } from 'src/users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { jwtConstants } from './constants';
 import { FortyTwoStrategy } from './fortyTwo.strategy';
+import {JwtTwoFaStrategy} from './jwt-two-factor.strategy'
 import { JwtStategy } from './jwt.strategy';
 
 @Module({
@@ -14,11 +14,9 @@ import { JwtStategy } from './jwt.strategy';
     UsersModule,
     PassportModule,
     PrismaModule,
-    JwtModule.register({
-      secret: jwtConstants.secret,
-    }),
+    JwtModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, FortyTwoStrategy, JwtStategy],
+  providers: [AuthService, FortyTwoStrategy, JwtStategy, JwtTwoFaStrategy],
 })
 export class AuthModule {}

@@ -1,6 +1,6 @@
 FILE= ./docker-compose.yml
 NAMES = server
-DB_FOLDER = ./database/data
+DB_FOLDER = $(PWD)/database/data
 VLM = `docker volume ls -q`
 all:
 	mkdir -p $(DB_FOLDER)

@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { FriendsController } from './friends.controller';
-import { FriendsService } from './friends.service';
+import { GameController } from './game.controller';
+import { GameService } from './game.service';
+import { GameGateway } from './game.gateway';
 import { NotificationsModule } from 'src/notifications/notifications.module';
 import { AchievementsModule } from 'src/achievements/achievements.module';
 
 @Module({
   imports: [NotificationsModule, AchievementsModule],
-  controllers: [FriendsController],
-  providers: [FriendsService],
+  controllers: [GameController],
+  providers: [GameService, GameGateway]
 })
-export class FriendsModule {}
+export class GameModule {}
