@@ -15,13 +15,13 @@ export class JwtTwoFaStrategy extends PassportStrategy(Strategy, "jwt-two-factor
 
   async validate(payload: any) {
     try {
-      console.log(payload);
+      
       
       const user = await this.usersService.user({ intra_id: payload.sub });
       if (!user.two_factor_activate) return payload;
       if (payload.tow_factor_validate) return payload;
     } catch (error) {
-      console.log(error);
+      
     }
   }
 }

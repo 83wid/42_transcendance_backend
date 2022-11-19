@@ -297,73 +297,73 @@ VALUES ('friendly', 'SILVER', 100, 'add 10 friends'),
     5000,
     'play 20 matches in one day'
   ),
-  ('photogenic', 'GOLD', 100, 'change your avatar'),
+  ('photogenic', 'GOLD', 50, 'change your avatar'),
   (
     'photogenic',
     'PLATINUM',
-    100,
+    50,
     'change your cover'
   );
--- ?for test insert into users
---TODO delete this insert (^_^)
-INSERT INTO users (
-    intra_id,
-    username,
-    email,
-    first_name,
-    last_name,
-    status,
-    img_url
-  )
-SELECT id,
-  'alizaynoune' || id,
-  'zaynoune' || id || '@ali.ali',
-  'ali',
-  'zaynoune',
-  'OFFLINE',
-  'https://joeschmoe.io/api/v1/random'
-FROM generate_series(1, 200) AS id;
-INSERT INTO users (
-    intra_id,
-    username,
-    email,
-    first_name,
-    last_name,
-    img_url
-  )
-VALUES (
-    51111,
-    'alizaynou',
-    'alzaynou@student.1337.ma',
-    'Ali',
-    'Zaynoune',
-    'https://cdn.intra.42.fr/users/alzaynou.jpg'
-  );
--- ?insert friend request
---TODO delete this insert (^_^)
-INSERT INTO invites (senderId, receiverId)
-SELECT id,
-  51111
-FROM generate_series(1, 120) AS id;
--- ?insert notifications
---TODO delete this insert (^_^)
-INSERT INTO notification (userId, fromId, content, type)
-SELECT 51111,
-  id,
-  'send you friend request',
-  'FRIEND_REQUEST'
-FROM generate_series(1, 120) AS id;
-INSERT INTO game (status, started)
-SELECT 'PLAYING',
-  true
-FROM generate_series(1, 50) AS id;
-INSERT INTO players (userId, gameId, ready)
-SELECT id,
-  id,
-  true
-FROM generate_series(1, 50) AS id;
-INSERT INTO players (userId, gameId, ready)
-SELECT id + 50,
-  id,
-  true
-FROM generate_series(1, 50) AS id;
+-- -- ?for test insert into users
+-- --TODO delete this insert (^_^)
+-- INSERT INTO users (
+--     intra_id,
+--     username,
+--     email,
+--     first_name,
+--     last_name,
+--     status,
+--     img_url
+--   )
+-- SELECT id,
+--   'alizaynoune' || id,
+--   'zaynoune' || id || '@ali.ali',
+--   'ali',
+--   'zaynoune',
+--   'OFFLINE',
+--   'https://joeschmoe.io/api/v1/random'
+-- FROM generate_series(1, 200) AS id;
+-- INSERT INTO users (
+--     intra_id,
+--     username,
+--     email,
+--     first_name,
+--     last_name,
+--     img_url
+--   )
+-- VALUES (
+--     51111,
+--     'alizaynou',
+--     'alzaynou@student.1337.ma',
+--     'Ali',
+--     'Zaynoune',
+--     'https://cdn.intra.42.fr/users/alzaynou.jpg'
+--   );
+-- -- ?insert friend request
+-- --TODO delete this insert (^_^)
+-- INSERT INTO invites (senderId, receiverId)
+-- SELECT id,
+--   51111
+-- FROM generate_series(1, 120) AS id;
+-- -- ?insert notifications
+-- --TODO delete this insert (^_^)
+-- INSERT INTO notification (userId, fromId, content, type)
+-- SELECT 51111,
+--   id,
+--   'send you friend request',
+--   'FRIEND_REQUEST'
+-- FROM generate_series(1, 120) AS id;
+-- INSERT INTO game (status, started)
+-- SELECT 'PLAYING',
+--   true
+-- FROM generate_series(1, 50) AS id;
+-- INSERT INTO players (userId, gameId, ready)
+-- SELECT id,
+--   id,
+--   true
+-- FROM generate_series(1, 50) AS id;
+-- INSERT INTO players (userId, gameId, ready)
+-- SELECT id + 50,
+--   id,
+--   true
+-- FROM generate_series(1, 50) AS id;

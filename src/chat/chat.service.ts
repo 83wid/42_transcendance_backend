@@ -76,7 +76,7 @@ export class ChatService {
       this.chatGateway.handleMemberJoinRoomChat(userId, conversation.id);
       return res.status(201).json(conversation);
     } catch (error) {
-      console.log(error);
+      
 
       return res.status(500).json({ message: "server error" });
     }
@@ -108,7 +108,7 @@ export class ChatService {
       });
       return res.status(200).json(messages);
     } catch (error) {
-      console.log(error);
+      
 
       return res.status(500).json({ message: "server error" });
     }
@@ -216,7 +216,7 @@ export class ChatService {
       this.chatGateway.handleMemberJoinRoomChat(userId, join.id);
       return res.status(200).json(plainToInstance(ConversationDataReturn, join));
     } catch (error) {
-      console.log(error);
+      
       return res.status(500).json({ message: "server error" });
     }
   }
@@ -226,7 +226,7 @@ export class ChatService {
       var users = null;
       if (dto.protected && !dto.password) return res.status(401).json({ message: "Bad Request" });
       if (dto.password) Object.assign(dto, { protected: true });
-      console.log(dto);
+      
       
       const conversation = await this.prismaService.conversation.findFirst({
         where: { id: dto.id, type: "GROUP", members: { some: { userid: userId, isadmin: true, active: true } } },
@@ -267,7 +267,7 @@ export class ChatService {
       if (dto.password) this.chatGateway.handlePasswordChanged(userId, conversation.id);
       return res.status(201).json(update);
     } catch (error) {
-      console.log(error);
+      
       return res.status(500).json({ message: "server error" });
     }
   }
@@ -301,7 +301,7 @@ export class ChatService {
       this.chatGateway.handleEmitUpdateConversation(update, userId);
       return res.status(201).json(update);
     } catch (error) {
-      console.log(error);
+      
       return res.status(500).json({ message: "server error" });
     }
   }
@@ -335,7 +335,7 @@ export class ChatService {
       this.chatGateway.handleEmitNewMessage(newMessage);
       return res.status(200).json(newMessage);
     } catch (error) {
-      console.log(error);
+      
       return res.status(500).json(error);
     }
   }
@@ -369,7 +369,7 @@ export class ChatService {
       this.chatGateway.handleEmitUpdateConversation(update, userId);
       return res.status(200).json(update);
     } catch (error) {
-      console.log(error);
+      
       return res.status(500).json({ message: "server error" });
     }
   }
@@ -404,7 +404,7 @@ export class ChatService {
       this.chatGateway.handleEmitUpdateConversation(update, userId);
       return res.status(200).json(update);
     } catch (error) {
-      console.log(error);
+      
       return res.status(500).json({ message: "server error" });
     }
   }
@@ -464,7 +464,7 @@ export class ChatService {
       this.chatGateway.handleRemoveSocketIdFromRoom(userId, dto.id);
       return res.status(200).json({ message: "success leave conversation" });
     } catch (error) {
-      console.log(error);
+      
       return res.status(500).json({ message: "server error" });
     }
   }

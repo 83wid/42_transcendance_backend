@@ -2,7 +2,6 @@ import { Body, Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { JwtTwoFactorGuard } from 'src/auth/jwt-two-factor.guard';
 import { NotificationsService } from './notifications.service';
-import { GetNotifcaions } from 'src/interfaces/user.interface';
 
 
 @Controller('notifications')
